@@ -1,0 +1,341 @@
+/* Quartz Editor - Main Styles */
+:root {
+  --quartz-bg: var(--vscode-editor-background, #1e1e1e);
+  --quartz-fg: var(--vscode-editor-foreground, #d4d4d4);
+  --quartz-border: var(--vscode-panel-border, #2d2d2d);
+  --quartz-accent: var(--vscode-focusBorder, #007acc);
+  --quartz-selection: var(--vscode-editor-selectionBackground, #264f78);
+  --quartz-code-bg: var(--vscode-textCodeBlock-background, #1a1a2e);
+  --quartz-page-bg: var(--vscode-editor-background, #1e1e1e);
+  --quartz-wrapper-bg: var(--vscode-sideBar-background, #181818);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--quartz-wrapper-bg);
+  color: var(--quartz-fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.quartz-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--quartz-fg);
+  opacity: 0.5;
+}
+
+.quartz-app {
+  min-height: 100vh;
+}
+
+/* Page Layout */
+.quartz-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+  background: var(--quartz-wrapper-bg);
+}
+
+.quartz-page {
+  background: var(--quartz-page-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  width: 100%;
+  min-height: calc(100vh - 48px);
+}
+
+.quartz-fluid {
+  padding: 16px 24px;
+  max-width: 100%;
+}
+
+/* Editor Content */
+.quartz-editor-content {
+  outline: none;
+  line-height: 1.7;
+}
+
+.quartz-editor-content > *:first-child {
+  margin-top: 0;
+}
+
+/* Headings */
+.quartz-editor-content h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 1em 0 0.5em;
+  line-height: 1.2;
+}
+
+.quartz-editor-content h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 0.8em 0 0.4em;
+  line-height: 1.3;
+}
+
+.quartz-editor-content h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+  line-height: 1.4;
+}
+
+.quartz-editor-content h4,
+.quartz-editor-content h5,
+.quartz-editor-content h6 {
+  font-weight: 600;
+  margin: 0.5em 0 0.25em;
+}
+
+/* Lists */
+.quartz-editor-content ul,
+.quartz-editor-content ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.quartz-editor-content li {
+  margin: 0.15em 0;
+}
+
+.quartz-editor-content li p {
+  margin: 0;
+}
+
+/* Task List */
+.quartz-editor-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.quartz-editor-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.quartz-editor-content ul[data-type="taskList"] li > label {
+  margin-top: 0.25em;
+}
+
+.quartz-editor-content ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+/* Code Blocks */
+.quartz-editor-content pre {
+  background: var(--quartz-code-bg);
+  border-radius: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  margin: 0.75em 0;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.quartz-editor-content pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.quartz-editor-content code {
+  background: var(--quartz-code-bg);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.9em;
+}
+
+/* Blockquote */
+.quartz-editor-content blockquote {
+  border-left: 3px solid var(--quartz-accent);
+  margin: 0.75em 0;
+  padding: 0.25em 0 0.25em 1em;
+  color: var(--quartz-fg);
+  opacity: 0.85;
+}
+
+.quartz-editor-content blockquote p {
+  margin: 0;
+}
+
+/* Horizontal Rule */
+.quartz-editor-content hr {
+  border: none;
+  border-top: 1px solid var(--quartz-border);
+  margin: 1.5em 0;
+}
+
+/* Images */
+.quartz-editor-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0.5em 0;
+}
+
+/* Tables */
+.quartz-editor-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75em 0;
+}
+
+.quartz-editor-content th,
+.quartz-editor-content td {
+  border: 1px solid var(--quartz-border);
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.quartz-editor-content th {
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Links */
+.quartz-editor-content a {
+  color: var(--quartz-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Highlight */
+.quartz-editor-content mark {
+  background: rgba(255, 255, 0, 0.3);
+  padding: 0.1em 0.15em;
+  border-radius: 2px;
+}
+
+/* Placeholder */
+.quartz-editor-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--quartz-fg);
+  opacity: 0.3;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Slash Menu */
+.quartz-slash-menu {
+  position: fixed;
+  z-index: 100;
+  background: var(--vscode-menu-background, #252526);
+  border: 1px solid var(--vscode-menu-border, #454545);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  max-height: 320px;
+  overflow-y: auto;
+  min-width: 240px;
+  padding: 4px;
+}
+
+.quartz-slash-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--vscode-menu-foreground, #cccccc);
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.quartz-slash-menu-item:hover,
+.quartz-slash-menu-item.selected {
+  background: var(--vscode-menu-selectionBackground, #094771);
+  color: var(--vscode-menu-selectionForeground, #ffffff);
+}
+
+.quartz-slash-menu-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.quartz-slash-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.quartz-slash-menu-label {
+  font-weight: 500;
+}
+
+.quartz-slash-menu-description {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.quartz-slash-menu-empty {
+  padding: 12px;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 13px;
+}
+
+/* Formatting Toolbar */
+.quartz-formatting-toolbar {
+  display: flex;
+  gap: 2px;
+  background: var(--vscode-menu-background, #252526);
+  border: 1px solid var(--vscode-menu-border, #454545);
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.quartz-toolbar-btn {
+  border: none;
+  background: none;
+  color: var(--vscode-menu-foreground, #cccccc);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quartz-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quartz-toolbar-btn.active {
+  background: var(--quartz-accent);
+  color: white;
+}
+
+/* Drop Cursor */
+.ProseMirror-dropcursor {
+  border-color: var(--quartz-accent) !important;
+}
