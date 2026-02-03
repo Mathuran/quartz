@@ -428,23 +428,23 @@ All previously open questions have been resolved:
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/notion-markdown-editor/001-extension-scaffold-and-custom-editor-provider.md) | Extension Scaffold and Custom Editor Provider | TODO | M |
-| [002](../issues/notion-markdown-editor/002-markdown-to-prosemirror-parser.md) | Markdown-to-ProseMirror Parser | TODO | M |
-| [003](../issues/notion-markdown-editor/003-prosemirror-to-markdown-serializer.md) | ProseMirror-to-Markdown Serializer | TODO | M |
-| [004](../issues/notion-markdown-editor/004-round-trip-fidelity-and-format-preservation.md) | Round-Trip Fidelity and Format Preservation | TODO | M |
-| [005](../issues/notion-markdown-editor/005-tiptap-core-editor-with-basic-blocks.md) | TipTap Core Editor with Basic Blocks | TODO | M |
-| [006](../issues/notion-markdown-editor/006-page-layout-and-document-styling.md) | Page Layout and Document Styling | TODO | S |
-| [007](../issues/notion-markdown-editor/007-slash-command-menu.md) | Slash Command Menu | TODO | M |
-| [008](../issues/notion-markdown-editor/008-task-list-callout-and-toggle-blocks.md) | Task List, Callout, and Toggle Block Types | TODO | M |
-| [009](../issues/notion-markdown-editor/009-table-editing.md) | Table Editing | TODO | M |
-| [010](../issues/notion-markdown-editor/010-image-math-mermaid-and-embed-blocks.md) | Image, Math, Mermaid, and Embed Block Types | TODO | M |
-| [011](../issues/notion-markdown-editor/011-inline-formatting-toolbar.md) | Inline Formatting Toolbar | TODO | S |
-| [012](../issues/notion-markdown-editor/012-drag-and-drop-block-reordering.md) | Drag-and-Drop Block Reordering | TODO | M |
-| [013](../issues/notion-markdown-editor/013-keyboard-shortcuts.md) | Keyboard Shortcuts | TODO | S |
-| [014](../issues/notion-markdown-editor/014-external-file-change-handling-and-unsupported-syntax-fallback.md) | External File Change Handling and Unsupported Syntax Fallback | TODO | S |
-| [015](../issues/notion-markdown-editor/015-performance-optimization-and-large-file-handling.md) | Performance Optimization and Large File Handling | TODO | M |
+| [001](../issues/notion-markdown-editor/001-extension-scaffold-and-custom-editor-provider.md) | Extension Scaffold and Custom Editor Provider | DONE | M |
+| [002](../issues/notion-markdown-editor/002-markdown-to-prosemirror-parser.md) | Markdown-to-ProseMirror Parser | DONE | M |
+| [003](../issues/notion-markdown-editor/003-prosemirror-to-markdown-serializer.md) | ProseMirror-to-Markdown Serializer | DONE | M |
+| [004](../issues/notion-markdown-editor/004-round-trip-fidelity-and-format-preservation.md) | Round-Trip Fidelity and Format Preservation | DONE | M |
+| [005](../issues/notion-markdown-editor/005-tiptap-core-editor-with-basic-blocks.md) | TipTap Core Editor with Basic Blocks | DONE | M |
+| [006](../issues/notion-markdown-editor/006-page-layout-and-document-styling.md) | Page Layout and Document Styling | DONE | S |
+| [007](../issues/notion-markdown-editor/007-slash-command-menu.md) | Slash Command Menu | DONE | M |
+| [008](../issues/notion-markdown-editor/008-task-list-callout-and-toggle-blocks.md) | Task List, Callout, and Toggle Block Types | DONE | M |
+| [009](../issues/notion-markdown-editor/009-table-editing.md) | Table Editing | DONE | M |
+| [010](../issues/notion-markdown-editor/010-image-math-mermaid-and-embed-blocks.md) | Image, Math, Mermaid, and Embed Block Types | DONE | M |
+| [011](../issues/notion-markdown-editor/011-inline-formatting-toolbar.md) | Inline Formatting Toolbar | DONE | S |
+| [012](../issues/notion-markdown-editor/012-drag-and-drop-block-reordering.md) | Drag-and-Drop Block Reordering | DONE | M |
+| [013](../issues/notion-markdown-editor/013-keyboard-shortcuts.md) | Keyboard Shortcuts | DONE | S |
+| [014](../issues/notion-markdown-editor/014-external-file-change-handling-and-unsupported-syntax-fallback.md) | External File Change Handling and Unsupported Syntax Fallback | DONE | S |
+| [015](../issues/notion-markdown-editor/015-performance-optimization-and-large-file-handling.md) | Performance Optimization and Large File Handling | DONE | M |
 
-**Progress:** 0/15 issues complete (0%)
+**Progress:** 15/15 issues complete (100%)
 
 ## 12. Appendix
 
