@@ -1,0 +1,9 @@
+{
+  "name": "project-manager",
+  "version": "1.0.0",
+  "description": "CTO-style project management with Amazon-style design docs, review workflows, and issue tracking",
+  "author": {
+    "name": "Quartz Team"
+  },
+  "keywords": ["project-management", "design-docs", "issues", "planning", "amazon-style"]
+}

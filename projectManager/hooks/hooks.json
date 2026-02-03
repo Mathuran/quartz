@@ -1,0 +1,53 @@
+{
+  "description": "Project management workflow hooks for design docs and issue tracking",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Analyze if this user prompt is requesting a new feature or significant functionality. Look for phrases like 'build', 'create', 'implement', 'add feature', 'new feature', 'I want to', 'we need to'. If this appears to be a feature request that would benefit from a design document (not a simple bug fix or small change), suggest: 'This sounds like a feature that would benefit from a design document. Would you like me to create one using `/design-doc <feature-name>`?' Otherwise, return empty response.",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/load-project-context.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if the file being written/edited is in the projectManager directory. If writing to projectManager/design-docs/*.md, verify the content follows the Amazon-style design doc structure (should have sections: Problem Statement, Goals, Non-Goals, Proposed Solution, Alternatives, Security, Testing, Rollout, Risks). If the doc is APPROVED status, it should also have an Implementation Issues section with links to issues. If writing to projectManager/issues/*/*.md, verify it follows the issue template (should have: Status, Design Doc link, Depends On, Acceptance Criteria, Tests Required). The Design Doc field should be a markdown link like [feature-name](../../design-docs/feature-name.md). If structure is missing critical elements, return a systemMessage suggesting what's missing. Otherwise approve silently.",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If this session involved creating or modifying design documents or issues in the projectManager folder, verify: 1) Design docs have all required sections filled out (not placeholder text), 2) Issues have acceptance criteria and test requirements, 3) Any new issues have been added to the dependency graph correctly. If there are incomplete items, suggest what should be completed before ending. Otherwise approve stopping.",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
