@@ -36,6 +36,8 @@ import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
 import { FormattingToolbar } from './components/FormattingToolbar';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
+import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
+import { dragHandleExtension } from './extensions/dragHandle';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -81,6 +83,8 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       TableCell,
       TableHeader,
       slashCommandExtension,
+      keyboardShortcutsExtension,
+      dragHandleExtension,
     ],
     content: parseMarkdown(initialContentRef.current),
     onUpdate: ({ editor }) => {
