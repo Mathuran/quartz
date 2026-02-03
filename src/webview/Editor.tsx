@@ -38,6 +38,7 @@ import { FormattingToolbar } from './components/FormattingToolbar';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 import { dragHandleExtension } from './extensions/dragHandle';
+import { virtualRenderingExtension } from './extensions/virtualRendering';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -85,6 +86,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       slashCommandExtension,
       keyboardShortcutsExtension,
       dragHandleExtension,
+      virtualRenderingExtension,
     ],
     content: parseMarkdown(initialContentRef.current),
     onUpdate: ({ editor }) => {
