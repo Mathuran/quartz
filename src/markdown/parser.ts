@@ -45,147 +45,152 @@ function tokensToNodes(tokens: MarkdownIt.Token[]): JSONContent[] {
   let i = 0;
 
   while (i < tokens.length) {
-    const token = tokens[i];
+    try {
+      const token = tokens[i];
 
-    switch (token.type) {
-      case 'heading_open': {
-        const level = parseInt(token.tag.slice(1), 10);
-        const inlineToken = tokens[i + 1];
-        const content = inlineToken ? parseInline(inlineToken.children || []) : [];
-        nodes.push({
-          type: 'heading',
-          attrs: { level },
-          content: content.length > 0 ? content : undefined,
-        });
-        i += 3; // heading_open, inline, heading_close
-        break;
-      }
-
-      case 'paragraph_open': {
-        const inlineToken = tokens[i + 1];
-        // Check for task list items or callout syntax in inline
-        const inlineContent = inlineToken ? parseInline(inlineToken.children || []) : [];
-
-        // Check if this looks like a GFM alert inside a blockquote
-        nodes.push({
-          type: 'paragraph',
-          content: inlineContent.length > 0 ? inlineContent : undefined,
-        });
-        i += 3; // paragraph_open, inline, paragraph_close
-        break;
-      }
-
-      case 'bullet_list_open': {
-        const listItems = parseListItems(tokens, i + 1, 'bullet_list_close');
-        // Check if this is a task list
-        const isTaskList = listItems.items.some((item) =>
-          isTaskItem(item)
-        );
-
-        if (isTaskList) {
+      switch (token.type) {
+        case 'heading_open': {
+          const level = parseInt(token.tag.slice(1), 10);
+          const inlineToken = tokens[i + 1];
+          const content = inlineToken ? parseInline(inlineToken.children || []) : [];
           nodes.push({
-            type: 'taskList',
-            content: listItems.items.map((item) => convertToTaskItem(item)),
+            type: 'heading',
+            attrs: { level },
+            content: content.length > 0 ? content : undefined,
           });
-        } else {
-          nodes.push({
-            type: 'bulletList',
-            content: listItems.items,
-          });
+          i += 3; // heading_open, inline, heading_close
+          break;
         }
-        i = listItems.endIndex + 1;
-        break;
-      }
 
-      case 'ordered_list_open': {
-        const attrs: Record<string, unknown> = {};
-        if (token.attrGet('start')) {
-          attrs.start = parseInt(token.attrGet('start')!, 10);
-        }
-        const listItems = parseListItems(tokens, i + 1, 'ordered_list_close');
-        nodes.push({
-          type: 'orderedList',
-          attrs: Object.keys(attrs).length > 0 ? attrs : undefined,
-          content: listItems.items,
-        });
-        i = listItems.endIndex + 1;
-        break;
-      }
+        case 'paragraph_open': {
+          const inlineToken = tokens[i + 1];
+          // Check for task list items or callout syntax in inline
+          const inlineContent = inlineToken ? parseInline(inlineToken.children || []) : [];
 
-      case 'code_block':
-      case 'fence': {
-        const language = token.info ? token.info.trim().split(/\s+/)[0] : null;
-        const text = token.content.replace(/\n$/, '');
-        nodes.push({
-          type: 'codeBlock',
-          attrs: language ? { language } : undefined,
-          content: text ? [{ type: 'text', text }] : undefined,
-        });
-        i++;
-        break;
-      }
-
-      case 'blockquote_open': {
-        const blockquoteContent = parseBlockquote(tokens, i + 1);
-        nodes.push({
-          type: 'blockquote',
-          content: blockquoteContent.nodes,
-        });
-        i = blockquoteContent.endIndex + 1;
-        break;
-      }
-
-      case 'hr': {
-        nodes.push({ type: 'horizontalRule' });
-        i++;
-        break;
-      }
-
-      case 'html_block': {
-        // Check for <details>/<summary> toggle pattern
-        const detailsMatch = token.content.match(
-          /^<details>\s*\n?<summary>(.*?)<\/summary>\s*\n?([\s\S]*?)\s*<\/details>\s*$/
-        );
-        if (detailsMatch) {
-          const summary = detailsMatch[1].trim();
-          const detailsBody = detailsMatch[2].trim();
-          // Parse the body as markdown
-          const bodyNodes = parseMarkdown(detailsBody);
-          nodes.push({
-            type: 'details',
-            content: [
-              {
-                type: 'detailsSummary',
-                content: [{ type: 'text', text: summary }],
-              },
-              {
-                type: 'detailsContent',
-                content: bodyNodes.content || [{ type: 'paragraph' }],
-              },
-            ],
-          });
-        } else {
-          // Preserve as raw HTML paragraph
+          // Check if this looks like a GFM alert inside a blockquote
           nodes.push({
             type: 'paragraph',
-            content: [{ type: 'text', text: token.content.trim() }],
+            content: inlineContent.length > 0 ? inlineContent : undefined,
           });
+          i += 3; // paragraph_open, inline, paragraph_close
+          break;
         }
-        i++;
-        break;
-      }
 
-      case 'table_open': {
-        const tableResult = parseTable(tokens, i + 1);
-        nodes.push(tableResult.node);
-        i = tableResult.endIndex + 1;
-        break;
-      }
+        case 'bullet_list_open': {
+          const listItems = parseListItems(tokens, i + 1, 'bullet_list_close');
+          // Check if this is a task list
+          const isTaskList = listItems.items.some((item) =>
+            isTaskItem(item)
+          );
 
-      default:
-        // Skip unknown tokens
-        i++;
-        break;
+          if (isTaskList) {
+            nodes.push({
+              type: 'taskList',
+              content: listItems.items.map((item) => convertToTaskItem(item)),
+            });
+          } else {
+            nodes.push({
+              type: 'bulletList',
+              content: listItems.items,
+            });
+          }
+          i = listItems.endIndex + 1;
+          break;
+        }
+
+        case 'ordered_list_open': {
+          const attrs: Record<string, unknown> = {};
+          if (token.attrGet('start')) {
+            attrs.start = parseInt(token.attrGet('start')!, 10);
+          }
+          const listItems = parseListItems(tokens, i + 1, 'ordered_list_close');
+          nodes.push({
+            type: 'orderedList',
+            attrs: Object.keys(attrs).length > 0 ? attrs : undefined,
+            content: listItems.items,
+          });
+          i = listItems.endIndex + 1;
+          break;
+        }
+
+        case 'code_block':
+        case 'fence': {
+          const language = token.info ? token.info.trim().split(/\s+/)[0] : null;
+          const text = token.content.replace(/\n$/, '');
+          nodes.push({
+            type: 'codeBlock',
+            attrs: language ? { language } : undefined,
+            content: text ? [{ type: 'text', text }] : undefined,
+          });
+          i++;
+          break;
+        }
+
+        case 'blockquote_open': {
+          const blockquoteContent = parseBlockquote(tokens, i + 1);
+          nodes.push({
+            type: 'blockquote',
+            content: blockquoteContent.nodes,
+          });
+          i = blockquoteContent.endIndex + 1;
+          break;
+        }
+
+        case 'hr': {
+          nodes.push({ type: 'horizontalRule' });
+          i++;
+          break;
+        }
+
+        case 'html_block': {
+          // Check for <details>/<summary> toggle pattern
+          const detailsMatch = token.content.match(
+            /^<details>\s*\n?<summary>(.*?)<\/summary>\s*\n?([\s\S]*?)\s*<\/details>\s*$/
+          );
+          if (detailsMatch) {
+            const summary = detailsMatch[1].trim();
+            const detailsBody = detailsMatch[2].trim();
+            // Parse the body as markdown
+            const bodyNodes = parseMarkdown(detailsBody);
+            nodes.push({
+              type: 'details',
+              content: [
+                {
+                  type: 'detailsSummary',
+                  content: [{ type: 'text', text: summary }],
+                },
+                {
+                  type: 'detailsContent',
+                  content: bodyNodes.content || [{ type: 'paragraph' }],
+                },
+              ],
+            });
+          } else {
+            // Preserve as raw HTML paragraph
+            nodes.push({
+              type: 'paragraph',
+              content: [{ type: 'text', text: token.content.trim() }],
+            });
+          }
+          i++;
+          break;
+        }
+
+        case 'table_open': {
+          const tableResult = parseTable(tokens, i + 1);
+          nodes.push(tableResult.node);
+          i = tableResult.endIndex + 1;
+          break;
+        }
+
+        default:
+          // Skip unknown tokens
+          i++;
+          break;
+      }
+    } catch (err) {
+      console.warn('Skipping token due to parse error:', err);
+      i++;
     }
   }
 
@@ -389,8 +394,9 @@ function parseBlockquote(
   const nodes: JSONContent[] = [];
   let i = startIndex;
   let depth = 1;
+  let safetyLimit = 10000;
 
-  while (i < tokens.length) {
+  while (i < tokens.length && safetyLimit-- > 0) {
     const token = tokens[i];
 
     if (token.type === 'blockquote_close') {
@@ -405,6 +411,7 @@ function parseBlockquote(
 
     if (depth === 1) {
       if (token.type === 'paragraph_open') {
+        if (i + 1 >= tokens.length) { i++; continue; }
         const inlineToken = tokens[i + 1];
         const inlineContent = inlineToken ? parseInline(inlineToken.children || []) : [];
         nodes.push({
@@ -479,6 +486,7 @@ function parseTableRow(
     const token = tokens[i];
 
     if (token.type === 'th_open' || token.type === 'td_open') {
+      if (i + 1 >= tokens.length) { i++; continue; }
       const cellType = isHeader ? 'tableHeader' : 'tableCell';
       const inlineToken = tokens[i + 1];
       const content = inlineToken && inlineToken.type === 'inline'

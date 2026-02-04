@@ -10,6 +10,38 @@ declare function acquireVsCodeApi(): {
 
 const vscode = acquireVsCodeApi();
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; content: string },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('Quartz editor error:', error);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="quartz-error">
+          <h3>Failed to render document</h3>
+          <p>{this.state.error.message}</p>
+          <p>Try opening this file with the default text editor.</p>
+          <details>
+            <summary>Raw content</summary>
+            <pre>{this.props.content}</pre>
+          </details>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function App() {
   const [content, setContent] = useState<string | null>(null);
   const [config, setConfig] = useState<EditorConfig>({
@@ -61,11 +93,13 @@ export function App() {
 
   return (
     <div className="quartz-app">
-      <Editor
-        initialContent={content}
-        config={config}
-        onUpdate={handleUpdate}
-      />
+      <ErrorBoundary content={content}>
+        <Editor
+          initialContent={content}
+          config={config}
+          onUpdate={handleUpdate}
+        />
+      </ErrorBoundary>
     </div>
   );
 }

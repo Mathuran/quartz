@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
@@ -49,9 +50,37 @@ interface EditorProps {
   onUpdate: (markdown: string) => void;
 }
 
+/**
+ * Safely parse markdown, returning the parsed doc and any error encountered.
+ */
+function safeParse(markdown: string): { doc: JSONContent; error: string | null } {
+  if (!markdown || !markdown.trim()) {
+    return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, error: null };
+  }
+
+  try {
+    const doc = parseMarkdown(markdown);
+    console.log('[Quartz] Parsed markdown into', doc.content?.length ?? 0, 'top-level nodes');
+    return { doc, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[Quartz] Failed to parse markdown:', message);
+    return {
+      doc: {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: markdown }] }],
+      },
+      error: `Parse error: ${message}`,
+    };
+  }
+}
+
 export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
+  const [contentWarning, setContentWarning] = useState<string | null>(null);
+
+  const { doc: initialDoc, error: parseError } = safeParse(initialContentRef.current);
 
   const editor = useEditor({
     extensions: [
@@ -88,7 +117,21 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       dragHandleExtension,
       virtualRenderingExtension,
     ],
-    content: parseMarkdown(initialContentRef.current),
+    content: initialDoc,
+    onCreate: ({ editor }) => {
+      // Detect if Tiptap silently dropped content during schema validation
+      const inputLength = initialContentRef.current.trim().length;
+      if (inputLength > 50) {
+        const editorText = editor.getText().trim();
+        if (editorText.length < 10) {
+          const msg = 'The document could not be fully rendered. Some content may use unsupported formatting.';
+          console.warn('[Quartz] Content appears to have been dropped by the editor.');
+          console.warn('[Quartz] Input length:', inputLength, '| Editor text length:', editorText.length);
+          console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialDoc, null, 2).slice(0, 2000));
+          setContentWarning(msg);
+        }
+      }
+    },
     onUpdate: ({ editor }) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
@@ -104,12 +147,35 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     },
   });
 
+  // Show parse error as warning
+  useEffect(() => {
+    if (parseError) {
+      setContentWarning(parseError);
+    }
+  }, [parseError]);
+
   // Update content when external changes come in
   useEffect(() => {
     if (editor && initialContent !== initialContentRef.current) {
       initialContentRef.current = initialContent;
-      const parsed = parseMarkdown(initialContent);
-      editor.commands.setContent(parsed);
+      const { doc, error } = safeParse(initialContent);
+      if (error) {
+        setContentWarning(error);
+      } else {
+        setContentWarning(null);
+      }
+      editor.commands.setContent(doc);
+
+      // Verify content was preserved after setContent
+      setTimeout(() => {
+        if (editor && initialContent.trim().length > 50) {
+          const editorText = editor.getText().trim();
+          if (editorText.length < 10) {
+            console.warn('[Quartz] Content may have been dropped after external update.');
+            setContentWarning('The document could not be fully rendered. Some content may use unsupported formatting.');
+          }
+        }
+      }, 100);
     }
   }, [editor, initialContent]);
 
@@ -124,6 +190,17 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
 
   return (
     <PageContainer config={config}>
+      {contentWarning && (
+        <div className="quartz-content-warning">
+          <span>{contentWarning}</span>
+          <button
+            onClick={() => setContentWarning(null)}
+            className="quartz-warning-dismiss"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
       <EditorContent

@@ -61,6 +61,24 @@ body {
 .quartz-editor-content {
   outline: none;
   line-height: 1.7;
+  padding-left: 36px;
+  min-height: 200px;
+  cursor: text;
+}
+
+/* Focus state - subtle background highlight like Notion */
+.quartz-editor-content:focus {
+  outline: none;
+}
+
+.quartz-editor-content.ProseMirror:focus {
+  background-color: transparent;
+}
+
+/* Subtle highlight on the empty editor to indicate it's clickable */
+.quartz-editor-content p.is-editor-empty:first-child {
+  min-height: 1.7em;
+  cursor: text;
 }
 
 .quartz-editor-content > *:first-child {
@@ -224,9 +242,34 @@ body {
   content: attr(data-placeholder);
   float: left;
   color: var(--quartz-fg);
-  opacity: 0.3;
+  opacity: 0.4;
   pointer-events: none;
   height: 0;
+  font-style: italic;
+}
+
+/* Drag Handle (floating, positioned by JS) */
+.quartz-drag-handle {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+  border-radius: 3px;
+  color: var(--quartz-fg);
+  user-select: none;
+}
+
+.quartz-drag-handle:hover {
+  background: rgba(128, 128, 128, 0.15);
+  opacity: 1;
+}
+
+.quartz-drag-handle:active {
+  cursor: grabbing;
 }
 
 /* Slash Menu */
@@ -338,4 +381,62 @@ body {
 /* Drop Cursor */
 .ProseMirror-dropcursor {
   border-color: var(--quartz-accent) !important;
+}
+
+/* Error State */
+.quartz-error {
+  padding: 24px;
+  color: var(--quartz-fg);
+}
+
+.quartz-error h3 {
+  color: var(--vscode-errorForeground, #f48771);
+  margin: 0 0 8px;
+}
+
+.quartz-error p {
+  margin: 4px 0;
+  opacity: 0.8;
+}
+
+.quartz-error pre {
+  background: var(--quartz-code-bg);
+  padding: 12px;
+  border-radius: 4px;
+  overflow: auto;
+  max-height: 300px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Content Warning Banner */
+.quartz-content-warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--vscode-inputValidation-warningBackground, #352a05);
+  border: 1px solid var(--vscode-inputValidation-warningBorder, #9d8a06);
+  color: var(--vscode-inputValidation-warningForeground, #cca700);
+  font-size: 13px;
+  border-radius: 4px;
+  margin: 8px 16px 0;
+}
+
+.quartz-warning-dismiss {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.quartz-warning-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
 }

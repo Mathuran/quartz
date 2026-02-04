@@ -1,6 +1,5 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey, NodeSelection } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
 
 const dragHandleKey = new PluginKey('dragHandle');
 
@@ -29,64 +28,122 @@ function createDragHandleElement(): HTMLElement {
 }
 
 /**
- * Builds a DecorationSet with a widget decoration at the start of each
- * top-level block node in the document.
+ * Walk up from target to find the direct child of the ProseMirror editor.
  */
-function buildDecorations(doc: any): DecorationSet {
-  const decorations: Decoration[] = [];
-
-  doc.forEach((node: any, offset: number) => {
-    decorations.push(
-      Decoration.widget(offset, () => createDragHandleElement(), {
-        side: -1,
-        key: `drag-handle-${offset}`,
-      })
-    );
-  });
-
-  return DecorationSet.create(doc, decorations);
+function findTopLevelBlock(target: HTMLElement, prosemirrorEl: HTMLElement): HTMLElement | null {
+  let el: HTMLElement | null = target;
+  while (el && el.parentElement !== prosemirrorEl) {
+    el = el.parentElement;
+  }
+  return el;
 }
 
+/**
+ * Drag handle extension using a single floating handle element.
+ *
+ * Instead of using ProseMirror widget decorations (which create DOM siblings
+ * of blocks and are hard to style with CSS hover), this approach appends a
+ * single absolutely-positioned handle to the editor wrapper. On mousemove
+ * we detect which top-level block is being hovered and reposition the handle
+ * next to it.
+ */
 export const dragHandleExtension = Extension.create({
   name: 'dragHandle',
 
   addProseMirrorPlugins() {
+    let handle: HTMLElement | null = null;
+    let currentBlockEl: HTMLElement | null = null;
+    let wrapper: HTMLElement | null = null;
+
+    function positionHandle(blockEl: HTMLElement) {
+      if (!handle || !wrapper) return;
+      handle.style.display = 'flex';
+      // Position relative to the wrapper using offset calculations
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const blockRect = blockEl.getBoundingClientRect();
+      handle.style.top = `${blockRect.top - wrapperRect.top + wrapper.scrollTop + 2}px`;
+    }
+
+    function hideHandle() {
+      if (handle) handle.style.display = 'none';
+      currentBlockEl = null;
+    }
+
     return [
       new Plugin({
         key: dragHandleKey,
 
-        state: {
-          init(_, { doc }) {
-            return buildDecorations(doc);
-          },
-          apply(tr, oldDecorations) {
-            if (tr.docChanged) {
-              return buildDecorations(tr.doc);
+        view(editorView) {
+          handle = createDragHandleElement();
+          handle.style.position = 'absolute';
+          handle.style.left = '8px';
+          handle.style.display = 'none';
+          handle.style.zIndex = '10';
+
+          wrapper = editorView.dom.parentElement as HTMLElement;
+          if (wrapper) {
+            wrapper.style.position = 'relative';
+            wrapper.appendChild(handle);
+          }
+
+          // Keep handle visible when mouse moves onto it
+          handle.addEventListener('mouseleave', (e) => {
+            const related = e.relatedTarget as HTMLElement | null;
+            // Hide only if not going back to the editor
+            if (!related || !related.closest('.ProseMirror')) {
+              hideHandle();
             }
-            return oldDecorations;
-          },
+          });
+
+          return {
+            destroy() {
+              handle?.remove();
+              handle = null;
+              wrapper = null;
+              currentBlockEl = null;
+            },
+          };
         },
 
         props: {
-          decorations(state) {
-            return dragHandleKey.getState(state);
-          },
-
           handleDOMEvents: {
+            mousemove(view, event) {
+              const target = event.target as HTMLElement;
+
+              // Don't reposition if hovering the handle itself
+              if (target.closest('.quartz-drag-handle')) return false;
+
+              const blockEl = findTopLevelBlock(target, view.dom);
+              if (!blockEl) {
+                hideHandle();
+                return false;
+              }
+
+              // Same block — skip
+              if (blockEl === currentBlockEl) return false;
+
+              currentBlockEl = blockEl;
+              positionHandle(blockEl);
+              return false;
+            },
+
+            mouseleave(view, event) {
+              const related = (event as MouseEvent).relatedTarget as HTMLElement | null;
+              // Don't hide if mouse moved onto the drag handle
+              if (related?.closest('.quartz-drag-handle')) return false;
+              hideHandle();
+              return false;
+            },
+
             mousedown(view, event) {
               const target = event.target as HTMLElement;
-              const handle = target.closest('.quartz-drag-handle');
-              if (!handle) return false;
+              if (!target.closest('.quartz-drag-handle')) return false;
 
               event.preventDefault();
 
-              // Find which top-level node this handle belongs to.
-              // Walk up from the handle to locate the block wrapper that
-              // ProseMirror rendered, then resolve its position.
-              const blockEl = handle.parentElement;
-              if (!blockEl) return false;
+              if (!currentBlockEl) return false;
 
-              const pos = view.posAtDOM(blockEl, 0);
+              const pos = view.posAtDOM(currentBlockEl, 0);
               if (pos == null) return false;
 
               // Resolve to the start of the top-level node
@@ -105,26 +162,20 @@ export const dragHandleExtension = Extension.create({
 
             dragstart(view, event) {
               const target = event.target as HTMLElement;
-              const handle = target.closest('.quartz-drag-handle');
-              if (!handle) return false;
+              if (!target.closest('.quartz-drag-handle')) return false;
 
-              // If we already have a NodeSelection (set in mousedown),
-              // let ProseMirror handle the native drag with that selection.
               const { selection } = view.state;
               if (!(selection instanceof NodeSelection)) return false;
 
               if (event.dataTransfer) {
-                // Serialize the selected node to text for the drag image
                 const node = selection.node;
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', node.textContent);
 
-                // Create a lightweight drag image from the block element
-                const blockEl = handle.parentElement;
-                if (blockEl) {
-                  const rect = blockEl.getBoundingClientRect();
+                if (currentBlockEl) {
+                  const rect = currentBlockEl.getBoundingClientRect();
                   event.dataTransfer.setDragImage(
-                    blockEl,
+                    currentBlockEl,
                     rect.width / 2,
                     rect.height / 2
                   );
