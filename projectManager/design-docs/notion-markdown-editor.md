@@ -3,7 +3,7 @@
 **Author:** Mathuran Sadagopan
 **Status:** APPROVED
 **Created:** 2026-02-03
-**Last Updated:** 2026-02-03 (Rev 2)
+**Last Updated:** 2026-02-03 (Rev 3 — post-implementation updates)
 **Reviewers:** TBD
 **Related Docs:** [claude-code-integration](./claude-code-integration.md), [project-management-ui](./project-management-ui.md)
 
@@ -88,26 +88,83 @@ The architecture has three layers:
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   VS Code                        │
-│                                                  │
-│  ┌──────────────────┐   ┌─────────────────────┐ │
-│  │  Extension Host   │   │     Webview Panel    │ │
-│  │  (Node.js)        │◄─►│  (React + TipTap)   │ │
-│  │                   │   │                      │ │
-│  │  • File I/O       │   │  • Block Editor UI   │ │
-│  │  • VS Code API    │   │  • Slash Commands    │ │
-│  │  • Config Mgmt    │   │  • Drag & Drop       │ │
-│  │  • Markdown Bridge│   │  • Floating Toolbar   │ │
-│  └────────┬─────────┘   └──────────────────────┘ │
-│           │                                       │
-│           ▼                                       │
-│  ┌──────────────────┐                            │
-│  │  .md Files        │                            │
-│  │  (CommonMark+GFM) │                            │
-│  └──────────────────┘                            │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                   VS Code                            │
+│                                                      │
+│  ┌──────────────────┐   ┌──────────────────────────┐│
+│  │  Extension Host   │   │      Webview Panel        ││
+│  │  (Node.js)        │◄─►│   (React + TipTap)       ││
+│  │                   │   │                           ││
+│  │  • File I/O       │   │  • Block Editor UI        ││
+│  │  • VS Code API    │   │  • Slash Commands         ││
+│  │  • Config Mgmt    │   │  • Drag & Drop            ││
+│  │  • WorkspaceEdit  │   │  • Floating Toolbar       ││
+│  │                   │   │  • Markdown Bridge         ││
+│  │                   │   │    (parser + serializer)   ││
+│  └────────┬─────────┘   └──────────────────────────┘│
+│           │                                          │
+│           ▼                                          │
+│  ┌──────────────────┐                               │
+│  │  .md Files        │                               │
+│  │  (CommonMark+GFM) │                               │
+│  └──────────────────┘                               │
+└─────────────────────────────────────────────────────┘
 ```
+
+**Implementation note:** The Markdown Bridge (parser and serializer) runs inside the webview bundle, not the extension host. The webview receives raw markdown from the extension host, parses it to ProseMirror JSON, and on edits serializes back to markdown which is sent to the extension host for file writes via `WorkspaceEdit`.
+
+### Project Structure (as implemented)
+
+```
+quartz/
+├── src/
+│   ├── extension.ts                    # VS Code extension entry point
+│   ├── QuartzEditorProvider.ts         # CustomTextEditorProvider
+│   ├── markdown/
+│   │   ├── parser.ts                   # markdown-it → ProseMirror JSON (554 lines)
+│   │   ├── serializer.ts              # ProseMirror JSON → Markdown (296 lines)
+│   │   └── frontmatter.ts            # YAML frontmatter extraction
+│   └── webview/
+│       ├── index.tsx                   # React 18 createRoot entry
+│       ├── App.tsx                     # Root component (VS Code message handling)
+│       ├── Editor.tsx                  # TipTap editor with 25+ extensions
+│       ├── types.ts                    # EditorConfig interface
+│       ├── commands/
+│       │   └── slashCommands.ts       # 14 slash commands (h1-h6, lists, code, etc.)
+│       ├── components/
+│       │   ├── PageContainer.tsx      # Letter-sized page layout with ResizeObserver
+│       │   ├── SlashMenu.tsx          # Floating menu with fuzzy filtering
+│       │   ├── FormattingToolbar.tsx   # BubbleMenu (bold, italic, strike, code, link, highlight)
+│       │   └── RawBlock.tsx           # Non-editable fallback for unsupported content
+│       ├── extensions/
+│       │   ├── slashCommandExtension.ts   # ProseMirror plugin for / trigger
+│       │   ├── keyboardShortcuts.ts       # 11 custom shortcuts (see Appendix B)
+│       │   ├── dragHandle.ts              # SVG grip decorations + NodeSelection drag
+│       │   └── virtualRendering.ts        # CSS visibility toggling for >1000 blocks
+│       ├── styles/
+│       │   ├── editor.css             # Full editor styles (VS Code CSS vars)
+│       │   └── rawBlock.css           # Raw block fallback styles
+│       └── utils/
+│           └── debounce.ts            # Debounce with flush() and cancel()
+├── test/                              # 87 tests across 6 files (see §7)
+├── dist/                              # Build output (gitignored)
+├── esbuild.js                         # Dual-bundle build script
+├── package.json                       # Extension manifest + dependencies
+├── tsconfig.json                      # Extension host TS config (CJS, Node)
+├── tsconfig.webview.json              # Webview TS config (ESNext, DOM)
+└── vitest.config.ts                   # Test config with vscode mock alias
+```
+
+### Build System
+
+The extension uses [esbuild](https://esbuild.github.io/) (`esbuild.js`) with two parallel build targets:
+
+| Target | Entry | Output | Format | Platform |
+|--------|-------|--------|--------|----------|
+| Extension host | `src/extension.ts` | `dist/extension.js` | CJS | Node.js 18 |
+| Webview | `src/webview/index.tsx` | `dist/webview/index.js` | IIFE | Browser (ES2020) |
+
+The `vscode` module is externalized from the extension host bundle. CSS files are bundled inline via esbuild's CSS loader. `--watch` mode is supported for development.
 
 ### Document Page Layout
 
@@ -140,15 +197,21 @@ For files that are partially unsupported (one unknown block in an otherwise stan
 
 This is the most critical component. It must handle round-trip conversion without data loss.
 
-**Markdown → ProseMirror (Parsing):**
-- Use [`markdown-it`](https://github.com/markdown-it/markdown-it) to parse markdown into an AST.
-- Transform the AST into ProseMirror nodes using a custom mapping layer.
-- Preserve frontmatter (YAML) as a special node type (not editable as blocks, but displayed and round-tripped).
+**Markdown → ProseMirror (Parsing) — `src/markdown/parser.ts`:**
+- Uses [`markdown-it`](https://github.com/markdown-it/markdown-it) in CommonMark mode with GFM strikethrough and tables enabled.
+- Custom `tokensToNodes()` function walks the markdown-it token stream and produces TipTap-compatible `JSONContent` nodes.
+- Inline marks (bold, italic, strike, code, link, highlight) are parsed via a mark stack in `parseInline()`.
+- Task lists are detected by checking for `[ ]`/`[x]` patterns in bullet list items and converted to `taskList`/`taskItem` nodes.
+- Frontmatter is extracted before parsing via regex (`src/markdown/frontmatter.ts`) and preserved as a `codeBlock` node with `language: 'yaml'`.
+- HTML `<details><summary>` blocks are parsed into `details`/`detailsSummary`/`detailsContent` nodes.
 
-**ProseMirror → Markdown (Serializing):**
-- Walk the ProseMirror document tree and emit markdown tokens.
-- Use [`prosemirror-markdown`](https://github.com/ProseMirror/prosemirror-markdown) as a base, extended for GFM features (tables, task lists, strikethrough).
-- Preserve original formatting choices where possible (e.g., if the user wrote `*bold*` vs `**bold**`, keep it).
+**ProseMirror → Markdown (Serializing) — `src/markdown/serializer.ts`:**
+- Custom recursive serializer (does **not** use `prosemirror-markdown` — written from scratch for full control over output).
+- Each node type has a dedicated serializer function.
+- Tables are auto-aligned using column width calculation.
+- Nested lists increment indent by 2 spaces per level.
+- Blank lines are inserted between all block-level elements.
+- Output always ends with a single trailing newline.
 
 **Round-trip fidelity rules:**
 1. Opening a file and immediately saving it must produce byte-identical output.
@@ -171,10 +234,10 @@ This is the most critical component. It must handle round-trip conversion withou
 | Horizontal Rule | `---` | `/divider` |
 | Image | `![alt](src)` | `/image` |
 | Toggle/Details | `<details><summary>` | `/toggle` |
-| Math Block | `$$...$$` | `/math` |
+| Math Block | `$$...$$` | `/math` | *Deferred — requires KaTeX lazy-load* |
 | Frontmatter | `---\nyaml\n---` | (auto-detected) |
-| Mermaid Diagram | ` ```mermaid ` | `/mermaid` |
-| Embed/Link Card | `[title](url)` with preview | `/embed` |
+| Mermaid Diagram | ` ```mermaid ` | `/mermaid` | *Deferred — requires mermaid.js lazy-load* |
+| Embed/Link Card | `[title](url)` with preview | `/embed` | *Deferred* |
 
 ### Slash Command System
 
@@ -316,39 +379,35 @@ The extension host owns all file operations:
 
 ## 7. Testing Strategy
 
-### Unit Tests
+### Implemented Test Suite
 
-- **Markdown Bridge (highest priority):** Comprehensive test suite for parser and serializer.
-  - Round-trip tests: parse → serialize → compare for 100+ markdown fixtures covering edge cases (nested lists, tables with pipes in cells, frontmatter with special chars, mixed HTML/markdown).
-  - Fixture files from CommonMark spec, GFM spec, and real-world documents.
-  - Property-based tests: generate random ProseMirror documents, serialize, re-parse, and verify structural equality.
-- **Block type tests:** Each of the 16 block types has dedicated tests for creation, editing, deletion, and serialization.
-- **Slash command tests:** Menu filtering, insertion behavior, keyboard navigation.
+All tests use [Vitest](https://vitest.dev/) with a VS Code API mock (`test/__mocks__/vscode.ts`). Configuration is in `vitest.config.ts`. **87 tests total, all passing.**
 
-### Integration Tests
+| Test file | Tests | Scope |
+|-----------|-------|-------|
+| `test/parser.test.ts` | 22 | Markdown → ProseMirror JSON: empty/whitespace, paragraphs, headings H1-H6, bullet/ordered/nested lists, code blocks, blockquotes, horizontal rules, inline marks, frontmatter, task lists, tables, images, large docs, mixed marks |
+| `test/serializer.test.ts` | 18 | ProseMirror JSON → Markdown: empty doc, paragraphs, headings, lists, code blocks, blockquotes, hr, all mark types, task lists, tables, images, trailing newline |
+| `test/roundtrip.test.ts` | 13 | Parse → serialize → compare: paragraphs, headings, lists, code blocks, blockquotes, hr, inline marks, task lists, complex documents |
+| `test/features.test.ts` | 20 | Frontmatter extraction (5), nested blockquotes (3), code blocks without language (2), empty list items (1), multiple paragraphs (2), table round-trip (1), images (1), hard breaks (1), serializer edge cases (4) |
+| `test/debounce.test.ts` | 7 | Debounce utility: delay, reset, latest args, flush, cancel |
+| `test/performance.test.ts` | 7 | 1K/5K/10K-line document parse/serialize benchmarks, round-trip idempotency |
 
-- **VS Code extension tests:** Use `@vscode/test-electron` to run the extension in a real VS Code instance.
-  - Open file → verify editor renders → edit → save → verify file contents.
-  - Test dirty indicator, undo/redo, and external file change handling.
-  - Test configuration changes apply in real-time.
-- **Webview ↔ Extension Host communication:** Verify message passing under load (rapid edits, large files).
+### Build validation
 
-### End-to-End Tests
+The build (`node esbuild.js`) produces two bundles and is run before every commit to verify no compilation errors:
+- `dist/extension.js` — Extension host (CJS, Node.js)
+- `dist/webview/index.js` — Webview (IIFE, browser)
 
-- **User scenario tests:** Script common workflows:
-  1. Open a README.md → add a table → save → verify output.
-  2. Create a new file → use slash commands to build a document → save.
-  3. Open a file with frontmatter → edit body → verify frontmatter preserved.
-  4. Paste an image → verify file created in assets dir → verify markdown link.
-- **Cross-platform:** Test on macOS, Windows, and Linux.
+### Future testing (not yet implemented)
+
+- **Integration tests:** Use `@vscode/test-electron` to run the extension in a real VS Code instance (open file → edit → save → verify).
+- **End-to-end tests:** Scripted user workflows across platforms.
+- **Property-based tests:** Random ProseMirror document generation for round-trip fuzz testing.
 
 ### Performance Tests
 
-- **Large file handling:** Open and edit files with 1K, 5K, and 10K lines. Measure:
-  - Time to initial render (target: <500ms for 5K lines).
-  - Keystroke latency (target: <16ms / 60fps).
-  - Memory usage (target: <200MB for 10K lines).
-- **Rapid editing:** Type at 120 WPM and verify no dropped characters or rendering lag.
+- **Implemented:** Parse/serialize benchmarks for 1K, 5K, and 10K-line documents with timing assertions (<500ms for 5K lines, no-crash for 10K).
+- **Not yet implemented:** Keystroke latency measurement (target: <16ms / 60fps), memory profiling (target: <200MB for 10K lines).
 
 ## 8. Rollout Plan
 
@@ -389,16 +448,19 @@ The extension host owns all file operations:
 
 ### Dependencies
 
-| Dependency | Type | Notes |
-|-----------|------|-------|
-| VS Code Extension API | Platform | CustomTextEditorProvider, Webview API. Stable, well-documented. |
-| TipTap v2 | Library | Headless editor framework. MIT licensed. Active maintenance. |
-| ProseMirror | Library | Underlying editor engine. Mature (8+ years). Stable API. |
-| markdown-it | Library | Markdown parser. CommonMark compliant. Widely used. |
-| React | Library | Webview UI framework. Used for TipTap rendering and slash command menu. |
-| mermaid.js | Library | Diagram rendering for ```mermaid code blocks. MIT licensed. |
-| KaTeX | Library | Math rendering for $$...$$ blocks. MIT licensed. |
-| VS Code Marketplace | Distribution | Publishing and updates. |
+| Dependency | Type | Status | Notes |
+|-----------|------|--------|-------|
+| VS Code Extension API | Platform | **In use** | CustomTextEditorProvider, Webview API. Stable, well-documented. |
+| TipTap v2 (`@tiptap/*`) | Library | **In use** | 25+ extensions loaded. Headless editor framework. MIT licensed. |
+| ProseMirror (`@tiptap/pm`) | Library | **In use** | Underlying editor engine. Used for custom plugins (slash commands, drag handles, virtual rendering). |
+| markdown-it v14 | Library | **In use** | CommonMark mode with GFM strikethrough + tables. Custom token walker (not prosemirror-markdown). |
+| React 18 | Library | **In use** | Webview UI. `createRoot` API. Components: Editor, SlashMenu, FormattingToolbar, PageContainer, RawBlock. |
+| lowlight + highlight.js | Library | **In use** | Syntax highlighting for code blocks via `@tiptap/extension-code-block-lowlight`. |
+| esbuild | Build tool | **In use** | Dual-bundle build (extension host CJS + webview IIFE). |
+| Vitest | Test framework | **In use** | 87 tests. VS Code API mocked via alias. |
+| mermaid.js | Library | **Deferred** | Not yet installed. Needed for ```mermaid block rendering. |
+| KaTeX | Library | **Deferred** | Not yet installed. Needed for $$...$$ math block rendering. |
+| VS Code Marketplace | Distribution | Planned | Publishing and updates. |
 
 ### Risks and Mitigations
 
