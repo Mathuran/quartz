@@ -204,6 +204,7 @@ function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
   for (const token of tokens) {
     switch (token.type) {
       case 'text': {
+        if (!token.content) break; // Skip empty text nodes (ProseMirror rejects them)
         const marks = markStack.length > 0 ? [...markStack] : undefined;
         result.push({
           type: 'text',

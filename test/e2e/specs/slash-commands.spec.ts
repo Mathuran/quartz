@@ -58,7 +58,8 @@ test.describe('Slash Commands', () => {
     await editorPage.prosemirror.click();
     await page.keyboard.press('End');
     await page.keyboard.press('Enter');
-    await editorPage.triggerSlashCommand('heading1');
+    // Use alias 'h1' which matches the filter
+    await editorPage.triggerSlashCommand('h1');
 
     await expect(editorPage.heading(1)).toBeVisible();
   });

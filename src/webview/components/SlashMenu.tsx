@@ -28,6 +28,25 @@ export function SlashMenu({ editor }: SlashMenuProps) {
 
   const executeCommand = useCallback(
     (cmd: SlashCommand) => {
+      // Delete the slash trigger text before executing the command
+      const { state } = editor;
+      const { $from } = state.selection;
+      const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
+      const slashIndex = textBefore.lastIndexOf('/');
+
+      if (slashIndex >= 0) {
+        // Calculate the absolute position of the slash
+        const blockStart = $from.start();
+        const deleteFrom = blockStart + slashIndex;
+        const deleteTo = $from.pos;
+
+        // Delete the slash and query, then execute the command
+        editor
+          .chain()
+          .deleteRange({ from: deleteFrom, to: deleteTo })
+          .run();
+      }
+
       cmd.command(editor);
       setIsOpen(false);
       setQuery('');

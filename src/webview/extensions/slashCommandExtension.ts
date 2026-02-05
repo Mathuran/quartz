@@ -3,6 +3,8 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 
 const slashMenuKey = new PluginKey('slashMenu');
 
+let isSlashMenuActive = false;
+
 function dispatchSlashMenuEvent(detail: Record<string, unknown>) {
   window.dispatchEvent(new CustomEvent('slashMenu', { detail }));
 }
@@ -21,6 +23,7 @@ export const slashCommandExtension = Extension.create({
               const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
               // Only trigger if at the start of a block or the block is empty
               if (textBefore.trim() === '') {
+                isSlashMenuActive = true;
                 // Delay to allow the character to be inserted
                 setTimeout(() => {
                   const coords = view.coordsAtPos(view.state.selection.from);
@@ -34,12 +37,15 @@ export const slashCommandExtension = Extension.create({
                 }, 10);
               }
             }
+            // Close slash menu on Escape or Enter (command was selected)
+            if (event.key === 'Escape' || event.key === 'Enter') {
+              isSlashMenuActive = false;
+            }
             return false;
           },
           handleTextInput(view, from, to, text) {
-            const state = slashMenuKey.getState(view.state);
-            if (state?.active) {
-              // Update query
+            if (isSlashMenuActive) {
+              // Update query - get content including the new text
               const { $from } = view.state.selection;
               const content = $from.parent.textContent;
               const slashIndex = content.lastIndexOf('/');
@@ -63,3 +69,12 @@ export const slashCommandExtension = Extension.create({
     ];
   },
 });
+
+// Listen for slash menu close events to update active state
+if (typeof window !== 'undefined') {
+  window.addEventListener('slashMenu', ((event: CustomEvent) => {
+    if (event.detail.type === 'close') {
+      isSlashMenuActive = false;
+    }
+  }) as EventListener);
+}
