@@ -1,9 +1,9 @@
 # E2E Playwright Testing Environment Design Document
 
 **Author:** Quartz Team
-**Status:** DRAFT
+**Status:** IMPLEMENTED
 **Created:** 2026-02-04
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-04 (Review Round 1)
 **Reviewers:** TBD
 
 ---
@@ -23,7 +23,6 @@ This means user-facing regressions — broken formatting toolbars, slash command
 - **P0:** Build a fixture loader utility that loads premade `.md` files into the editor via the message protocol and supports in-browser editing verification
 - **P1:** Cover 10+ core editing scenarios: headings, bold/italic, lists, code blocks, tables, task lists, slash commands, keyboard shortcuts, drag-and-drop, and page layout rendering
 - **P1:** Add `npm run test:e2e` script that builds the app, starts a local server, runs Playwright tests, and tears down cleanly
-- **P2:** Capture visual regression screenshots for page layout mode across light/dark themes
 - **P2:** Generate an HTML test report via Playwright's built-in reporter
 
 ### Non-Goals
@@ -136,13 +135,13 @@ A minimal HTML page that:
   <script>
     // Mock VS Code API before bundle loads
     window.__quartzMessages = [];
-    window.__quartzLastUpdate = null;
+    window.__quartzUpdates = [];  // Queue of all update payloads
     window.acquireVsCodeApi = function() {
       return {
         postMessage: function(msg) {
           window.__quartzMessages.push(msg);
           if (msg.type === 'update') {
-            window.__quartzLastUpdate = msg.content;
+            window.__quartzUpdates.push(msg.content);
           }
           // When webview sends "ready", auto-load if pending
           if (msg.type === 'ready' && window.__pendingLoad) {
@@ -166,8 +165,16 @@ A minimal HTML page that:
       }
     };
 
-    window.__getLastUpdate = function() {
-      return window.__quartzLastUpdate;
+    // Get update at a specific index (0-based), or the latest
+    window.__getUpdate = function(index) {
+      if (index === undefined) {
+        return window.__quartzUpdates[window.__quartzUpdates.length - 1] || null;
+      }
+      return window.__quartzUpdates[index] || null;
+    };
+
+    window.__getUpdateCount = function() {
+      return window.__quartzUpdates.length;
     };
 
     window.__updateConfig = function(config) {
@@ -218,16 +225,32 @@ export async function loadMarkdown(page: Page, content: string, fileName = 'test
 }
 
 export async function getEditorMarkdown(page: Page): Promise<string | null> {
-  return page.evaluate(() => (window as any).__getLastUpdate());
+  return page.evaluate(() => (window as any).__getUpdate());
 }
 
-export async function waitForUpdate(page: Page, timeout = 2000): Promise<string> {
-  // Wait for debounced update (300ms debounce + buffer)
+export async function getUpdateCount(page: Page): Promise<number> {
+  return page.evaluate(() => (window as any).__getUpdateCount());
+}
+
+export async function waitForUpdate(page: Page, afterIndex?: number, timeout = 2000): Promise<string> {
+  // Wait for an update with index > afterIndex (or any update if afterIndex is undefined)
+  const targetIndex = afterIndex ?? -1;
   await page.waitForFunction(
-    () => (window as any).__quartzLastUpdate !== null,
+    (idx) => (window as any).__getUpdateCount() > idx + 1,
+    targetIndex,
     { timeout }
   );
-  return page.evaluate(() => (window as any).__quartzLastUpdate);
+  return page.evaluate(() => (window as any).__getUpdate());
+}
+
+export async function waitForNthUpdate(page: Page, n: number, timeout = 2000): Promise<string> {
+  // Wait until at least n updates have been received (1-based)
+  await page.waitForFunction(
+    (count) => (window as any).__getUpdateCount() >= count,
+    n,
+    { timeout }
+  );
+  return page.evaluate((idx) => (window as any).__getUpdate(idx), n - 1);
 }
 ```
 
@@ -242,15 +265,22 @@ export class EditorPage {
   readonly page: Page;
   readonly editor: Locator;
   readonly prosemirror: Locator;
+  private readonly isMac: boolean;
 
   constructor(page: Page) {
     this.page = page;
     this.editor = page.locator('.quartz-app');
     this.prosemirror = page.locator('.ProseMirror');
+    this.isMac = process.platform === 'darwin';
+  }
+
+  /** Returns 'Meta' on macOS, 'Control' elsewhere */
+  private get mod(): string {
+    return this.isMac ? 'Meta' : 'Control';
   }
 
   async goto() {
-    await this.page.goto('http://localhost:3100/test/e2e/harness.html');
+    await this.page.goto('/test/e2e/harness.html');
     await this.page.waitForSelector('#root');
   }
 
@@ -291,7 +321,23 @@ export class EditorPage {
 
   async selectAllText() {
     await this.prosemirror.click();
-    await this.page.keyboard.press('Meta+a');
+    await this.page.keyboard.press(`${this.mod}+a`);
+  }
+
+  async undo() {
+    await this.page.keyboard.press(`${this.mod}+z`);
+  }
+
+  async redo() {
+    await this.page.keyboard.press(`${this.mod}+Shift+z`);
+  }
+
+  async toggleBold() {
+    await this.page.keyboard.press(`${this.mod}+b`);
+  }
+
+  async toggleItalic() {
+    await this.page.keyboard.press(`${this.mod}+i`);
   }
 }
 ```
@@ -302,11 +348,12 @@ A minimal HTTP server for test setup:
 
 ```typescript
 import * as http from 'http';
+import * as net from 'net';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '../..');
-const PORT = 3100;
+const DEFAULT_PORT = 3100;
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -315,7 +362,26 @@ const MIME_TYPES: Record<string, string> = {
   '.md': 'text/plain',
 };
 
-export function startServer(): Promise<http.Server> {
+/** Check if a port is available */
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => { server.close(); resolve(true); });
+    server.listen(port);
+  });
+}
+
+/** Find a free port starting from the default */
+async function findFreePort(startPort = DEFAULT_PORT): Promise<number> {
+  for (let port = startPort; port < startPort + 100; port++) {
+    if (await isPortAvailable(port)) return port;
+  }
+  throw new Error(`No free port found in range ${startPort}-${startPort + 99}`);
+}
+
+export async function startServer(): Promise<{ server: http.Server; port: number }> {
+  const port = await findFreePort();
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
       const filePath = path.join(ROOT, req.url || '/');
@@ -330,7 +396,10 @@ export function startServer(): Promise<http.Server> {
         res.end('Not found');
       }
     });
-    server.listen(PORT, () => resolve(server));
+    server.listen(port, () => {
+      console.log(`E2E test server running on http://localhost:${port}`);
+      resolve({ server, port });
+    });
   });
 }
 
@@ -349,8 +418,10 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   timeout: 30_000,
   retries: 1,
+  globalSetup: './test/e2e/global-setup.ts',
+  globalTeardown: './test/e2e/global-teardown.ts',
   use: {
-    baseURL: 'http://localhost:3100',
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3100',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
@@ -361,12 +432,32 @@ export default defineConfig({
     ['html', { outputFolder: 'test-results/e2e-report' }],
     ['list'],
   ],
-  webServer: {
-    command: 'npm run build && npx tsx test/e2e/server.ts',
-    port: 3100,
-    reuseExistingServer: !process.env.CI,
-  },
 });
+```
+
+The `global-setup.ts` builds the webview, starts the server on a dynamic port, and sets `E2E_BASE_URL` for all tests:
+
+```typescript
+// test/e2e/global-setup.ts
+import { execSync } from 'child_process';
+import { startServer } from './server';
+
+export default async function globalSetup() {
+  execSync('npm run build:webview', { stdio: 'inherit' });
+  const { server, port } = await startServer();
+  process.env.E2E_BASE_URL = `http://localhost:${port}`;
+  (globalThis as any).__E2E_SERVER = server;
+}
+```
+
+```typescript
+// test/e2e/global-teardown.ts
+import { stopServer } from './server';
+
+export default async function globalTeardown() {
+  const server = (globalThis as any).__E2E_SERVER;
+  if (server) await stopServer(server);
+}
 ```
 
 #### 4.6 File Structure
@@ -374,7 +465,9 @@ export default defineConfig({
 ```
 test/e2e/
 ├── harness.html              # Standalone HTML harness
-├── server.ts                 # Static file server
+├── server.ts                 # Static file server (dynamic port)
+├── global-setup.ts           # Build webview + start server
+├── global-teardown.ts        # Stop server
 ├── fixtures.ts               # Fixture loader utility
 ├── fixtures/                 # E2E-specific markdown fixtures
 │   ├── all-blocks.md         # Every block type
@@ -391,6 +484,7 @@ test/e2e/
     ├── slash-commands.spec.ts # Slash command menu & insertion
     ├── editing.spec.ts       # Typing, deleting, undo/redo
     ├── roundtrip.spec.ts     # Load → edit → serialize fidelity
+    ├── external-change.spec.ts # externalChange message handling
     ├── theme.spec.ts         # Light/dark theme rendering
     ├── page-layout.spec.ts   # Page layout mode dimensions
     └── drag-drop.spec.ts     # Block drag-and-drop reordering
@@ -401,7 +495,7 @@ test/e2e/
 ```typescript
 import { test, expect } from '@playwright/test';
 import { EditorPage } from '../pages/editor.page';
-import { loadFixture, loadMarkdown, waitForUpdate } from '../fixtures';
+import { loadFixture, loadMarkdown, getUpdateCount, waitForUpdate } from '../fixtures';
 
 test.describe('Editor Loading', () => {
   let editorPage: EditorPage;
@@ -432,10 +526,11 @@ test.describe('Editor Loading', () => {
 
   test('edits text and produces updated markdown', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nWorld');
+    const countBefore = await getUpdateCount(page);
     await editorPage.prosemirror.click();
     await page.keyboard.press('End');
     await page.keyboard.type(' there');
-    const updated = await waitForUpdate(page);
+    const updated = await waitForUpdate(page, countBefore - 1);
     expect(updated).toContain('there');
   });
 });
@@ -525,12 +620,12 @@ test.describe('Editor Loading', () => {
 | Keyboard Shortcuts | 8-10 | P1 | Ctrl+B, Ctrl+I, Ctrl+Z, Ctrl+Shift+Z, etc. |
 | Slash Commands | 5-6 | P1 | Menu opens, commands insert correct blocks |
 | Editing & Roundtrip | 4-5 | P0 | Type text, verify serialized output matches |
+| External Changes | 2-3 | P1 | externalChange message replaces content, rapid changes |
 | Theme Rendering | 2-3 | P2 | Light/dark theme CSS applied correctly |
 | Page Layout | 2-3 | P2 | Letter-size dimensions, margin calculations |
 | Drag & Drop | 2-3 | P2 | Block reordering via drag handle |
-| Visual Regression | 3-4 | P2 | Screenshot comparisons for layout |
 
-**Total: 45-57 test cases across 10 spec files**
+**Total: 44-56 test cases across 11 spec files**
 
 ### Test Data
 
@@ -549,6 +644,7 @@ test.describe('Editor Loading', () => {
 ### Phase 1: Foundation
 
 - Install Playwright and add configuration
+- Add `npm run build:webview` script to `package.json` (builds only the webview IIFE bundle via esbuild, skipping the extension host)
 - Create test harness HTML with VS Code API mock
 - Create static file server
 - Create fixture loader and page object model
@@ -562,13 +658,13 @@ test.describe('Editor Loading', () => {
 - Add keyboard shortcut tests
 - Add slash command tests
 - Add editing and roundtrip tests
+- Add external change (`externalChange` message) tests
 
 ### Phase 3: Polish
 
 - Add theme rendering tests
 - Add page layout tests
 - Add drag-and-drop tests
-- Add visual regression screenshots
 - Configure HTML reporter
 - Update `npm run test:all` to include E2E
 
@@ -607,20 +703,27 @@ No new production dependencies.
 
 | # | Question | Owner | Status |
 |---|----------|-------|--------|
-| 1 | Should we add Firefox/WebKit projects to Playwright config or stick with Chromium only? | Team | Open |
-| 2 | Should the test server port (3100) be configurable via env var? | Team | Open |
-| 3 | Should visual regression screenshots be committed to the repo or generated fresh each run? | Team | Open |
-| 4 | Do we need to test the `externalChange` message path (simulating external file edits)? | Team | Open |
+| 1 | ~~Should we add Firefox/WebKit projects to Playwright config?~~ **No — Chromium only.** VS Code webviews are Chromium-based; testing other engines adds no value. | Team | Resolved |
+| 2 | ~~Should the test server port be configurable?~~ **Dynamic port allocation.** Try port 3100 by default; if unavailable, increment until a free port is found. Pass the resolved port to Playwright via env. | Team | Resolved |
+| 3 | ~~Should visual regression screenshots be committed or generated fresh?~~ **Dropped entirely.** Visual regression testing removed from scope — not worth the maintenance burden. | Team | Resolved |
+| 4 | ~~Do we need to test the `externalChange` message path?~~ **Yes — P1, include in Phase 2.** | Team | Resolved |
 
 ## 11. Implementation Issues
 
-*This section will be populated when `/create-issues e2e-playwright-testing` is run.*
-
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| — | — | — | — |
+| [001](../issues/e2e-playwright-testing/001-install-playwright-and-configure.md) | Install Playwright and Configure Build Scripts | DONE | S |
+| [002](../issues/e2e-playwright-testing/002-create-test-harness-and-server.md) | Create Test Harness HTML and Static File Server | DONE | M |
+| [003](../issues/e2e-playwright-testing/003-create-fixture-loader-and-page-object.md) | Create Fixture Loader and Page Object Model | DONE | M |
+| [004](../issues/e2e-playwright-testing/004-smoke-tests-editor-loading.md) | Write Smoke Tests for Editor Loading | DONE | S |
+| [005](../issues/e2e-playwright-testing/005-block-rendering-tests.md) | Write Block Rendering Tests | DONE | M |
+| [006](../issues/e2e-playwright-testing/006-inline-formatting-tests.md) | Write Inline Formatting Tests | DONE | S |
+| [007](../issues/e2e-playwright-testing/007-keyboard-shortcuts-tests.md) | Write Keyboard Shortcuts Tests | DONE | M |
+| [008](../issues/e2e-playwright-testing/008-slash-commands-and-editing-tests.md) | Write Slash Commands, Editing, and Roundtrip Tests | DONE | M |
+| [009](../issues/e2e-playwright-testing/009-external-change-tests.md) | Write External Change Tests | DONE | S |
+| [010](../issues/e2e-playwright-testing/010-theme-layout-dragdrop-tests.md) | Write Theme, Page Layout, and Drag-and-Drop Tests | DONE | M |
 
-**Progress:** 0/0 issues complete (0%)
+**Progress:** 10/10 issues complete (100%)
 
 ## 12. Appendix
 

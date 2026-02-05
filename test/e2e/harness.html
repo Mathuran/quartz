@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Quartz E2E Test Harness</title>
+  <link rel="stylesheet" href="/dist/webview/index.css">
+  <script>
+    // Mock VS Code API before bundle loads
+    window.__quartzMessages = [];
+    window.__quartzUpdates = [];  // Queue of all update payloads
+    window.acquireVsCodeApi = function() {
+      return {
+        postMessage: function(msg) {
+          window.__quartzMessages.push(msg);
+          if (msg.type === 'update') {
+            window.__quartzUpdates.push(msg.content);
+          }
+          // When webview sends "ready", auto-load content
+          if (msg.type === 'ready') {
+            if (window.__pendingLoad) {
+              window.postMessage(window.__pendingLoad, '*');
+              window.__pendingLoad = null;
+            } else {
+              // Auto-load default content so editor is usable
+              window.postMessage({
+                type: 'loadDocument',
+                content: '# Welcome to Quartz\n\nStart typing here...\n',
+                fileName: 'untitled.md'
+              }, '*');
+            }
+          }
+        },
+        getState: function() { return null; },
+        setState: function() {}
+      };
+    };
+
+    window.__loadMarkdown = function(content, fileName) {
+      var msg = { type: 'loadDocument', content: content, fileName: fileName || 'test.md' };
+      // If editor not ready yet, queue it
+      var readyMsg = window.__quartzMessages.find(function(m) { return m.type === 'ready'; });
+      if (readyMsg) {
+        window.postMessage(msg, '*');
+      } else {
+        window.__pendingLoad = msg;
+      }
+    };
+
+    // Get update at a specific index (0-based), or the latest
+    window.__getUpdate = function(index) {
+      if (index === undefined) {
+        return window.__quartzUpdates[window.__quartzUpdates.length - 1] || null;
+      }
+      return window.__quartzUpdates[index] || null;
+    };
+
+    window.__getUpdateCount = function() {
+      return window.__quartzUpdates.length;
+    };
+
+    window.__updateConfig = function(config) {
+      window.postMessage({ type: 'configUpdate', config: config }, '*');
+    };
+
+    window.__sendExternalChange = function(content) {
+      window.postMessage({ type: 'externalChange', content: content }, '*');
+    };
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="/dist/webview/index.js"></script>
+</body>
+</html>

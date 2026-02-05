@@ -2,6 +2,7 @@ const esbuild = require('esbuild');
 const path = require('path');
 
 const isWatch = process.argv.includes('--watch');
+const webviewOnly = process.argv.includes('--webview-only');
 
 /** @type {import('esbuild').BuildOptions} */
 const extensionConfig = {
@@ -40,6 +41,9 @@ async function build() {
     const webCtx = await esbuild.context(webviewConfig);
     await Promise.all([extCtx.watch(), webCtx.watch()]);
     console.log('Watching for changes...');
+  } else if (webviewOnly) {
+    await esbuild.build(webviewConfig);
+    console.log('Webview build complete.');
   } else {
     await Promise.all([
       esbuild.build(extensionConfig),

@@ -1,0 +1,95 @@
+import { Page } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const FIXTURES_DIR = path.resolve(__dirname, 'fixtures');
+const SHARED_FIXTURES_DIR = path.resolve(__dirname, '../integration/fixtures');
+
+/**
+ * Load a markdown fixture file into the editor.
+ * Looks in test/e2e/fixtures/ first, then falls back to test/integration/fixtures/
+ */
+export async function loadFixture(page: Page, fixtureName: string): Promise<string> {
+  let filePath = path.join(FIXTURES_DIR, fixtureName);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(SHARED_FIXTURES_DIR, fixtureName);
+  }
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Fixture not found: ${fixtureName}`);
+  }
+  const content = fs.readFileSync(filePath, 'utf-8');
+  await loadMarkdown(page, content, fixtureName);
+  return content;
+}
+
+/**
+ * Load raw markdown content into the editor.
+ */
+export async function loadMarkdown(page: Page, content: string, fileName = 'test.md'): Promise<void> {
+  await page.evaluate(
+    ({ content, fileName }) => (window as any).__loadMarkdown(content, fileName),
+    { content, fileName }
+  );
+  // Wait for editor to render
+  await page.waitForSelector('.ProseMirror[contenteditable="true"]', { timeout: 5000 });
+}
+
+/**
+ * Get the latest serialized markdown from the editor.
+ */
+export async function getEditorMarkdown(page: Page): Promise<string | null> {
+  return page.evaluate(() => (window as any).__getUpdate());
+}
+
+/**
+ * Get the number of updates the editor has sent.
+ */
+export async function getUpdateCount(page: Page): Promise<number> {
+  return page.evaluate(() => (window as any).__getUpdateCount());
+}
+
+/**
+ * Wait for an update after a given index.
+ * If afterIndex is undefined, waits for any update.
+ */
+export async function waitForUpdate(page: Page, afterIndex?: number, timeout = 2000): Promise<string> {
+  const targetIndex = afterIndex ?? -1;
+  await page.waitForFunction(
+    (idx: number) => (window as any).__getUpdateCount() > idx + 1,
+    targetIndex,
+    { timeout }
+  );
+  return page.evaluate(() => (window as any).__getUpdate());
+}
+
+/**
+ * Wait for the nth update (1-based).
+ */
+export async function waitForNthUpdate(page: Page, n: number, timeout = 2000): Promise<string> {
+  await page.waitForFunction(
+    (count: number) => (window as any).__getUpdateCount() >= count,
+    n,
+    { timeout }
+  );
+  return page.evaluate((idx: number) => (window as any).__getUpdate(idx), n - 1);
+}
+
+/**
+ * Send an external change to the editor (simulates file modified externally).
+ */
+export async function sendExternalChange(page: Page, content: string): Promise<void> {
+  await page.evaluate(
+    (content: string) => (window as any).__sendExternalChange(content),
+    content
+  );
+}
+
+/**
+ * Update the editor configuration.
+ */
+export async function updateConfig(page: Page, config: Record<string, any>): Promise<void> {
+  await page.evaluate(
+    (config: Record<string, any>) => (window as any).__updateConfig(config),
+    config
+  );
+}
