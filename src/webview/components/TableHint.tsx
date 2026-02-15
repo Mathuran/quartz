@@ -6,8 +6,9 @@ interface TableHintProps {
 
 // Detect OS for correct shortcut symbols
 const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
-const modKey = isMac ? '\u2318' : 'Ctrl';
-const altKey = isMac ? '\u2325' : 'Alt';
+// Use Ctrl+Shift+Arrow to avoid VS Code conflicts (Ctrl = ⌃ on Mac)
+const ctrlKey = isMac ? '\u2303' : 'Ctrl';
+const shiftKey = isMac ? '\u21e7' : 'Shift';
 
 /**
  * TableHint displays keyboard shortcuts for table editing.
@@ -17,8 +18,8 @@ export function TableHint({ position }: TableHintProps) {
   if (!position) return null;
 
   const shortcuts = isMac
-    ? `${modKey}${altKey}\u2193 Add row  \u00b7  ${modKey}${altKey}\u2192 Add column  \u00b7  ${modKey}${altKey}\u232b Delete row`
-    : `${modKey}+${altKey}+\u2193 Add row  \u00b7  ${modKey}+${altKey}+\u2192 Add column  \u00b7  ${modKey}+${altKey}+Backspace Delete row`;
+    ? `${ctrlKey}${shiftKey}\u2193 Add row  \u00b7  ${ctrlKey}${shiftKey}\u2192 Add col  \u00b7  ${ctrlKey}${shiftKey}\u2191 Del row  \u00b7  ${ctrlKey}${shiftKey}\u2190 Del col`
+    : `${ctrlKey}+${shiftKey}+\u2193 Add row  \u00b7  ${ctrlKey}+${shiftKey}+\u2192 Add col  \u00b7  ${ctrlKey}+${shiftKey}+\u2191 Del row  \u00b7  ${ctrlKey}+${shiftKey}+\u2190 Del col`;
 
   return (
     <div

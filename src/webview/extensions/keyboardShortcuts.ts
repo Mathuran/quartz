@@ -267,26 +267,27 @@ export const keyboardShortcutsExtension = Extension.create({
         this.editor.chain().focus().toggleHighlight().run(),
 
       // Table editing shortcuts (only work when cursor is inside a table)
-      // Add row below: Cmd/Ctrl+Alt+ArrowDown
-      'Mod-Alt-ArrowDown': () => {
+      // Using Ctrl+Shift+Arrow to avoid conflicts with VS Code's Cmd+Alt shortcuts
+      // Add row below: Ctrl+Shift+ArrowDown
+      'Control-Shift-ArrowDown': () => {
         if (!this.editor.isActive('table')) return false;
         return this.editor.commands.addRowAfter();
       },
 
-      // Add column right: Cmd/Ctrl+Alt+ArrowRight
-      'Mod-Alt-ArrowRight': () => {
+      // Add column right: Ctrl+Shift+ArrowRight
+      'Control-Shift-ArrowRight': () => {
         if (!this.editor.isActive('table')) return false;
         return this.editor.commands.addColumnAfter();
       },
 
-      // Delete current row: Cmd/Ctrl+Alt+Backspace
-      'Mod-Alt-Backspace': () => {
+      // Delete current row: Ctrl+Shift+ArrowUp
+      'Control-Shift-ArrowUp': () => {
         if (!this.editor.isActive('table')) return false;
         return this.editor.commands.deleteRow();
       },
 
-      // Delete current column: Cmd/Ctrl+Alt+Shift+Backspace
-      'Mod-Alt-Shift-Backspace': () => {
+      // Delete current column: Ctrl+Shift+ArrowLeft
+      'Control-Shift-ArrowLeft': () => {
         if (!this.editor.isActive('table')) return false;
         return this.editor.commands.deleteColumn();
       },
