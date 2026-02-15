@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -10,7 +10,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
 import Blockquote from '@tiptap/extension-blockquote';
-import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import { CustomHorizontalRule } from './extensions/horizontalRuleExtension';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Strike from '@tiptap/extension-strike';
@@ -36,10 +36,12 @@ import { serializeMarkdown } from '../markdown/serializer';
 import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
 import { FormattingToolbar } from './components/FormattingToolbar';
+import { TableHint } from './components/TableHint';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 import { virtualRenderingExtension } from './extensions/virtualRendering';
 import { linkInputRuleExtension } from './extensions/linkInputRule';
+import { combinedMarksInputRuleExtension } from './extensions/combinedMarksInputRule';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -80,6 +82,11 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const initialContentRef = useRef(initialContent);
   const [contentWarning, setContentWarning] = useState<string | null>(null);
 
+  // Table hint state
+  const [tableHintPosition, setTableHintPosition] = useState<{ top: number; left: number } | null>(null);
+  const tableHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInTableRef = useRef(false);
+
   const { doc: initialDoc, error: parseError } = safeParse(initialContentRef.current);
 
   const editor = useEditor({
@@ -93,13 +100,16 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       ListItem,
       CustomCodeBlockLowlight.configure({ lowlight }),
       Blockquote,
-      HorizontalRule,
+      CustomHorizontalRule,
+      combinedMarksInputRuleExtension, // Must come BEFORE Bold/Italic to handle *** before ** or *
       Bold,
       Italic,
       Strike,
       Code,
       Link.configure({ openOnClick: false }),
-      History,
+      History.configure({
+        newGroupDelay: 150, // Group changes within 150ms (default is 500ms) for finer undo granularity
+      }),
       HardBreak,
       Gapcursor,
       Dropcursor.configure({ color: '#3b82f6', width: 2 }),
@@ -186,6 +196,52 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     };
   }, []);
 
+  // Track table focus for showing hint
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleSelectionUpdate = () => {
+      const isInTable = editor.isActive('table');
+
+      if (isInTable && !isInTableRef.current) {
+        // Cursor just entered a table - start 500ms delay
+        isInTableRef.current = true;
+        if (tableHintTimeoutRef.current) {
+          clearTimeout(tableHintTimeoutRef.current);
+        }
+        tableHintTimeoutRef.current = setTimeout(() => {
+          // Find the table element and position hint below it
+          const tableNode = editor.view.dom.querySelector('table');
+          if (tableNode) {
+            const rect = tableNode.getBoundingClientRect();
+            const editorRect = editor.view.dom.getBoundingClientRect();
+            setTableHintPosition({
+              top: rect.bottom - editorRect.top + 4,
+              left: rect.left - editorRect.left,
+            });
+          }
+        }, 500);
+      } else if (!isInTable && isInTableRef.current) {
+        // Cursor left the table - hide hint immediately
+        isInTableRef.current = false;
+        if (tableHintTimeoutRef.current) {
+          clearTimeout(tableHintTimeoutRef.current);
+          tableHintTimeoutRef.current = null;
+        }
+        setTableHintPosition(null);
+      }
+    };
+
+    editor.on('selectionUpdate', handleSelectionUpdate);
+
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate);
+      if (tableHintTimeoutRef.current) {
+        clearTimeout(tableHintTimeoutRef.current);
+      }
+    };
+  }, [editor]);
+
   if (!editor) return null;
 
   return (
@@ -203,13 +259,16 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       )}
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
-      <EditorContent
-        editor={editor}
-        style={{
-          fontFamily: config.fontFamily === 'inherit' ? undefined : config.fontFamily,
-          fontSize: `${config.fontSize}px`,
-        }}
-      />
+      <div style={{ position: 'relative' }}>
+        <EditorContent
+          editor={editor}
+          style={{
+            fontFamily: config.fontFamily === 'inherit' ? undefined : config.fontFamily,
+            fontSize: `${config.fontSize}px`,
+          }}
+        />
+        <TableHint position={tableHintPosition} />
+      </div>
     </PageContainer>
   );
 }

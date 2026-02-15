@@ -190,10 +190,15 @@ body {
 }
 
 /* Horizontal Rule */
-.quartz-editor-content hr {
+.quartz-editor-content hr,
+.quartz-editor-content hr.quartz-hr {
   border: none;
   border-top: 1px solid var(--quartz-border);
   margin: 1.5em 0;
+  height: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
 }
 
 /* Images */
@@ -415,4 +420,18 @@ body {
 .quartz-warning-dismiss:hover {
   background: rgba(255, 255, 255, 0.1);
   opacity: 1;
+}
+
+/* Table Hint */
+.quartz-table-hint {
+  position: absolute;
+  font-size: 11px;
+  color: var(--quartz-fg);
+  opacity: 0.6;
+  padding: 4px 8px;
+  background: var(--quartz-bg);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
 }

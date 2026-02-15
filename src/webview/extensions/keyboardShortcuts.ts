@@ -1,10 +1,175 @@
 import { Extension } from '@tiptap/core';
+import type { Editor } from '@tiptap/react';
+import { TextSelection } from '@tiptap/pm/state';
+import type { Node as ProseMirrorNode, ResolvedPos } from '@tiptap/pm/model';
+
+/**
+ * Find the top-level block node that contains the current selection.
+ * Returns the position and the node itself.
+ */
+function findTopLevelBlock(
+  $pos: ResolvedPos
+): { pos: number; node: ProseMirrorNode } | null {
+  // depth 0 is the doc, depth 1 is the top-level block
+  if ($pos.depth < 1) return null;
+
+  const pos = $pos.before(1);
+  const node = $pos.node(1);
+
+  return { pos, node };
+}
+
+/**
+ * Move the current block up (swap with previous sibling).
+ */
+function moveBlockUp(editor: Editor): boolean {
+  const { state, dispatch } = editor.view;
+  const { selection, doc } = state;
+  const { $from, $to } = selection;
+
+  // Find the top-level block containing the start of selection
+  const startBlock = findTopLevelBlock($from);
+  if (!startBlock) return false;
+
+  // Find the top-level block containing the end of selection (for multi-block)
+  const endBlock = findTopLevelBlock($to);
+  if (!endBlock) return false;
+
+  const startPos = startBlock.pos;
+  const endPos = endBlock.pos + endBlock.node.nodeSize;
+
+  // Get the resolved position at the start of our block range
+  const $startPos = doc.resolve(startPos);
+
+  // Check if there's a previous sibling (index > 0 means there's something before)
+  const indexInParent = $startPos.index(0);
+  if (indexInParent === 0) {
+    // Already at the top of document
+    return false;
+  }
+
+  // Find the previous sibling block
+  const prevBlockPos = $startPos.before(1) - 1;
+  const $prevPos = doc.resolve(prevBlockPos);
+  const prevBlock = findTopLevelBlock($prevPos);
+  if (!prevBlock) return false;
+
+  // Calculate the content slice we want to move
+  const movingContent = doc.slice(startPos, endPos);
+  const prevContent = doc.slice(prevBlock.pos, prevBlock.pos + prevBlock.node.nodeSize);
+
+  // Create the transaction to swap
+  const tr = state.tr;
+
+  // Delete the current block(s) first
+  tr.delete(startPos, endPos);
+
+  // Now delete the previous block (its position hasn't changed)
+  tr.delete(prevBlock.pos, prevBlock.pos + prevBlock.node.nodeSize);
+
+  // Insert our content at where the previous block was
+  tr.insert(prevBlock.pos, movingContent.content);
+
+  // Insert the previous block after our content
+  tr.insert(prevBlock.pos + movingContent.size, prevContent.content);
+
+  // Restore cursor position relative to the moved block
+  const cursorOffset = $from.pos - startPos;
+  const newCursorPos = prevBlock.pos + cursorOffset;
+
+  // Set the selection
+  try {
+    const $newPos = tr.doc.resolve(Math.min(newCursorPos, tr.doc.content.size - 1));
+    tr.setSelection(TextSelection.near($newPos));
+  } catch {
+    // If we can't set selection, just let it be at the start
+  }
+
+  dispatch(tr.scrollIntoView());
+  return true;
+}
+
+/**
+ * Move the current block down (swap with next sibling).
+ */
+function moveBlockDown(editor: Editor): boolean {
+  const { state, dispatch } = editor.view;
+  const { selection, doc } = state;
+  const { $from, $to } = selection;
+
+  // Find the top-level block containing the start of selection
+  const startBlock = findTopLevelBlock($from);
+  if (!startBlock) return false;
+
+  // Find the top-level block containing the end of selection (for multi-block)
+  const endBlock = findTopLevelBlock($to);
+  if (!endBlock) return false;
+
+  const startPos = startBlock.pos;
+  const endPos = endBlock.pos + endBlock.node.nodeSize;
+
+  // Check if there's a next sibling
+  const $endPos = doc.resolve(endPos);
+
+  // Check if we're at the last block
+  if (endPos >= doc.content.size) {
+    // Already at the bottom of document
+    return false;
+  }
+
+  // Find the next sibling block
+  const nextBlockPos = endPos;
+  const nextBlock = doc.nodeAt(nextBlockPos);
+  if (!nextBlock) return false;
+
+  const nextBlockEndPos = nextBlockPos + nextBlock.nodeSize;
+
+  // Calculate the content slices
+  const movingContent = doc.slice(startPos, endPos);
+  const nextContent = doc.slice(nextBlockPos, nextBlockEndPos);
+
+  // Create the transaction to swap
+  const tr = state.tr;
+
+  // Delete the next block first (so positions don't shift for our content)
+  tr.delete(nextBlockPos, nextBlockEndPos);
+
+  // Delete our current block(s)
+  tr.delete(startPos, endPos);
+
+  // Insert the next block at where our block was
+  tr.insert(startPos, nextContent.content);
+
+  // Insert our content after the next block
+  tr.insert(startPos + nextContent.size, movingContent.content);
+
+  // Restore cursor position relative to the moved block
+  const cursorOffset = $from.pos - startPos;
+  const newCursorPos = startPos + nextContent.size + cursorOffset;
+
+  // Set the selection
+  try {
+    const $newPos = tr.doc.resolve(Math.min(newCursorPos, tr.doc.content.size - 1));
+    tr.setSelection(TextSelection.near($newPos));
+  } catch {
+    // If we can't set selection, just let it be at the start
+  }
+
+  dispatch(tr.scrollIntoView());
+  return true;
+}
 
 export const keyboardShortcutsExtension = Extension.create({
   name: 'quartzKeyboardShortcuts',
 
   addKeyboardShortcuts() {
     return {
+      // Move block up: Alt+ArrowUp (Option+↑ on Mac)
+      'Alt-ArrowUp': () => moveBlockUp(this.editor),
+
+      // Move block down: Alt+ArrowDown (Option+↓ on Mac)
+      'Alt-ArrowDown': () => moveBlockDown(this.editor),
+
       // Strikethrough: Cmd/Ctrl+Shift+S
       'Mod-Shift-s': () => this.editor.chain().focus().toggleStrike().run(),
 
