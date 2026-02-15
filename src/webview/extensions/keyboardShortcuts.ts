@@ -69,6 +69,31 @@ export const keyboardShortcutsExtension = Extension.create({
       // Highlight: Cmd/Ctrl+Shift+H
       'Mod-Shift-h': () =>
         this.editor.chain().focus().toggleHighlight().run(),
+
+      // Table editing shortcuts (only work when cursor is inside a table)
+      // Add row below: Cmd/Ctrl+Alt+ArrowDown
+      'Mod-Alt-ArrowDown': () => {
+        if (!this.editor.isActive('table')) return false;
+        return this.editor.commands.addRowAfter();
+      },
+
+      // Add column right: Cmd/Ctrl+Alt+ArrowRight
+      'Mod-Alt-ArrowRight': () => {
+        if (!this.editor.isActive('table')) return false;
+        return this.editor.commands.addColumnAfter();
+      },
+
+      // Delete current row: Cmd/Ctrl+Alt+Backspace
+      'Mod-Alt-Backspace': () => {
+        if (!this.editor.isActive('table')) return false;
+        return this.editor.commands.deleteRow();
+      },
+
+      // Delete current column: Cmd/Ctrl+Alt+Shift+Backspace
+      'Mod-Alt-Shift-Backspace': () => {
+        if (!this.editor.isActive('table')) return false;
+        return this.editor.commands.deleteColumn();
+      },
     };
   },
 });

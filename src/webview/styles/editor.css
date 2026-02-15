@@ -248,30 +248,6 @@ body {
   font-style: italic;
 }
 
-/* Drag Handle (floating, positioned by JS) */
-.quartz-drag-handle {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  opacity: 0.4;
-  transition: opacity 0.15s ease;
-  border-radius: 3px;
-  color: var(--quartz-fg);
-  user-select: none;
-}
-
-.quartz-drag-handle:hover {
-  background: rgba(128, 128, 128, 0.15);
-  opacity: 1;
-}
-
-.quartz-drag-handle:active {
-  cursor: grabbing;
-}
-
 /* Slash Menu */
 .quartz-slash-menu {
   position: fixed;

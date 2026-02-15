@@ -355,4 +355,89 @@ Here is a simple footnote[^1].`;
     expect(paragraph.content![0].text).toBe(longText);
     expect(paragraph.content![0].text!.length).toBe(10_500);
   });
+
+  it('should parse multiple code blocks followed by paragraphs', () => {
+    const md = [
+      '```javascript',
+      'console.log("hello");',
+      '```',
+      '',
+      'This paragraph should be outside the code block.',
+      '',
+      '```python',
+      'print("world")',
+      '```',
+      '',
+      'Another paragraph.',
+    ].join('\n');
+    const result = parseMarkdown(md);
+
+    // Should have: codeBlock, paragraph, codeBlock, paragraph
+    expect(result.content!.length).toBe(4);
+    expect(result.content![0].type).toBe('codeBlock');
+    expect(result.content![0].attrs?.language).toBe('javascript');
+    expect(result.content![1].type).toBe('paragraph');
+    expect(result.content![1].content![0].text).toBe('This paragraph should be outside the code block.');
+    expect(result.content![2].type).toBe('codeBlock');
+    expect(result.content![2].attrs?.language).toBe('python');
+    expect(result.content![3].type).toBe('paragraph');
+    expect(result.content![3].content![0].text).toBe('Another paragraph.');
+  });
+
+  it('should parse code block without language specifier followed by paragraph', () => {
+    const md = [
+      '```',
+      'some code',
+      '```',
+      '',
+      'Paragraph after.',
+    ].join('\n');
+    const result = parseMarkdown(md);
+
+    expect(result.content!.length).toBe(2);
+    expect(result.content![0].type).toBe('codeBlock');
+    expect(result.content![0].attrs?.language).toBeFalsy();
+    expect(result.content![0].content![0].text).toBe('some code');
+    expect(result.content![1].type).toBe('paragraph');
+    expect(result.content![1].content![0].text).toBe('Paragraph after.');
+  });
+
+  it('should parse code block containing backticks in content', () => {
+    // Code block that shows markdown examples with backticks
+    const md = [
+      '```markdown',
+      'Use `inline code` like this.',
+      '```',
+    ].join('\n');
+    const result = parseMarkdown(md);
+
+    expect(result.content!.length).toBe(1);
+    const codeBlock = result.content![0];
+    expect(codeBlock.type).toBe('codeBlock');
+    expect(codeBlock.attrs?.language).toBe('markdown');
+    expect(codeBlock.content![0].text).toBe('Use `inline code` like this.');
+  });
+
+  it('should parse three consecutive code blocks', () => {
+    const md = [
+      '```js',
+      'const a = 1;',
+      '```',
+      '',
+      '```ts',
+      'const b: number = 2;',
+      '```',
+      '',
+      '```py',
+      'c = 3',
+      '```',
+    ].join('\n');
+    const result = parseMarkdown(md);
+
+    const codeBlocks = result.content!.filter((n) => n.type === 'codeBlock');
+    expect(codeBlocks).toHaveLength(3);
+    expect(codeBlocks[0].attrs?.language).toBe('js');
+    expect(codeBlocks[1].attrs?.language).toBe('ts');
+    expect(codeBlocks[2].attrs?.language).toBe('py');
+  });
 });

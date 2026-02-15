@@ -405,9 +405,25 @@ function parseBlockquote(
       if (depth === 0) {
         return { nodes, endIndex: i };
       }
+      i++;
+      continue;
     }
+
+    // Handle nested blockquote BEFORE incrementing depth
+    if (token.type === 'blockquote_open' && depth === 1) {
+      const nested = parseBlockquote(tokens, i + 1);
+      nodes.push({
+        type: 'blockquote',
+        content: nested.nodes.length > 0 ? nested.nodes : [{ type: 'paragraph' }],
+      });
+      i = nested.endIndex + 1;
+      continue;
+    }
+
     if (token.type === 'blockquote_open') {
       depth++;
+      i++;
+      continue;
     }
 
     if (depth === 1) {
@@ -420,13 +436,6 @@ function parseBlockquote(
           content: inlineContent.length > 0 ? inlineContent : undefined,
         });
         i += 3;
-      } else if (token.type === 'blockquote_open') {
-        const nested = parseBlockquote(tokens, i + 1);
-        nodes.push({
-          type: 'blockquote',
-          content: nested.nodes,
-        });
-        i = nested.endIndex + 1;
       } else {
         i++;
       }
