@@ -43,12 +43,49 @@ describe('Markdown Parser', () => {
     expect(list.content![0].type).toBe('listItem');
   });
 
+  it('should parse bullet list items without dash prefix in text content', () => {
+    const md = '- Item 1\n- Item 2\n- Item 3';
+    const result = parseMarkdown(md);
+    const list = result.content![0];
+    expect(list.type).toBe('bulletList');
+
+    // Each list item's text content should NOT include the dash prefix
+    list.content!.forEach((item, index) => {
+      const paragraph = item.content![0];
+      expect(paragraph.type).toBe('paragraph');
+      const textNode = paragraph.content![0];
+      expect(textNode.type).toBe('text');
+      // Text should be "Item N", not "- Item N"
+      expect(textNode.text).toBe(`Item ${index + 1}`);
+      expect(textNode.text).not.toMatch(/^[-*+]\s/);
+    });
+  });
+
   it('should parse ordered list', () => {
     const md = '1. First\n2. Second\n3. Third';
     const result = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('orderedList');
     expect(list.content).toHaveLength(3);
+  });
+
+  it('should parse ordered list items without number prefix in text content', () => {
+    const md = '1. First\n2. Second\n3. Third';
+    const result = parseMarkdown(md);
+    const list = result.content![0];
+    expect(list.type).toBe('orderedList');
+
+    const expectedTexts = ['First', 'Second', 'Third'];
+    // Each list item's text content should NOT include the number prefix
+    list.content!.forEach((item, index) => {
+      const paragraph = item.content![0];
+      expect(paragraph.type).toBe('paragraph');
+      const textNode = paragraph.content![0];
+      expect(textNode.type).toBe('text');
+      // Text should be "First", "Second", "Third", not "1. First", "2. Second", "3. Third"
+      expect(textNode.text).toBe(expectedTexts[index]);
+      expect(textNode.text).not.toMatch(/^\d+\.\s/);
+    });
   });
 
   it('should parse nested bullet list', () => {
@@ -59,6 +96,50 @@ describe('Markdown Parser', () => {
     // First item should contain a nested list
     const firstItem = list.content![0];
     expect(firstItem.content!.length).toBeGreaterThan(1);
+  });
+
+  it('should parse nested lists without markdown prefixes at all levels', () => {
+    const md = '- Level 1\n  - Level 2\n    - Level 3';
+    const result = parseMarkdown(md);
+
+    // Helper to extract text from a list item
+    const getItemText = (item: { content?: { type: string; content?: { type: string; text?: string }[] }[] }) => {
+      const paragraph = item.content?.[0];
+      if (paragraph?.type === 'paragraph' && paragraph.content?.[0]) {
+        return paragraph.content[0].text;
+      }
+      return null;
+    };
+
+    // Helper to check no prefix in text
+    const hasNoPrefix = (text: string | null | undefined) => {
+      if (!text) return true;
+      return !text.match(/^[-*+]\s/) && !text.match(/^\d+\.\s/);
+    };
+
+    // Level 1
+    const level1List = result.content![0];
+    expect(level1List.type).toBe('bulletList');
+    const level1Item = level1List.content![0];
+    const level1Text = getItemText(level1Item);
+    expect(level1Text).toBe('Level 1');
+    expect(hasNoPrefix(level1Text)).toBe(true);
+
+    // Level 2
+    const level2List = level1Item.content?.find((n: { type: string }) => n.type === 'bulletList');
+    expect(level2List).toBeDefined();
+    const level2Item = level2List!.content![0];
+    const level2Text = getItemText(level2Item);
+    expect(level2Text).toBe('Level 2');
+    expect(hasNoPrefix(level2Text)).toBe(true);
+
+    // Level 3
+    const level3List = level2Item.content?.find((n: { type: string }) => n.type === 'bulletList');
+    expect(level3List).toBeDefined();
+    const level3Item = level3List!.content![0];
+    const level3Text = getItemText(level3Item);
+    expect(level3Text).toBe('Level 3');
+    expect(hasNoPrefix(level3Text)).toBe(true);
   });
 
   it('should parse code block with language', () => {

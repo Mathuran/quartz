@@ -522,7 +522,7 @@ History.configure({
 | [004](../issues/markdown-parsing-fixes/004-table-shortcut-hint-ui.md) | Add Table Shortcut Hint UI | DONE | S | P0 |
 | [005](../issues/markdown-parsing-fixes/005-fix-link-input-rule.md) | Fix Link Markdown Input Rule | DONE | M | P0 |
 | [006](../issues/markdown-parsing-fixes/006-link-toolbar-dialog.md) | Add Link URL Dialog for Toolbar | TODO | M | P1 |
-| [007](../issues/markdown-parsing-fixes/007-fix-list-rendering.md) | Fix List Item Rendering | TODO | M | P0 |
+| [007](../issues/markdown-parsing-fixes/007-fix-list-rendering.md) | Fix List Item Rendering | DONE | M | P0 |
 | [008](../issues/markdown-parsing-fixes/008-fix-code-block-closure.md) | Fix Code Block Closure | DONE | M | P0 |
 | [009](../issues/markdown-parsing-fixes/009-fix-blockquote-nesting.md) | Fix Blockquote Nesting | DONE | S | P0 |
 | [010](../issues/markdown-parsing-fixes/010-fix-combined-bold-italic.md) | Fix Combined Bold+Italic Formatting | DONE | S | P1 |
@@ -532,7 +532,7 @@ History.configure({
 | [014](../issues/markdown-parsing-fixes/014-fix-copy-paste.md) | Fix Copy/Paste Functionality | DONE | M | P2 |
 | [015](../issues/markdown-parsing-fixes/015-cleanup-drag-handle-tests.md) | Clean Up Drag Handle Tests | DONE | XS | P0 |
 
-**Progress:** 13/15 issues complete (87%)
+**Progress:** 14/15 issues complete (93%)
 
 ---
 

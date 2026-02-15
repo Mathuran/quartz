@@ -37,6 +37,7 @@ import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
 import { FormattingToolbar } from './components/FormattingToolbar';
 import { TableHint } from './components/TableHint';
+import { LinkDialog } from './components/LinkDialog';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 import { virtualRenderingExtension } from './extensions/virtualRendering';
@@ -87,6 +88,11 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const [tableHintPosition, setTableHintPosition] = useState<{ top: number; left: number } | null>(null);
   const tableHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInTableRef = useRef(false);
+
+  // Link dialog state
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkDialogSelection, setLinkDialogSelection] = useState<string>('');
+  const [linkDialogHasSelection, setLinkDialogHasSelection] = useState(false);
 
   const { doc: initialDoc, error: parseError } = safeParse(initialContentRef.current);
 
@@ -305,6 +311,52 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     };
   }, [editor]);
 
+  // Handle opening the link dialog
+  const handleLinkClick = useCallback(() => {
+    if (!editor) return;
+
+    const { from, to, empty } = editor.state.selection;
+    const selectedText = empty ? '' : editor.state.doc.textBetween(from, to);
+
+    setLinkDialogSelection(selectedText);
+    setLinkDialogHasSelection(!empty);
+    setLinkDialogOpen(true);
+  }, [editor]);
+
+  // Handle link dialog submission
+  const handleLinkSubmit = useCallback(
+    (url: string, text?: string) => {
+      if (!editor) return;
+
+      if (linkDialogHasSelection) {
+        // User has text selected - just apply the link mark
+        editor.chain().focus().setLink({ href: url }).run();
+      } else {
+        // No selection - insert the link text with the link mark
+        const linkText = text || url;
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: 'text',
+            text: linkText,
+            marks: [{ type: 'link', attrs: { href: url } }],
+          })
+          .run();
+      }
+
+      setLinkDialogOpen(false);
+    },
+    [editor, linkDialogHasSelection]
+  );
+
+  // Handle link dialog cancellation
+  const handleLinkCancel = useCallback(() => {
+    setLinkDialogOpen(false);
+    // Return focus to editor
+    editor?.commands.focus();
+  }, [editor]);
+
   if (!editor) return null;
 
   return (
@@ -320,7 +372,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
           </button>
         </div>
       )}
-      <FormattingToolbar editor={editor} />
+      <FormattingToolbar editor={editor} onLinkClick={handleLinkClick} />
       <SlashMenu editor={editor} />
       <div style={{ position: 'relative' }}>
         <EditorContent
@@ -332,6 +384,13 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
         />
         <TableHint position={tableHintPosition} />
       </div>
+      <LinkDialog
+        isOpen={linkDialogOpen}
+        onSubmit={handleLinkSubmit}
+        onCancel={handleLinkCancel}
+        initialText={linkDialogSelection}
+        hasSelection={linkDialogHasSelection}
+      />
     </PageContainer>
   );
 }

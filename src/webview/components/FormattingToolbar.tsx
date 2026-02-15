@@ -3,9 +3,10 @@ import { BubbleMenu, type Editor } from '@tiptap/react';
 
 interface FormattingToolbarProps {
   editor: Editor;
+  onLinkClick?: () => void;
 }
 
-export function FormattingToolbar({ editor }: FormattingToolbarProps) {
+export function FormattingToolbar({ editor, onLinkClick }: FormattingToolbarProps) {
   return (
     <BubbleMenu
       editor={editor}
@@ -52,9 +53,12 @@ export function FormattingToolbar({ editor }: FormattingToolbarProps) {
       <button
         className={`quartz-toolbar-btn ${editor.isActive('link') ? 'active' : ''}`}
         onClick={() => {
-          const url = window.prompt('Enter URL');
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
+          if (editor.isActive('link')) {
+            // If already a link, remove it
+            editor.chain().focus().unsetLink().run();
+          } else if (onLinkClick) {
+            // Open the link dialog
+            onLinkClick();
           }
         }}
         title="Link (Cmd+K)"
