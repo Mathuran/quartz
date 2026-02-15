@@ -42,6 +42,7 @@ import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 import { virtualRenderingExtension } from './extensions/virtualRendering';
 import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { combinedMarksInputRuleExtension } from './extensions/combinedMarksInputRule';
+import { taskListInputRuleExtension } from './extensions/taskListInputRule';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -116,6 +117,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       Placeholder.configure({ placeholder: 'Type / for commands...' }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      taskListInputRuleExtension,
       Highlight.configure({ multicolor: false }),
       Image,
       Table.configure({ resizable: false }),
@@ -153,6 +155,67 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       attributes: {
         class: 'quartz-editor-content',
         spellcheck: 'true',
+      },
+      // Handle clipboard events - VS Code webviews may have restrictions on the default
+      // browser clipboard API. TipTap/ProseMirror handles clipboard internally, but we
+      // need to ensure the events propagate correctly.
+      handleDOMEvents: {
+        // Ensure copy events work by allowing default clipboard behavior
+        copy: (view, event) => {
+          // Return false to allow the default ProseMirror copy handler to work
+          // ProseMirror will serialize the selection to HTML/text and write to clipboard
+          return false;
+        },
+        cut: (view, event) => {
+          // Return false to allow the default ProseMirror cut handler to work
+          return false;
+        },
+        paste: (view, event) => {
+          // Return false to allow the default ProseMirror paste handler to work
+          // ProseMirror will read from clipboard and parse HTML/text into nodes
+          return false;
+        },
+      },
+      // Custom clipboard text serialization - ensures text is properly extracted
+      // when copying content to plain text format
+      clipboardTextSerializer: (slice) => {
+        // Serialize the slice content to plain text with newlines between blocks
+        return slice.content.textBetween(0, slice.content.size, '\n\n');
+      },
+      // Transform and sanitize pasted HTML content
+      // This ensures external HTML is properly cleaned and converted to our schema
+      transformPastedHTML: (html: string) => {
+        // Create a temporary DOM parser to sanitize the HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Remove potentially dangerous elements and attributes
+        const dangerousTags = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'];
+        dangerousTags.forEach((tag) => {
+          const elements = doc.getElementsByTagName(tag);
+          while (elements.length > 0) {
+            elements[0].parentNode?.removeChild(elements[0]);
+          }
+        });
+
+        // Remove event handler attributes and javascript: URLs from all elements
+        const allElements = doc.body.querySelectorAll('*');
+        allElements.forEach((el) => {
+          // Remove event handlers
+          Array.from(el.attributes).forEach((attr) => {
+            if (attr.name.startsWith('on') || attr.value.toLowerCase().includes('javascript:')) {
+              el.removeAttribute(attr.name);
+            }
+          });
+        });
+
+        return doc.body.innerHTML;
+      },
+      // Transform pasted plain text - preserve line breaks properly
+      transformPastedText: (text: string) => {
+        // The text comes in as-is, we return it unchanged
+        // ProseMirror will handle converting it to nodes
+        return text;
       },
     },
   });

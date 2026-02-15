@@ -143,10 +143,28 @@ body {
 
 .quartz-editor-content ul[data-type="taskList"] li > label {
   margin-top: 0.25em;
+  cursor: pointer;
+}
+
+.quartz-editor-content ul[data-type="taskList"] li > label input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--quartz-accent);
 }
 
 .quartz-editor-content ul[data-type="taskList"] li > div {
   flex: 1;
+}
+
+/* Checked task item - strikethrough and reduced opacity */
+.quartz-editor-content ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Nested task lists */
+.quartz-editor-content ul[data-type="taskList"] ul[data-type="taskList"] {
+  padding-left: 1.5em;
+  margin-top: 0.25em;
 }
 
 /* Code Blocks */

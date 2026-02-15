@@ -143,8 +143,84 @@ export class EditorPage {
     return this.page.locator('.quartz-slash-menu');
   }
 
-  // Drag handle
-  dragHandle(): Locator {
-    return this.page.locator('.drag-handle');
+  // Block movement
+  async moveBlockDown(): Promise<void> {
+    await this.page.keyboard.press('Alt+ArrowDown');
+  }
+
+  async moveBlockUp(): Promise<void> {
+    await this.page.keyboard.press('Alt+ArrowUp');
+  }
+
+  // Clipboard operations
+  async copy(): Promise<void> {
+    await this.page.keyboard.press(`${this.mod}+c`);
+  }
+
+  async cut(): Promise<void> {
+    await this.page.keyboard.press(`${this.mod}+x`);
+  }
+
+  async paste(): Promise<void> {
+    await this.page.keyboard.press(`${this.mod}+v`);
+  }
+
+  /**
+   * Select text in the editor by specifying start and end positions.
+   * This is a helper for clipboard testing.
+   */
+  async selectText(startOffset: number, endOffset: number): Promise<void> {
+    // Use JavaScript to set selection in the editor
+    await this.page.evaluate(
+      ({ start, end }) => {
+        const editor = document.querySelector('.ProseMirror');
+        if (!editor) return;
+
+        const selection = window.getSelection();
+        if (!selection) return;
+
+        // Get all text nodes
+        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
+        let currentOffset = 0;
+        let startNode: Node | null = null;
+        let startNodeOffset = 0;
+        let endNode: Node | null = null;
+        let endNodeOffset = 0;
+
+        while (walker.nextNode()) {
+          const node = walker.currentNode;
+          const nodeLength = node.textContent?.length || 0;
+
+          if (!startNode && currentOffset + nodeLength >= start) {
+            startNode = node;
+            startNodeOffset = start - currentOffset;
+          }
+
+          if (!endNode && currentOffset + nodeLength >= end) {
+            endNode = node;
+            endNodeOffset = end - currentOffset;
+            break;
+          }
+
+          currentOffset += nodeLength;
+        }
+
+        if (startNode && endNode) {
+          const range = document.createRange();
+          range.setStart(startNode, startNodeOffset);
+          range.setEnd(endNode, endNodeOffset);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      },
+      { start: startOffset, end: endOffset }
+    );
+  }
+
+  /**
+   * Get the current text content of the editor
+   */
+  async getEditorText(): Promise<string> {
+    return await this.prosemirror.innerText();
   }
 }

@@ -164,6 +164,37 @@ export const keyboardShortcutsExtension = Extension.create({
 
   addKeyboardShortcuts() {
     return {
+      // =========================================================
+      // Clipboard operations - ensure they work in VS Code webview
+      // TipTap/ProseMirror handles these by default, but we explicitly
+      // define them here to ensure the shortcuts reach the editor
+      // and are not intercepted by VS Code's own clipboard handling.
+      // =========================================================
+
+      // Copy: Cmd/Ctrl+C
+      // Let the browser handle this - return false to allow default behavior
+      'Mod-c': () => {
+        // Return false to let the native clipboard handling work
+        // ProseMirror's clipboard plugin will intercept the copy event
+        return false;
+      },
+
+      // Cut: Cmd/Ctrl+X
+      // Let the browser handle this - return false to allow default behavior
+      'Mod-x': () => {
+        // Return false to let the native clipboard handling work
+        // ProseMirror's clipboard plugin will intercept the cut event
+        return false;
+      },
+
+      // Paste: Cmd/Ctrl+V
+      // Let the browser handle this - return false to allow default behavior
+      'Mod-v': () => {
+        // Return false to let the native clipboard handling work
+        // ProseMirror's clipboard plugin will intercept the paste event
+        return false;
+      },
+
       // Move block up: Alt+ArrowUp (Option+↑ on Mac)
       'Alt-ArrowUp': () => moveBlockUp(this.editor),
 
