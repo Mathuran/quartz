@@ -1,7 +1,7 @@
 # [006] Add Link URL Dialog for Toolbar
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 005
 - **Blocks:** —
 - **Scope:** M
