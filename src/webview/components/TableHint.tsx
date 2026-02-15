@@ -6,9 +6,11 @@ interface TableHintProps {
 
 // Detect OS for correct shortcut symbols
 const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
-// Use Ctrl+Shift+Arrow to avoid VS Code conflicts (Ctrl = ⌃ on Mac)
+// Use Ctrl+Enter/Backspace to avoid VS Code and table cell navigation conflicts
 const ctrlKey = isMac ? '\u2303' : 'Ctrl';
 const shiftKey = isMac ? '\u21e7' : 'Shift';
+const enterKey = isMac ? '\u21a9' : 'Enter';
+const backspaceKey = isMac ? '\u232b' : 'Bksp';
 
 /**
  * TableHint displays keyboard shortcuts for table editing.
@@ -18,8 +20,8 @@ export function TableHint({ position }: TableHintProps) {
   if (!position) return null;
 
   const shortcuts = isMac
-    ? `${ctrlKey}${shiftKey}\u2193 Add row  \u00b7  ${ctrlKey}${shiftKey}\u2192 Add col  \u00b7  ${ctrlKey}${shiftKey}\u2191 Del row  \u00b7  ${ctrlKey}${shiftKey}\u2190 Del col`
-    : `${ctrlKey}+${shiftKey}+\u2193 Add row  \u00b7  ${ctrlKey}+${shiftKey}+\u2192 Add col  \u00b7  ${ctrlKey}+${shiftKey}+\u2191 Del row  \u00b7  ${ctrlKey}+${shiftKey}+\u2190 Del col`;
+    ? `${ctrlKey}${enterKey} Add row  \u00b7  ${ctrlKey}${shiftKey}${enterKey} Add col  \u00b7  ${ctrlKey}${backspaceKey} Del row  \u00b7  ${ctrlKey}${shiftKey}${backspaceKey} Del col`
+    : `${ctrlKey}+${enterKey} Add row  \u00b7  ${ctrlKey}+${shiftKey}+${enterKey} Add col  \u00b7  ${ctrlKey}+${backspaceKey} Del row  \u00b7  ${ctrlKey}+${shiftKey}+${backspaceKey} Del col`;
 
   return (
     <div
