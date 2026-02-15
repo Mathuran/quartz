@@ -1,5 +1,4 @@
-import { Extension } from '@tiptap/core';
-import { InputRule } from '@tiptap/pm/inputrules';
+import { Extension, InputRule } from '@tiptap/core';
 
 /**
  * Regex for markdown task list syntax: - [ ] or - [x]
@@ -20,35 +19,34 @@ export const taskListInputRuleExtension = Extension.create({
     return [
       new InputRule({
         find: taskListRegex,
-        handler: ({ state, range, match }) => {
-          const { tr, schema } = state;
+        handler: ({ state, range, match, chain }) => {
           const checked = match[1] === 'x';
 
           // Check if we have the necessary node types
-          const taskItemType = schema.nodes.taskItem;
-          const taskListType = schema.nodes.taskList;
+          const taskItemType = state.schema.nodes.taskItem;
+          const taskListType = state.schema.nodes.taskList;
 
           if (!taskItemType || !taskListType) {
             return;
           }
 
-          // Delete the typed text "- [ ] " or "- [x] "
-          tr.delete(range.from, range.to);
-
-          // Create a task item with a paragraph inside
-          const paragraphType = schema.nodes.paragraph;
-          const paragraph = paragraphType.create();
-          const taskItem = taskItemType.create({ checked }, paragraph);
-          const taskList = taskListType.create(null, taskItem);
-
-          // Insert the task list
-          tr.insert(range.from, taskList);
-
-          // Position cursor inside the paragraph of the task item
-          // The structure is: taskList > taskItem > paragraph
-          // We want to place cursor at the start of paragraph content
-          const newPos = range.from + 3; // taskList(1) + taskItem(1) + paragraph(1)
-          tr.setSelection(state.selection.constructor.near(tr.doc.resolve(newPos)));
+          // Use TipTap's chain API to create the task list
+          chain()
+            .deleteRange(range)
+            .toggleTaskList()
+            .command(({ tr, state }) => {
+              // If checked, set the task item as checked
+              if (checked) {
+                const { selection } = state;
+                const taskItem = selection.$from.node(-1);
+                if (taskItem?.type.name === 'taskItem') {
+                  const pos = selection.$from.before(-1);
+                  tr.setNodeMarkup(pos, undefined, { ...taskItem.attrs, checked: true });
+                }
+              }
+              return true;
+            })
+            .run();
         },
       }),
     ];
