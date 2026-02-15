@@ -1,7 +1,7 @@
 # [004] Add Table Shortcut Hint UI
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 003
 - **Blocks:** —
 - **Scope:** S

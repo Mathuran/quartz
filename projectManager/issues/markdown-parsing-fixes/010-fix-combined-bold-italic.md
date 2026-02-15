@@ -1,7 +1,7 @@
 # [010] Fix Combined Bold+Italic Formatting
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** S

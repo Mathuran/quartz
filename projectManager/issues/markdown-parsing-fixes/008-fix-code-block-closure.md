@@ -1,7 +1,7 @@
 # [008] Fix Code Block Closure
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** M

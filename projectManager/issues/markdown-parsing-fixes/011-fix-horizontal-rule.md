@@ -1,7 +1,7 @@
 # [011] Fix Horizontal Rule Rendering
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** S

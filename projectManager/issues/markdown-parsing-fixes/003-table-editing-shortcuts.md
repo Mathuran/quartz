@@ -1,7 +1,7 @@
 # [003] Add Table Editing Keyboard Shortcuts
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** 004
 - **Scope:** S

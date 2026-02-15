@@ -1,7 +1,7 @@
 # [014] Fix Copy/Paste Functionality
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** M

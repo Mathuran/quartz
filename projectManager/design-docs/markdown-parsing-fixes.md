@@ -516,23 +516,23 @@ History.configure({
 
 | # | Title | Status | Scope | Priority |
 |---|-------|--------|-------|----------|
-| [001](../issues/markdown-parsing-fixes/001-remove-drag-handle.md) | Remove Drag Handle Extension | TODO | S | P0 |
-| [002](../issues/markdown-parsing-fixes/002-block-movement-shortcuts.md) | Add Block Movement Keyboard Shortcuts | TODO | M | P0 |
-| [003](../issues/markdown-parsing-fixes/003-table-editing-shortcuts.md) | Add Table Editing Keyboard Shortcuts | TODO | S | P0 |
-| [004](../issues/markdown-parsing-fixes/004-table-shortcut-hint-ui.md) | Add Table Shortcut Hint UI | TODO | S | P0 |
-| [005](../issues/markdown-parsing-fixes/005-fix-link-input-rule.md) | Fix Link Markdown Input Rule | TODO | M | P0 |
+| [001](../issues/markdown-parsing-fixes/001-remove-drag-handle.md) | Remove Drag Handle Extension | DONE | S | P0 |
+| [002](../issues/markdown-parsing-fixes/002-block-movement-shortcuts.md) | Add Block Movement Keyboard Shortcuts | DONE | M | P0 |
+| [003](../issues/markdown-parsing-fixes/003-table-editing-shortcuts.md) | Add Table Editing Keyboard Shortcuts | DONE | S | P0 |
+| [004](../issues/markdown-parsing-fixes/004-table-shortcut-hint-ui.md) | Add Table Shortcut Hint UI | DONE | S | P0 |
+| [005](../issues/markdown-parsing-fixes/005-fix-link-input-rule.md) | Fix Link Markdown Input Rule | DONE | M | P0 |
 | [006](../issues/markdown-parsing-fixes/006-link-toolbar-dialog.md) | Add Link URL Dialog for Toolbar | TODO | M | P1 |
 | [007](../issues/markdown-parsing-fixes/007-fix-list-rendering.md) | Fix List Item Rendering | TODO | M | P0 |
-| [008](../issues/markdown-parsing-fixes/008-fix-code-block-closure.md) | Fix Code Block Closure | TODO | M | P0 |
-| [009](../issues/markdown-parsing-fixes/009-fix-blockquote-nesting.md) | Fix Blockquote Nesting | TODO | S | P0 |
-| [010](../issues/markdown-parsing-fixes/010-fix-combined-bold-italic.md) | Fix Combined Bold+Italic Formatting | TODO | S | P1 |
-| [011](../issues/markdown-parsing-fixes/011-fix-horizontal-rule.md) | Fix Horizontal Rule Rendering | TODO | S | P1 |
-| [012](../issues/markdown-parsing-fixes/012-improve-undo-redo-granularity.md) | Improve Undo/Redo Granularity | TODO | XS | P1 |
-| [013](../issues/markdown-parsing-fixes/013-add-task-list-support.md) | Add Task List Input Rule | TODO | S | P2 |
-| [014](../issues/markdown-parsing-fixes/014-fix-copy-paste.md) | Fix Copy/Paste Functionality | TODO | M | P2 |
-| [015](../issues/markdown-parsing-fixes/015-cleanup-drag-handle-tests.md) | Clean Up Drag Handle Tests | TODO | XS | P0 |
+| [008](../issues/markdown-parsing-fixes/008-fix-code-block-closure.md) | Fix Code Block Closure | DONE | M | P0 |
+| [009](../issues/markdown-parsing-fixes/009-fix-blockquote-nesting.md) | Fix Blockquote Nesting | DONE | S | P0 |
+| [010](../issues/markdown-parsing-fixes/010-fix-combined-bold-italic.md) | Fix Combined Bold+Italic Formatting | DONE | S | P1 |
+| [011](../issues/markdown-parsing-fixes/011-fix-horizontal-rule.md) | Fix Horizontal Rule Rendering | DONE | S | P1 |
+| [012](../issues/markdown-parsing-fixes/012-improve-undo-redo-granularity.md) | Improve Undo/Redo Granularity | DONE | XS | P1 |
+| [013](../issues/markdown-parsing-fixes/013-add-task-list-support.md) | Add Task List Input Rule | DONE | S | P2 |
+| [014](../issues/markdown-parsing-fixes/014-fix-copy-paste.md) | Fix Copy/Paste Functionality | DONE | M | P2 |
+| [015](../issues/markdown-parsing-fixes/015-cleanup-drag-handle-tests.md) | Clean Up Drag Handle Tests | DONE | XS | P0 |
 
-**Progress:** 0/15 issues complete (0%)
+**Progress:** 13/15 issues complete (87%)
 
 ---
 

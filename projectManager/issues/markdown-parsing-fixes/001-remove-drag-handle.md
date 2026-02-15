@@ -1,7 +1,7 @@
 # [001] Remove Drag Handle Extension
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** 002, 015
 - **Scope:** S

@@ -1,7 +1,7 @@
 # [012] Improve Undo/Redo Granularity
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** XS

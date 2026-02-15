@@ -1,7 +1,7 @@
 # [005] Fix Link Markdown Input Rule
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** 006
 - **Scope:** M

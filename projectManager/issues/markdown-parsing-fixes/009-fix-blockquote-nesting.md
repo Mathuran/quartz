@@ -1,7 +1,7 @@
 # [009] Fix Blockquote Nesting
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** S

@@ -1,7 +1,7 @@
 # [013] Add Task List Input Rule
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** S

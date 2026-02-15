@@ -1,7 +1,7 @@
 # [002] Add Block Movement Keyboard Shortcuts
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** 015
 - **Scope:** M
