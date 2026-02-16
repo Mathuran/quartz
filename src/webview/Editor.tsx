@@ -8,7 +8,6 @@ import Heading from '@tiptap/extension-heading';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Blockquote from '@tiptap/extension-blockquote';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import Bold from '@tiptap/extension-bold';
@@ -44,6 +43,7 @@ import { virtualRenderingExtension } from './extensions/virtualRendering';
 import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { combinedMarksInputRuleExtension } from './extensions/combinedMarksInputRule';
 import { taskListInputRuleExtension } from './extensions/taskListInputRule';
+import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -96,7 +96,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       BulletList,
       OrderedList,
       ListItem,
-      CodeBlockLowlight.configure({ lowlight }),
+      CustomCodeBlockLowlight.configure({ lowlight }),
       Blockquote,
       HorizontalRule,
       combinedMarksInputRuleExtension,
