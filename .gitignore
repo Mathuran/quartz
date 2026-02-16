@@ -1,6 +1,22 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 *.vsix
+
+# Test artifacts
 .vscode-test/
 test-results/
 playwright-report/
+playwright-results/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+
+# Placeholder files
+images/*.placeholder

@@ -1,6 +1,8 @@
 # Quartz — Clear Markdown Editor for VS Code
 
-![Quartz Editor](images/quartzDemo.png)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/quartz.quartz-markdown-editor?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=quartz.quartz-markdown-editor)
+
+![Quartz Editor](https://raw.githubusercontent.com/Mathuran/quartz/main/images/quartzDemo.png)
 
 A **Notion-style block-based WYSIWYG markdown editor** that lives inside VS Code. Edit `.md` files visually while keeping them as standard CommonMark + GFM markdown.
 
@@ -20,16 +22,19 @@ A **Notion-style block-based WYSIWYG markdown editor** that lives inside VS Code
 
 Type `/` anywhere to quickly insert blocks:
 
-![Slash Commands](images/slashCommandDemo.png)
+![Slash Commands](https://raw.githubusercontent.com/Mathuran/quartz/main/images/slashCommandDemo.png)
 
 ### Table Editing
 
 Create and edit tables with full keyboard navigation:
 
-![Table Editing](images/quartzTableDemo.png)
+![Table Editing](https://raw.githubusercontent.com/Mathuran/quartz/main/images/quartzTableDemo.png)
 
 ## Installation
 
+**[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=quartz.quartz-markdown-editor)**
+
+Or manually:
 1. Open VS Code
 2. Go to Extensions (`Cmd+Shift+X` / `Ctrl+Shift+X`)
 3. Search **"Quartz"**
