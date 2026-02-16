@@ -45,9 +45,48 @@
             "filenamePattern": "*.md"
           }
         ],
-        "priority": "option"
+        "priority": "default"
       }
     ],
+    "commands": [
+      {
+        "command": "quartz.openWithQuartz",
+        "title": "Open with Quartz Editor",
+        "category": "Quartz"
+      },
+      {
+        "command": "quartz.openWithTextEditor",
+        "title": "Open with Text Editor",
+        "category": "Quartz"
+      },
+      {
+        "command": "quartz.toggleEditor",
+        "title": "Toggle Editor Mode",
+        "category": "Quartz",
+        "icon": "$(symbol-keyword)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "quartz.toggleEditor",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "quartz.openWithQuartz",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        },
+        {
+          "command": "quartz.openWithTextEditor",
+          "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Quartz Markdown Editor",
       "properties": {
