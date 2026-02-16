@@ -36,6 +36,7 @@ import { serializeMarkdown } from '../markdown/serializer';
 import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
 import { FormattingToolbar } from './components/FormattingToolbar';
+import { TableHint } from './components/TableHint';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 // import { dragHandleExtension } from './extensions/dragHandle'; // REMOVED
@@ -82,6 +83,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
   const [contentWarning, setContentWarning] = useState<string | null>(null);
+  const [tableHintPosition, setTableHintPosition] = useState<{ top: number } | null>(null);
 
   const { doc: initialDoc, error: parseError } = safeParse(initialContentRef.current);
 
@@ -144,6 +146,29 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
         const markdown = serializeMarkdown(editor.getJSON());
         onUpdate(markdown);
       }, 300);
+    },
+    onSelectionUpdate: ({ editor }) => {
+      const inTable = editor.isActive('table') || editor.isActive('tableCell') || editor.isActive('tableHeader');
+      if (inTable) {
+        // Find the table element and position the hint alongside it
+        const { $from } = editor.state.selection;
+        let tableDepth = $from.depth;
+        while (tableDepth > 0 && $from.node(tableDepth).type.name !== 'table') {
+          tableDepth--;
+        }
+        if (tableDepth > 0) {
+          const tableStart = $from.before(tableDepth);
+          const dom = editor.view.nodeDOM(tableStart);
+          if (dom instanceof HTMLElement) {
+            const rect = dom.getBoundingClientRect();
+            setTableHintPosition({
+              top: rect.top,
+            });
+            return;
+          }
+        }
+      }
+      setTableHintPosition(null);
     },
     editorProps: {
       attributes: {
@@ -209,6 +234,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       )}
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
+      <TableHint position={tableHintPosition} />
       <EditorContent
         editor={editor}
         style={{

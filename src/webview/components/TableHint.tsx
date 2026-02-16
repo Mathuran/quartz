@@ -1,37 +1,42 @@
 import React from 'react';
 
 interface TableHintProps {
-  position: { top: number; left: number } | null;
+  position: { top: number } | null;
 }
 
 // Detect OS for correct shortcut symbols
 const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
-// Use Ctrl+Enter/Backspace to avoid VS Code and table cell navigation conflicts
-const ctrlKey = isMac ? '\u2303' : 'Ctrl';
-const shiftKey = isMac ? '\u21e7' : 'Shift';
+const ctrlKey = isMac ? '\u2303' : 'Ctrl+';
+const shiftKey = isMac ? '\u21e7' : 'Shift+';
 const enterKey = isMac ? '\u21a9' : 'Enter';
 const backspaceKey = isMac ? '\u232b' : 'Bksp';
 
+const shortcuts = [
+  { keys: `${ctrlKey}${enterKey}`, label: 'Add row' },
+  { keys: `${ctrlKey}${shiftKey}${enterKey}`, label: 'Add column' },
+  { keys: `${ctrlKey}${backspaceKey}`, label: 'Delete row' },
+  { keys: `${ctrlKey}${shiftKey}${backspaceKey}`, label: 'Delete column' },
+];
+
 /**
  * TableHint displays keyboard shortcuts for table editing.
- * Shows below the table when the cursor is inside a table cell.
+ * Shows as a card on the left side when cursor is inside a table cell.
  */
 export function TableHint({ position }: TableHintProps) {
   if (!position) return null;
 
-  const shortcuts = isMac
-    ? `${ctrlKey}${enterKey} Add row  \u00b7  ${ctrlKey}${shiftKey}${enterKey} Add col  \u00b7  ${ctrlKey}${backspaceKey} Del row  \u00b7  ${ctrlKey}${shiftKey}${backspaceKey} Del col`
-    : `${ctrlKey}+${enterKey} Add row  \u00b7  ${ctrlKey}+${shiftKey}+${enterKey} Add col  \u00b7  ${ctrlKey}+${backspaceKey} Del row  \u00b7  ${ctrlKey}+${shiftKey}+${backspaceKey} Del col`;
-
   return (
     <div
       className="quartz-table-hint"
-      style={{
-        top: position.top,
-        left: position.left,
-      }}
+      style={{ top: position.top }}
     >
-      {shortcuts}
+      <div className="quartz-table-hint-title">Table Shortcuts</div>
+      {shortcuts.map((shortcut, index) => (
+        <div key={index} className="quartz-table-hint-row">
+          <kbd className="quartz-table-hint-keys">{shortcut.keys}</kbd>
+          <span className="quartz-table-hint-label">{shortcut.label}</span>
+        </div>
+      ))}
     </div>
   );
 }
