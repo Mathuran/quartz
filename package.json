@@ -1,15 +1,37 @@
 {
   "name": "quartz-markdown-editor",
-  "displayName": "Quartz - Clear Markdown Editor",
+  "displayName": "Quartz — Clear Markdown Editor",
   "description": "A Notion-style block-based WYSIWYG markdown editor for VS Code",
   "version": "0.1.0",
   "publisher": "quartz",
   "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mathuran/quartz"
+  },
+  "homepage": "https://github.com/Mathuran/quartz#readme",
+  "bugs": {
+    "url": "https://github.com/Mathuran/quartz/issues"
+  },
+  "keywords": [
+    "markdown",
+    "editor",
+    "wysiwyg",
+    "notion",
+    "block editor",
+    "tiptap"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Visualization"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -109,6 +131,7 @@
     "@types/vscode": "^1.85.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
     "esbuild": "^0.24.0",
     "typescript": "^5.3.3",
     "vitest": "^2.1.0"
