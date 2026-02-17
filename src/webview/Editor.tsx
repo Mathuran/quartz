@@ -44,6 +44,7 @@ import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { combinedMarksInputRuleExtension } from './extensions/combinedMarksInputRule';
 import { taskListInputRuleExtension } from './extensions/taskListInputRule';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
+import { listInputRuleExtension } from './extensions/listInputRule';
 import type { EditorConfig } from './types';
 
 const lowlight = createLowlight(common);
@@ -96,6 +97,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       BulletList,
       OrderedList,
       ListItem,
+      listInputRuleExtension,
       CustomCodeBlockLowlight.configure({ lowlight }),
       Blockquote,
       HorizontalRule,
