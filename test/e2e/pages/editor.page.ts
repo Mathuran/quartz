@@ -131,7 +131,7 @@ export class EditorPage {
   }
 
   async toggleStrikethrough(): Promise<void> {
-    await this.page.keyboard.press(`${this.mod}+Shift+x`);
+    await this.page.keyboard.press(`${this.mod}+Shift+s`);
   }
 
   async toggleCode(): Promise<void> {
