@@ -20,9 +20,20 @@ export const slashCommandExtension = Extension.create({
           handleKeyDown(view, event) {
             if (event.key === '/') {
               const { $from } = view.state.selection;
+
+              // Don't trigger in code blocks
+              if ($from.parent.type.name === 'codeBlock') {
+                return false;
+              }
+
               const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
-              // Only trigger if at the start of a block or the block is empty
-              if (textBefore.trim() === '') {
+              const charBefore = textBefore.slice(-1);
+
+              // Require space or start-of-block before slash (like Notion)
+              // This prevents accidental triggers in URLs like https://
+              const shouldTrigger = textBefore.length === 0 || charBefore === ' ' || charBefore === '\t';
+
+              if (shouldTrigger) {
                 isSlashMenuActive = true;
                 // Delay to allow the character to be inserted
                 setTimeout(() => {

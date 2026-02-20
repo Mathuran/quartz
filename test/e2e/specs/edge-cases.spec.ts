@@ -385,15 +385,16 @@ test.describe('Edge Cases', () => {
   });
 
   test('slash command after inline formatting', async ({ page }) => {
-    await loadMarkdown(page, '**bold** ');
+    await loadMarkdown(page, '**bold**');
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
     await page.keyboard.press('End');
-    await page.keyboard.type('/');
+    // Type space then slash - menu should open
+    await page.keyboard.type(' /');
     await page.waitForTimeout(300);
 
-    // Menu should still open
+    // Menu should open after "bold /"
     await expect(editorPage.slashMenu()).toBeVisible();
   });
 
