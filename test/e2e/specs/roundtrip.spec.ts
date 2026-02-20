@@ -51,7 +51,7 @@ test.describe('Roundtrip', () => {
 
     // Navigate to end and add new item
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
     await page.keyboard.type('Item 2');
 
@@ -74,7 +74,7 @@ test.describe('Roundtrip', () => {
     // Click in middle paragraph and add text
     const middlePara = editorPage.paragraph().first();
     await middlePara.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' edited');
 
     // Wait for update

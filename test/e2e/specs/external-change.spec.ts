@@ -33,7 +33,7 @@ test.describe('External Changes', () => {
 
     // User makes an edit
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' user edit');
     await page.waitForTimeout(400);
 

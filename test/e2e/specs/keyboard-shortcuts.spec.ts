@@ -40,7 +40,7 @@ test.describe('Keyboard Shortcuts', () => {
 
     // Type something new
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' added');
     await page.waitForTimeout(400); // Wait for debounce
 
@@ -61,7 +61,7 @@ test.describe('Keyboard Shortcuts', () => {
 
     // Type, undo, then redo
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' added');
     await page.waitForTimeout(400);
 
@@ -93,7 +93,7 @@ test.describe('Keyboard Shortcuts', () => {
 
     // Move to end and press Enter
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
     await page.keyboard.type('Second line');
 
@@ -109,7 +109,7 @@ test.describe('Keyboard Shortcuts', () => {
     // Click at start of second paragraph and press backspace
     const secondPara = editorPage.paragraph().nth(1);
     await secondPara.click();
-    await page.keyboard.press('Home');
+    await editorPage.goToLineStart();
     await page.keyboard.press('Backspace');
 
     // Should merge paragraphs

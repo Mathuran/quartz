@@ -6,6 +6,16 @@ interface PageContainerProps {
   children: React.ReactNode;
 }
 
+/**
+ * PageContainer - √2 Layout System
+ *
+ * Uses fixed 800px content width based on √2 (Lichtenberg) ratio.
+ * Width and margins are defined in CSS variables, not props.
+ *
+ * - Content width: 800px (viewport ÷ √2 at ~1132px)
+ * - Prose margin: 48px (content ÷ √2⁴)
+ * - Prose width: 704px (content - margins)
+ */
 export function PageContainer({ config, children }: PageContainerProps) {
   const [isNarrow, setIsNarrow] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,6 +24,7 @@ export function PageContainer({ config, children }: PageContainerProps) {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
+        // Switch to fluid layout below 600px
         setIsNarrow(entry.contentRect.width < 600);
       }
     });
@@ -26,16 +37,12 @@ export function PageContainer({ config, children }: PageContainerProps) {
   return (
     <div ref={containerRef} className="quartz-page-wrapper">
       {usePageLayout ? (
-        <div
-          className="quartz-page"
-          style={{
-            maxWidth: `${config.pageWidth}px`,
-            padding: `${config.pageMargin}px`,
-          }}
-        >
+        // Page layout: 800px width, 48px padding (all from CSS variables)
+        <div className="quartz-page">
           {children}
         </div>
       ) : (
+        // Fluid layout for narrow viewports
         <div className="quartz-fluid">{children}</div>
       )}
     </div>

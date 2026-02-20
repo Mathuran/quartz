@@ -92,7 +92,8 @@ export class EditorPage {
   // Interactions
   async typeInEditor(text: string): Promise<void> {
     await this.prosemirror.click();
-    await this.page.keyboard.type(text);
+    await this.page.waitForTimeout(100);
+    await this.page.keyboard.type(text, { delay: 50 });
   }
 
   async pressKeys(keys: string): Promise<void> {
@@ -141,6 +142,33 @@ export class EditorPage {
   // Get the slash menu
   slashMenu(): Locator {
     return this.page.locator('.quartz-slash-menu');
+  }
+
+  // Cursor navigation (platform-aware)
+  async goToLineEnd(): Promise<void> {
+    // Use End key - works in Chromium contenteditable on all platforms
+    await this.page.keyboard.press('End');
+  }
+
+  async goToLineStart(): Promise<void> {
+    // Use Home key - works in Chromium contenteditable on all platforms
+    await this.page.keyboard.press('Home');
+  }
+
+  async goToDocumentEnd(): Promise<void> {
+    if (this.isMac) {
+      await this.page.keyboard.press('Meta+ArrowDown');
+    } else {
+      await this.page.keyboard.press('Control+End');
+    }
+  }
+
+  async goToDocumentStart(): Promise<void> {
+    if (this.isMac) {
+      await this.page.keyboard.press('Meta+ArrowUp');
+    } else {
+      await this.page.keyboard.press('Control+Home');
+    }
   }
 
   // Block movement

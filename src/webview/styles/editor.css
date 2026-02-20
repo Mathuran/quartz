@@ -1,5 +1,6 @@
 /* Quartz Editor - Main Styles */
 :root {
+  /* VSCode Theme Integration */
   --quartz-bg: var(--vscode-editor-background, #1e1e1e);
   --quartz-fg: var(--vscode-editor-foreground, #d4d4d4);
   --quartz-border: var(--vscode-panel-border, #2d2d2d);
@@ -8,6 +9,39 @@
   --quartz-code-bg: var(--vscode-textCodeBlock-background, #1a1a2e);
   --quartz-page-bg: var(--vscode-editor-background, #1e1e1e);
   --quartz-wrapper-bg: var(--vscode-sideBar-background, #181818);
+
+  /* ============================================
+     √2 DESIGN SYSTEM
+
+     All spacing derives from √2 (1.414...) ratio.
+     Each step multiplies by √2; every 2 steps doubles.
+     Inspired by ISO 216 paper (A4) proportions.
+     ============================================ */
+
+  /* √2 ratio constant */
+  --ratio: 1.4142135623730951;
+
+  /* Base spacing unit */
+  --space-base: 16px;
+
+  /* √2 geometric scale: base × √2^n */
+  --space-4xs: 4px;    /* base × √2⁻⁴ = 16/4      */
+  --space-3xs: 6px;    /* base × √2⁻³ ≈ 16/2.83   */
+  --space-2xs: 8px;    /* base × √2⁻² = 16/2      */
+  --space-xs:  11px;   /* base × √2⁻¹ ≈ 16/1.414  */
+  --space-sm:  23px;   /* base × √2¹  ≈ 16×1.414  */
+  --space-md:  32px;   /* base × √2²  = 16×2      */
+  --space-lg:  45px;   /* base × √2³  ≈ 16×2.83   */
+  --space-xl:  64px;   /* base × √2⁴  = 16×4      */
+
+  /* Layout dimensions */
+  --content-width: 800px;   /* viewport ÷ √2 (at ~1132px) */
+  --prose-margin: 48px;     /* content ÷ √2⁴ ≈ 50px */
+  --prose-width: 704px;     /* content - (margin × 2) */
+
+  /* Line heights - standard for readability */
+  --line-height-base: 1.6;     /* Standard readable line height */
+  --line-height-tight: 1.3;    /* Headings only */
 }
 
 * {
@@ -35,12 +69,12 @@ body {
   min-height: 100vh;
 }
 
-/* Page Layout */
+/* Page Layout - √2 Based (800px content width) */
 .quartz-page-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 24px 0;
+  padding: var(--space-sm) 0;  /* 23px top/bottom */
   background: var(--quartz-wrapper-bg);
   overflow: visible;
 }
@@ -50,26 +84,34 @@ body {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   width: 100%;
-  min-height: calc(100vh - 48px);
+  max-width: var(--content-width);  /* 800px - √2 derived */
+  padding: var(--prose-margin);     /* 48px - √2 derived */
+  min-height: calc(100vh - 46px);   /* Account for wrapper padding */
   position: relative;
 }
 
 .quartz-fluid {
-  padding: 16px 24px;
+  padding: var(--space-base) var(--space-sm);  /* 16px 23px */
   max-width: 100%;
   position: relative;
 }
 
-/* Editor Content */
+/* ============================================
+   EDITOR CONTENT - √2 Layout System
+
+   Prose elements: 704px width with 48px margins
+   Full-width elements: 800px (code, tables, diagrams)
+   All spacing follows √2 geometric scale
+   ============================================ */
+
 .quartz-editor-content {
   outline: none;
-  line-height: 1.7;
-  padding-left: 36px;
+  line-height: var(--line-height-base);  /* 1.6 for readability */
   min-height: 200px;
   cursor: text;
 }
 
-/* Focus state - subtle background highlight like Notion */
+/* Focus state */
 .quartz-editor-content:focus {
   outline: none;
 }
@@ -78,74 +120,134 @@ body {
   background-color: transparent;
 }
 
-/* Subtle highlight on the empty editor to indicate it's clickable */
+/* First/last child margin normalization */
+.quartz-editor-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+.quartz-editor-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* ============================================
+   PROSE ELEMENTS - Respect 48px side margins
+   ============================================ */
+
+/* Paragraphs */
+.quartz-editor-content > p {
+  margin-top: 0;
+  margin-bottom: var(--space-base);  /* 16px */
+  line-height: var(--line-height-base);
+}
+
+/* Empty editor placeholder */
 .quartz-editor-content p.is-editor-empty:first-child {
-  min-height: 1.7em;
+  min-height: calc(var(--line-height-base) * 1em);
   cursor: text;
 }
 
-.quartz-editor-content > *:first-child {
-  margin-top: 0;
-}
-
-/* Headings */
-.quartz-editor-content h1 {
+/* Headings - √2 decreasing scale for top margins */
+.quartz-editor-content > h1 {
   font-size: 2em;
   font-weight: 700;
-  margin: 1em 0 0.5em;
-  line-height: 1.2;
+  margin-top: var(--space-lg);      /* 45px = √2³ */
+  margin-bottom: var(--space-base); /* 16px = √2⁰ */
+  line-height: var(--line-height-tight);
 }
 
-.quartz-editor-content h2 {
+.quartz-editor-content > h2 {
   font-size: 1.5em;
   font-weight: 600;
-  margin: 0.8em 0 0.4em;
-  line-height: 1.3;
+  margin-top: var(--space-md);      /* 32px = √2² */
+  margin-bottom: var(--space-xs);   /* 11px = √2⁻¹ */
+  line-height: var(--line-height-tight);
 }
 
-.quartz-editor-content h3 {
+.quartz-editor-content > h3 {
   font-size: 1.25em;
   font-weight: 600;
-  margin: 0.6em 0 0.3em;
-  line-height: 1.4;
+  margin-top: var(--space-sm);      /* 23px = √2¹ */
+  margin-bottom: var(--space-2xs);  /* 8px = √2⁻² */
+  line-height: var(--line-height-tight);
 }
 
+.quartz-editor-content > h4 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-top: var(--space-base);    /* 16px = √2⁰ */
+  margin-bottom: var(--space-3xs);  /* 6px = √2⁻³ */
+  line-height: var(--line-height-tight);
+}
+
+.quartz-editor-content > h5,
+.quartz-editor-content > h6 {
+  font-size: 1em;
+  font-weight: 600;
+  margin-top: var(--space-xs);      /* 11px = √2⁻¹ */
+  margin-bottom: var(--space-4xs);  /* 4px = √2⁻⁴ */
+  line-height: var(--line-height-tight);
+}
+
+/* Headings inside content (non-direct children) */
+.quartz-editor-content h1,
+.quartz-editor-content h2,
+.quartz-editor-content h3,
 .quartz-editor-content h4,
 .quartz-editor-content h5,
 .quartz-editor-content h6 {
-  font-weight: 600;
-  margin: 0.5em 0 0.25em;
+  line-height: var(--line-height-tight);
 }
 
-/* Lists */
-.quartz-editor-content ul,
-.quartz-editor-content ol {
-  padding-left: 1.5em;
-  margin: 0.5em 0;
+/* ============================================
+   LISTS - √2 based indentation
+   ============================================ */
+
+.quartz-editor-content > ul,
+.quartz-editor-content > ol {
+  margin-top: var(--space-2xs);     /* 8px */
+  margin-bottom: var(--space-2xs);  /* 8px */
+  padding-left: var(--space-sm);    /* 23px = √2¹ */
+  line-height: var(--line-height-base);
+}
+
+/* Ordered lists need more padding for numbers */
+.quartz-editor-content > ol {
+  padding-left: var(--space-md);    /* 32px = √2² */
 }
 
 .quartz-editor-content li {
-  margin: 0.15em 0;
+  margin-bottom: var(--space-4xs);  /* 4px = √2⁻⁴ */
 }
 
 .quartz-editor-content li p {
   margin: 0;
 }
 
-/* Task List */
+/* Nested lists: √2 step per level */
+.quartz-editor-content li > ul,
+.quartz-editor-content li > ol {
+  margin-top: var(--space-4xs);
+  margin-bottom: var(--space-4xs);
+  padding-left: var(--space-sm);    /* 23px = √2¹ */
+}
+
+/* Task List - √2 indentation */
 .quartz-editor-content ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
+  margin-top: var(--space-2xs);
+  margin-bottom: var(--space-2xs);
 }
 
 .quartz-editor-content ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
-  gap: 0.5em;
+  gap: var(--space-2xs);  /* 8px */
+  margin-bottom: var(--space-4xs);
 }
 
 .quartz-editor-content ul[data-type="taskList"] li > label {
-  margin-top: 0.25em;
+  margin-top: 0.2em;
   cursor: pointer;
 }
 
@@ -166,20 +268,60 @@ body {
 
 /* Nested task lists */
 .quartz-editor-content ul[data-type="taskList"] ul[data-type="taskList"] {
-  padding-left: 1.5em;
-  margin-top: 0.25em;
+  padding-left: var(--space-sm);  /* 23px = √2¹ */
+  margin-top: var(--space-4xs);
 }
 
-/* Code Blocks */
+/* ============================================
+   CODE BLOCKS - Full width (800px) with scroll
+   ============================================ */
+
 .quartz-editor-content pre {
   background: var(--quartz-code-bg);
   border-radius: 6px;
-  padding: 12px 16px;
-  overflow-x: auto;
-  margin: 0.75em 0;
+  padding: var(--space-xs) var(--space-base);  /* 11px 16px */
+  margin-top: var(--space-base);     /* 16px */
+  margin-bottom: var(--space-base);  /* 16px */
   font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
   font-size: 0.9em;
   line-height: 1.5;
+
+  /* Full width - no prose margins */
+  width: 100%;
+  max-width: 100%;
+
+  /* Horizontal scroll, never wrap */
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* Code blocks inside lists/blockquotes inherit parent indent */
+.quartz-editor-content li pre,
+.quartz-editor-content blockquote pre {
+  max-width: 100%;
+  margin-top: var(--space-2xs);
+  margin-bottom: var(--space-2xs);
+}
+
+/* Scrollbar styling for code blocks */
+.quartz-editor-content pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.quartz-editor-content pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quartz-editor-content pre::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.quartz-editor-content pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .quartz-editor-content pre code {
@@ -187,21 +329,29 @@ body {
   padding: 0;
   border-radius: 0;
   font-size: inherit;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  display: block;
 }
 
+/* Inline code */
 .quartz-editor-content code {
   background: var(--quartz-code-bg);
   border-radius: 3px;
-  padding: 0.15em 0.35em;
+  padding: 2px 4px;  /* Tighter padding for inline */
   font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
   font-size: 0.9em;
 }
 
-/* Blockquote */
-.quartz-editor-content blockquote {
-  border-left: 3px solid var(--quartz-accent);
-  margin: 0.75em 0;
-  padding: 0.25em 0 0.25em 1em;
+/* ============================================
+   BLOCKQUOTES - √2 based padding/borders
+   ============================================ */
+
+.quartz-editor-content > blockquote {
+  border-left: var(--space-4xs) solid var(--quartz-accent);  /* 4px border */
+  margin-top: var(--space-base);      /* 16px */
+  margin-bottom: var(--space-base);   /* 16px */
+  padding: var(--space-4xs) 0 var(--space-4xs) var(--space-sm);  /* 4px 0 4px 23px */
   color: var(--quartz-fg);
   opacity: 0.85;
 }
@@ -210,57 +360,146 @@ body {
   margin: 0;
 }
 
-/* Horizontal Rule */
-.quartz-editor-content hr,
-.quartz-editor-content hr.quartz-hr {
+/* Nested blockquotes */
+.quartz-editor-content blockquote blockquote {
+  margin-top: var(--space-2xs);
+  margin-bottom: var(--space-2xs);
+}
+
+/* ============================================
+   HORIZONTAL RULE - Full width, √2 spacing
+   ============================================ */
+
+.quartz-editor-content > hr,
+.quartz-editor-content > hr.quartz-hr {
   border: none;
   border-top: 1px solid var(--quartz-border);
-  margin: 1.5em 0;
+  margin-top: var(--space-sm);     /* 23px = √2¹ */
+  margin-bottom: var(--space-sm);  /* 23px = √2¹ */
   height: 0;
   padding: 0;
   display: block;
   width: 100%;
 }
 
-/* Images */
-.quartz-editor-content img {
+/* ============================================
+   IMAGES - Full width, centered if smaller
+   ============================================ */
+
+.quartz-editor-content > img,
+.quartz-editor-content > figure {
+  display: block;
   max-width: 100%;
   height: auto;
   border-radius: 4px;
-  margin: 0.5em 0;
+  margin-top: var(--space-base);     /* 16px */
+  margin-bottom: var(--space-base);  /* 16px */
 }
 
-/* Tables */
+/* Inline images in paragraphs */
+.quartz-editor-content p img {
+  max-height: 1.5em;
+  vertical-align: middle;
+  border-radius: 2px;
+  margin: 0;
+}
+
+/* ============================================
+   TABLES - Full width with horizontal scroll
+   ============================================ */
+
+/* Table wrapper for horizontal scrolling (TipTap adds this) */
+.quartz-editor-content .tableWrapper {
+  overflow-x: auto;
+  margin-top: var(--space-base);     /* 16px */
+  margin-bottom: var(--space-base);  /* 16px */
+}
+
+/* Direct table children (fallback if no wrapper) */
+.quartz-editor-content > table {
+  margin-top: var(--space-base);     /* 16px */
+  margin-bottom: var(--space-base);  /* 16px */
+}
+
 .quartz-editor-content table {
-  border-collapse: collapse;
   width: 100%;
-  margin: 0.75em 0;
+  border-collapse: collapse;
+  table-layout: auto;
+  /* DO NOT use display: block - it breaks table layout and editability */
 }
 
 .quartz-editor-content th,
 .quartz-editor-content td {
   border: 1px solid var(--quartz-border);
-  padding: 6px 12px;
+  padding: var(--space-3xs) var(--space-xs);  /* 6px 11px */
   text-align: left;
+  min-width: 80px;
+  position: relative;
+  vertical-align: top;
 }
 
 .quartz-editor-content th {
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
 }
+
+/* Selected cell highlight */
+.quartz-editor-content .selectedCell {
+  background: var(--quartz-selection);
+}
+
+/* Column resize handle */
+.quartz-editor-content .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--quartz-accent);
+  pointer-events: none;
+}
+
+/* Table scrollbar */
+.quartz-editor-content .tableWrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.quartz-editor-content .tableWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quartz-editor-content .tableWrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+/* ============================================
+   INLINE ELEMENTS
+   ============================================ */
 
 /* Links */
 .quartz-editor-content a {
   color: var(--quartz-accent);
-  text-decoration: underline;
+  text-decoration: none;
   cursor: pointer;
 }
 
-/* Highlight */
+.quartz-editor-content a:hover {
+  text-decoration: underline;
+}
+
+/* Highlight/Mark */
 .quartz-editor-content mark {
   background: rgba(255, 255, 0, 0.3);
-  padding: 0.1em 0.15em;
+  padding: 0 2px;
   border-radius: 2px;
+}
+
+/* Subscript/Superscript */
+.quartz-editor-content sub,
+.quartz-editor-content sup {
+  font-size: 0.75em;
+  line-height: 0;  /* Prevent disrupting line height */
 }
 
 /* Placeholder */

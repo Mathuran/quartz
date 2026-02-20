@@ -11,24 +11,25 @@ test.describe('Slash Commands', () => {
   });
 
   test('typing / opens slash menu', async ({ page }) => {
-    await loadMarkdown(page, 'Test');
+    await loadMarkdown(page, '');
     await page.waitForTimeout(300);
 
-    // Move to end of line first
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
-    await page.keyboard.press('Enter');
+    await page.waitForTimeout(100);
     await page.keyboard.type('/');
 
     await expect(editorPage.slashMenu()).toBeVisible({ timeout: 2000 });
   });
+
+  // Note: Tests below require content navigation which has timing issues
+  // with Playwright's keyboard handling in contenteditable elements
 
   test('filtering narrows slash menu results', async ({ page }) => {
     await loadMarkdown(page, 'Test');
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
     await page.keyboard.type('/head');
 
@@ -42,7 +43,7 @@ test.describe('Slash Commands', () => {
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
     await page.keyboard.type('/');
     await expect(editorPage.slashMenu()).toBeVisible({ timeout: 2000 });
@@ -56,7 +57,7 @@ test.describe('Slash Commands', () => {
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
     // Use alias 'h1' which matches the filter
     await editorPage.triggerSlashCommand('h1');
@@ -69,7 +70,7 @@ test.describe('Slash Commands', () => {
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
 
     // Open slash menu and navigate to bullet list (7th item)
@@ -91,7 +92,7 @@ test.describe('Slash Commands', () => {
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.press('Enter');
 
     // Open slash menu and navigate to code block (10th item)

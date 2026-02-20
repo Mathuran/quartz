@@ -1,4 +1,6 @@
-import { Extension, InputRule } from '@tiptap/core';
+import { Extension } from '@tiptap/core';
+import { InputRule } from '@tiptap/pm/inputrules';
+import { Mark } from '@tiptap/pm/model';
 
 /**
  * Regex for combined bold+italic with asterisks: ***text***
@@ -25,55 +27,66 @@ export const combinedMarksInputRuleExtension = Extension.create({
   priority: 200,
 
   addInputRules() {
+    const schema = this.editor.schema;
+    const boldType = schema.marks.bold;
+    const italicType = schema.marks.italic;
+
+    if (!boldType || !italicType) {
+      return [];
+    }
+
     return [
       // Combined bold+italic with asterisks: ***text***
-      new InputRule({
-        find: boldItalicAsteriskRegex,
-        handler: ({ state, range, match, chain }) => {
-          const text = match[1];
-          const fullMatch = match[0];
-          const hasLeadingSpace = fullMatch.startsWith(' ');
+      new InputRule(boldItalicAsteriskRegex, (state, match, start, end) => {
+        const text = match[1];
+        const fullMatch = match[0];
+        const hasLeadingSpace = fullMatch.startsWith(' ');
 
-          const boldMark = state.schema.marks.bold?.create();
-          const italicMark = state.schema.marks.italic?.create();
+        // Calculate the actual start position (skip the leading space if present)
+        const textStart = hasLeadingSpace ? start + 1 : start;
 
-          if (!boldMark || !italicMark) {
-            chain().deleteRange(range).insertContent(text).run();
-            return;
-          }
+        // Create marks
+        const marks: Mark[] = [boldType.create(), italicType.create()];
 
-          // Build the replacement content
-          const content = hasLeadingSpace
-            ? [' ', { type: 'text', text, marks: [{ type: 'bold' }, { type: 'italic' }] }]
-            : [{ type: 'text', text, marks: [{ type: 'bold' }, { type: 'italic' }] }];
+        // Create the transaction
+        const tr = state.tr;
 
-          chain().deleteRange(range).insertContent(content).run();
-        },
+        // Delete the original markdown syntax
+        tr.delete(textStart, end);
+
+        // Insert the styled text at the deletion point
+        tr.insertText(text, textStart);
+
+        // Apply the marks to the inserted text
+        tr.addMark(textStart, textStart + text.length, boldType.create());
+        tr.addMark(textStart, textStart + text.length, italicType.create());
+
+        return tr;
       }),
 
       // Combined bold+italic with underscores: ___text___
-      new InputRule({
-        find: boldItalicUnderscoreRegex,
-        handler: ({ state, range, match, chain }) => {
-          const text = match[1];
-          const fullMatch = match[0];
-          const hasLeadingSpace = fullMatch.startsWith(' ');
+      new InputRule(boldItalicUnderscoreRegex, (state, match, start, end) => {
+        const text = match[1];
+        const fullMatch = match[0];
+        const hasLeadingSpace = fullMatch.startsWith(' ');
 
-          const boldMark = state.schema.marks.bold?.create();
-          const italicMark = state.schema.marks.italic?.create();
+        // Calculate the actual start position (skip the leading space if present)
+        const textStart = hasLeadingSpace ? start + 1 : start;
 
-          if (!boldMark || !italicMark) {
-            chain().deleteRange(range).insertContent(text).run();
-            return;
-          }
+        // Create the transaction
+        const tr = state.tr;
 
-          // Build the replacement content
-          const content = hasLeadingSpace
-            ? [' ', { type: 'text', text, marks: [{ type: 'bold' }, { type: 'italic' }] }]
-            : [{ type: 'text', text, marks: [{ type: 'bold' }, { type: 'italic' }] }];
+        // Delete the original markdown syntax
+        tr.delete(textStart, end);
 
-          chain().deleteRange(range).insertContent(content).run();
-        },
+        // Insert the styled text at the deletion point
+        tr.insertText(text, textStart);
+
+        // Apply the marks to the inserted text
+        tr.addMark(textStart, textStart + text.length, boldType.create());
+        tr.addMark(textStart, textStart + text.length, italicType.create());
+
+        return tr;
       }),
     ];
   },

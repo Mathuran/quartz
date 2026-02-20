@@ -84,6 +84,8 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
   private sendConfigToWebview(webview: vscode.Webview): void {
     const config = vscode.workspace.getConfiguration('quartz.editor');
+    // Note: pageWidth and pageMargin removed in √2 layout system
+    // Width (800px) and margin (48px) are now CSS constants
     webview.postMessage({
       type: 'configUpdate',
       config: {
@@ -91,8 +93,6 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         fontFamily: config.get<string>('fontFamily', 'inherit'),
         fontSize: config.get<number>('fontSize', 16),
         pageLayout: config.get<boolean>('pageLayout', true),
-        pageWidth: config.get<number>('pageWidth', 816),
-        pageMargin: config.get<number>('pageMargin', 72),
         imageDir: config.get<string>('imageDir', './assets'),
         preserveFormatting: config.get<boolean>('preserveFormatting', true),
         showBlockHandles: config.get<boolean>('showBlockHandles', true),

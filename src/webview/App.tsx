@@ -44,13 +44,12 @@ class ErrorBoundary extends React.Component<
 
 export function App() {
   const [content, setContent] = useState<string | null>(null);
+  // √2 Layout System: width (800px) and margin (48px) are CSS constants
   const [config, setConfig] = useState<EditorConfig>({
     theme: 'auto',
     fontFamily: 'inherit',
     fontSize: 16,
     pageLayout: true,
-    pageWidth: 816,
-    pageMargin: 72,
     imageDir: './assets',
     preserveFormatting: true,
     showBlockHandles: true,

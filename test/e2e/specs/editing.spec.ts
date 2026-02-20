@@ -27,7 +27,7 @@ test.describe('Editing', () => {
     // Navigate to start of second paragraph
     const secondPara = editorPage.paragraph().nth(1);
     await secondPara.click();
-    await page.keyboard.press('Home');
+    await editorPage.goToLineStart();
     await page.keyboard.press('Backspace');
 
     await page.waitForTimeout(300);
@@ -41,7 +41,7 @@ test.describe('Editing', () => {
 
     // Add text
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' new');
     await page.waitForTimeout(400);
 
@@ -59,7 +59,7 @@ test.describe('Editing', () => {
     await page.waitForTimeout(300);
 
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' new');
     await page.waitForTimeout(400);
 
@@ -79,7 +79,7 @@ test.describe('Editing', () => {
 
     // Type quickly multiple times
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type('a');
     await page.keyboard.type('b');
     await page.keyboard.type('c');

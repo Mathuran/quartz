@@ -45,7 +45,7 @@ test.describe('Editor Loading', () => {
 
     // Click in editor and type
     await editorPage.prosemirror.click();
-    await page.keyboard.press('End');
+    await editorPage.goToLineEnd();
     await page.keyboard.type(' there');
 
     // Wait for debounced update

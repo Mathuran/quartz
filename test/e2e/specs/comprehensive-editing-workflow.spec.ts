@@ -39,7 +39,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await loadMarkdown(page, 'Start');
       await page.waitForTimeout(300);
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await editorPage.triggerSlashCommand(alias);
     }
@@ -134,7 +134,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await editorPage.triggerSlashCommand('hr');
 
@@ -223,7 +223,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('Second item');
 
@@ -255,7 +255,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.bulletList().locator('li').click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('New item');
 
@@ -270,7 +270,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('Second');
       await page.keyboard.press('Enter');
@@ -300,7 +300,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       const secondPara = editorPage.paragraph().nth(1);
       await secondPara.click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('Backspace');
 
       await page.waitForTimeout(300);
@@ -312,7 +312,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.heading(2).click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('Backspace');
 
       await page.waitForTimeout(300);
@@ -327,7 +327,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       const listItem = editorPage.bulletList().locator('li').first();
       await listItem.click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('Backspace');
 
       await page.waitForTimeout(300);
@@ -340,7 +340,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.blockquote().click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('Backspace');
 
       await page.waitForTimeout(300);
@@ -355,7 +355,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('New paragraph');
 
@@ -372,7 +372,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.heading(1).click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('New paragraph');
 
@@ -386,7 +386,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.heading(1).click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       for (let i = 0; i < 6; i++) {
         await page.keyboard.press('ArrowRight');
       }
@@ -403,7 +403,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Shift+Enter');
       await page.keyboard.type('Line two');
 
@@ -449,7 +449,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('Delete');
 
       await page.waitForTimeout(300);
@@ -463,7 +463,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type(' added');
       await page.waitForTimeout(400);
 
@@ -478,7 +478,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type(' added');
       await page.waitForTimeout(400);
 
@@ -511,7 +511,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type('A');
       await page.waitForTimeout(200);
       await page.keyboard.type('B');
@@ -534,7 +534,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.press('ArrowRight');
       await page.keyboard.press('ArrowRight');
       await page.keyboard.type('X');
@@ -548,9 +548,9 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.prosemirror.click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type('!');
-      await page.keyboard.press('Home');
+      await editorPage.goToLineStart();
       await page.keyboard.type('>');
 
       await page.waitForTimeout(300);
@@ -563,7 +563,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       // Click first paragraph, go to end, arrow down
       await editorPage.paragraph().first().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.type('X');
 
@@ -578,7 +578,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.codeBlock().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('const y = 2;');
 
@@ -591,7 +591,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.codeBlock().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type('123');
 
       await page.waitForTimeout(300);
@@ -604,7 +604,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.codeBlock().click();
-      await page.keyboard.press(`${mod}+End`);
+      await editorPage.goToDocumentEnd();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.type('X');
 
@@ -637,7 +637,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       // Click first data cell and add text
       const cells = editorPage.table().locator('td');
       await cells.first().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type('X');
 
       await page.waitForTimeout(300);
@@ -651,7 +651,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       // Edit a table cell
       const dataCells = editorPage.table().locator('td');
       await dataCells.first().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type('X');
 
       await page.waitForTimeout(300);
@@ -665,7 +665,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.blockquote().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('Second line');
 
@@ -678,7 +678,7 @@ test.describe('Comprehensive Editing Workflow', () => {
       await page.waitForTimeout(300);
 
       await editorPage.blockquote().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter'); // Create new line in blockquote
       await page.keyboard.press('Backspace'); // Exit blockquote
       await page.keyboard.type('Not quoted');
@@ -697,7 +697,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       // Make a small edit
       await editorPage.heading(1).click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type(' Modified');
       await page.waitForTimeout(500);
 
@@ -721,7 +721,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       // Make a small edit to trigger update
       await editorPage.heading(1).click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.type(' ');
       await page.waitForTimeout(500);
 
@@ -758,7 +758,7 @@ test.describe('Comprehensive Editing Workflow', () => {
 
       // Make an edit - add to the list
       await listItems.last().click();
-      await page.keyboard.press('End');
+      await editorPage.goToLineEnd();
       await page.keyboard.press('Enter');
       await page.keyboard.type('Item three');
 
