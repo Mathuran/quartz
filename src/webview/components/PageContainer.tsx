@@ -23,8 +23,11 @@ export function PageContainer({ config, children }: PageContainerProps) {
 
   const usePageLayout = config.pageLayout && !isNarrow;
 
+  // Editor aligns opposite to sidebar: sidebar left → editor right, sidebar right → editor left
+  const alignClass = config.sidebarPosition === 'left' ? 'align-right' : 'align-left';
+
   return (
-    <div ref={containerRef} className="quartz-page-wrapper">
+    <div ref={containerRef} className={`quartz-page-wrapper ${alignClass}`}>
       {usePageLayout ? (
         <div
           className="quartz-page"

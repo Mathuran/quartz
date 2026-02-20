@@ -54,6 +54,7 @@ export function App() {
     imageDir: './assets',
     preserveFormatting: true,
     showBlockHandles: true,
+    sidebarPosition: 'left',
   });
   const suppressUpdateRef = useRef(false);
 

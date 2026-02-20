@@ -24,6 +24,7 @@ test.describe('Theme Rendering', () => {
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
+      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update
@@ -45,6 +46,7 @@ test.describe('Theme Rendering', () => {
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
+      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update
@@ -66,6 +68,7 @@ test.describe('Theme Rendering', () => {
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
+      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update

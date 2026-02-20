@@ -59,7 +59,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle config changes
     const onConfigChange = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('quartz.editor')) {
+      if (e.affectsConfiguration('quartz.editor') || e.affectsConfiguration('workbench.sideBar.location')) {
         this.sendConfigToWebview(webviewPanel.webview);
       }
     });
@@ -84,6 +84,8 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
   private sendConfigToWebview(webview: vscode.Webview): void {
     const config = vscode.workspace.getConfiguration('quartz.editor');
+    const workbenchConfig = vscode.workspace.getConfiguration('workbench');
+    const sidebarPosition = workbenchConfig.get<string>('sideBar.location', 'left') as 'left' | 'right';
     webview.postMessage({
       type: 'configUpdate',
       config: {
@@ -96,6 +98,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         imageDir: config.get<string>('imageDir', './assets'),
         preserveFormatting: config.get<boolean>('preserveFormatting', true),
         showBlockHandles: config.get<boolean>('showBlockHandles', true),
+        sidebarPosition,
       },
     });
   }

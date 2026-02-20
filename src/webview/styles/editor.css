@@ -39,10 +39,19 @@ body {
 .quartz-page-wrapper {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
   padding: 24px 0;
   background: var(--quartz-wrapper-bg);
   overflow: visible;
+}
+
+.quartz-page-wrapper.align-left {
+  justify-content: flex-start;
+  padding-left: 24px;
+}
+
+.quartz-page-wrapper.align-right {
+  justify-content: flex-end;
+  padding-right: 24px;
 }
 
 .quartz-page {

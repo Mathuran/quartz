@@ -8,6 +8,7 @@ export interface EditorConfig {
   imageDir: string;
   preserveFormatting: boolean;
   showBlockHandles: boolean;
+  sidebarPosition: 'left' | 'right';
 }
 
 export interface EditorMessage {

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { EditorPage } from '../pages/editor.page';
 import { loadMarkdown, updateConfig } from '../fixtures';
 
-test.describe('Page Layout', () => {
+test.describe('Sidebar Alignment', () => {
   let editorPage: EditorPage;
 
   test.beforeEach(async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe('Page Layout', () => {
     await editorPage.goto();
   });
 
-  test('page layout mode applies fixed width', async ({ page }) => {
+  test('editor aligns right when sidebar is on left', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nParagraph content.');
     await page.waitForTimeout(300);
 
@@ -29,16 +29,13 @@ test.describe('Page Layout', () => {
 
     await page.waitForTimeout(200);
 
-    // Check that page container exists and has width styling
-    const pageContainer = page.locator('.quartz-page');
-    const isVisible = await pageContainer.isVisible().catch(() => false);
-
-    // Editor should still work regardless of page layout wrapper
-    await expect(editorPage.prosemirror).toBeVisible();
-    await expect(editorPage.heading(1)).toContainText('Hello');
+    // Check that page wrapper has align-right class
+    const pageWrapper = page.locator('.quartz-page-wrapper');
+    await expect(pageWrapper).toHaveClass(/align-right/);
+    await expect(pageWrapper).not.toHaveClass(/align-left/);
   });
 
-  test('fluid mode uses full width', async ({ page }) => {
+  test('editor aligns left when sidebar is on right', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nParagraph content.');
     await page.waitForTimeout(300);
 
@@ -46,30 +43,32 @@ test.describe('Page Layout', () => {
       theme: 'auto',
       fontFamily: 'inherit',
       fontSize: 16,
-      pageLayout: false,
+      pageLayout: true,
       pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
+      sidebarPosition: 'right',
     });
 
     await page.waitForTimeout(200);
 
-    // Editor should still work
-    await expect(editorPage.prosemirror).toBeVisible();
-    await expect(editorPage.heading(1)).toContainText('Hello');
+    // Check that page wrapper has align-left class
+    const pageWrapper = page.locator('.quartz-page-wrapper');
+    await expect(pageWrapper).toHaveClass(/align-left/);
+    await expect(pageWrapper).not.toHaveClass(/align-right/);
   });
 
-  test('custom font size is applied', async ({ page }) => {
+  test('alignment updates dynamically when sidebar position changes', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nParagraph content.');
     await page.waitForTimeout(300);
 
+    // Start with sidebar on left
     await updateConfig(page, {
       theme: 'auto',
       fontFamily: 'inherit',
-      fontSize: 20,
+      fontSize: 16,
       pageLayout: true,
       pageWidth: 816,
       pageMargin: 72,
@@ -81,7 +80,26 @@ test.describe('Page Layout', () => {
 
     await page.waitForTimeout(200);
 
-    // Editor should still work with custom font size
-    await expect(editorPage.prosemirror).toBeVisible();
+    const pageWrapper = page.locator('.quartz-page-wrapper');
+    await expect(pageWrapper).toHaveClass(/align-right/);
+
+    // Change sidebar to right
+    await updateConfig(page, {
+      theme: 'auto',
+      fontFamily: 'inherit',
+      fontSize: 16,
+      pageLayout: true,
+      pageWidth: 816,
+      pageMargin: 72,
+      imageDir: './assets',
+      preserveFormatting: true,
+      showBlockHandles: true,
+      sidebarPosition: 'right',
+    });
+
+    await page.waitForTimeout(200);
+
+    await expect(pageWrapper).toHaveClass(/align-left/);
+    await expect(pageWrapper).not.toHaveClass(/align-right/);
   });
 });
