@@ -436,6 +436,35 @@ function parseBlockquote(
           content: inlineContent.length > 0 ? inlineContent : undefined,
         });
         i += 3;
+      } else if (token.type === 'bullet_list_open') {
+        // Handle bullet list inside blockquote
+        const listItems = parseListItems(tokens, i + 1, 'bullet_list_close');
+        const isTaskList = listItems.items.some((item) => isTaskItem(item));
+        if (isTaskList) {
+          nodes.push({
+            type: 'taskList',
+            content: listItems.items.map((item) => convertToTaskItem(item)),
+          });
+        } else {
+          nodes.push({
+            type: 'bulletList',
+            content: listItems.items,
+          });
+        }
+        i = listItems.endIndex + 1;
+      } else if (token.type === 'ordered_list_open') {
+        // Handle ordered list inside blockquote
+        const attrs: Record<string, unknown> = {};
+        if (token.attrGet('start')) {
+          attrs.start = parseInt(token.attrGet('start')!, 10);
+        }
+        const listItems = parseListItems(tokens, i + 1, 'ordered_list_close');
+        nodes.push({
+          type: 'orderedList',
+          attrs: Object.keys(attrs).length > 0 ? attrs : undefined,
+          content: listItems.items,
+        });
+        i = listItems.endIndex + 1;
       } else {
         i++;
       }

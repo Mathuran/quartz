@@ -49,7 +49,8 @@ export class EditorPage {
   }
 
   taskItem(): Locator {
-    return this.prosemirror.locator('li[data-type="taskItem"]');
+    // TipTap renders task items with data-checked attribute, not data-type
+    return this.prosemirror.locator('ul[data-type="taskList"] li[data-checked]');
   }
 
   blockquote(): Locator {
