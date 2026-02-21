@@ -21,8 +21,9 @@ const extensionConfig = {
 const webviewConfig = {
   entryPoints: ['src/webview/index.tsx'],
   bundle: true,
-  outfile: 'dist/webview/index.js',
-  format: 'iife',
+  outdir: 'dist/webview',
+  format: 'esm',
+  splitting: true,
   platform: 'browser',
   target: 'es2020',
   sourcemap: true,
@@ -33,6 +34,8 @@ const webviewConfig = {
   loader: {
     '.css': 'css',
   },
+  // Chunk naming: place shared chunks alongside the entry point
+  chunkNames: 'chunks/[name]-[hash]',
 };
 
 async function build() {

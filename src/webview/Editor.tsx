@@ -28,7 +28,7 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { common, createLowlight } from 'lowlight';
+import { createLowlight } from 'lowlight';
 
 import { parseMarkdown } from '../markdown/parser';
 import { serializeMarkdown } from '../markdown/serializer';
@@ -41,13 +41,28 @@ import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 // import { dragHandleExtension } from './extensions/dragHandle'; // REMOVED
 import { virtualRenderingExtension } from './extensions/virtualRendering';
 import { linkInputRuleExtension } from './extensions/linkInputRule';
-import { combinedMarksInputRuleExtension } from './extensions/combinedMarksInputRule';
-import { taskListInputRuleExtension } from './extensions/taskListInputRule';
+import { inputRulesExtension } from './extensions/inputRules';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
-import { listInputRuleExtension } from './extensions/listInputRule';
 import type { EditorConfig } from './types';
 
-const lowlight = createLowlight(common);
+// Create lowlight without languages initially — languages are loaded lazily
+// to reduce the initial bundle size by ~120 KB. The empty lowlight still renders
+// code blocks correctly; they just won't have syntax highlighting until languages load.
+const lowlight = createLowlight();
+
+// Lazy-load highlight.js common languages in the background.
+// The language grammars (~120 KB) are split into a separate chunk by esbuild
+// so they don't block the initial editor render.
+import('./lowlightLanguages.js')
+  .then((mod) => {
+    const grammars = (mod as { grammars: Parameters<typeof lowlight.register>[0] }).grammars;
+    if (grammars && typeof grammars === 'object') {
+      lowlight.register(grammars);
+    }
+  })
+  .catch((err: unknown) => {
+    console.warn('[Quartz] Failed to lazy-load syntax highlighting languages:', err);
+  });
 
 interface EditorProps {
   initialContent: string;
@@ -97,11 +112,10 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       BulletList,
       OrderedList,
       ListItem,
-      listInputRuleExtension,
+      inputRulesExtension,
       CustomCodeBlockLowlight.configure({ lowlight }),
       Blockquote,
       HorizontalRule,
-      combinedMarksInputRuleExtension,
       Bold,
       Italic,
       Strike,
@@ -114,7 +128,6 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       Placeholder.configure({ placeholder: 'Type / for commands...' }),
       TaskList,
       TaskItem.configure({ nested: true }),
-      taskListInputRuleExtension,
       Highlight.configure({ multicolor: false }),
       Image,
       Table.configure({ resizable: false }),
@@ -134,9 +147,15 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       if (inputLength > 50) {
         const editorText = editor.getText().trim();
         if (editorText.length < 10) {
-          const msg = 'The document could not be fully rendered. Some content may use unsupported formatting.';
+          const msg =
+            'The document could not be fully rendered. Some content may use unsupported formatting.';
           console.warn('[Quartz] Content appears to have been dropped by the editor.');
-          console.warn('[Quartz] Input length:', inputLength, '| Editor text length:', editorText.length);
+          console.warn(
+            '[Quartz] Input length:',
+            inputLength,
+            '| Editor text length:',
+            editorText.length,
+          );
           console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialDoc, null, 2).slice(0, 2000));
           setContentWarning(msg);
         }
@@ -150,7 +169,8 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       }, 300);
     },
     onSelectionUpdate: ({ editor }) => {
-      const inTable = editor.isActive('table') || editor.isActive('tableCell') || editor.isActive('tableHeader');
+      const inTable =
+        editor.isActive('table') || editor.isActive('tableCell') || editor.isActive('tableHeader');
       if (inTable) {
         // Find the table element and position the hint alongside it
         const { $from } = editor.state.selection;
@@ -211,7 +231,9 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
           const editorText = editor.getText().trim();
           if (editorText.length < 10) {
             console.warn('[Quartz] Content may have been dropped after external update.');
-            setContentWarning('The document could not be fully rendered. Some content may use unsupported formatting.');
+            setContentWarning(
+              'The document could not be fully rendered. Some content may use unsupported formatting.',
+            );
           }
         }
       }, 100);
@@ -232,10 +254,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       {contentWarning && (
         <div className="quartz-content-warning">
           <span>{contentWarning}</span>
-          <button
-            onClick={() => setContentWarning(null)}
-            className="quartz-warning-dismiss"
-          >
+          <button onClick={() => setContentWarning(null)} className="quartz-warning-dismiss">
             Dismiss
           </button>
         </div>
