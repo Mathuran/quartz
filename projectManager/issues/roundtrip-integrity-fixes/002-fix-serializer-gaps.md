@@ -1,7 +1,7 @@
 # [002] Fix Serializer Gaps for Complex Documents
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001-investigate-roundtrip-timeout
 - **Blocks:** 003-add-roundtrip-tests
 - **Scope:** M

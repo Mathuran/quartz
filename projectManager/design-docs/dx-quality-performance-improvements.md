@@ -1,9 +1,13 @@
 # DX, Code Quality & Performance Improvements Design Document
 
 **Author:** Claude
-**Status:** DRAFT
+**Status:** SUPERSEDED
 **Created:** 2026-02-20
-**Last Updated:** 2026-02-20
+**Last Updated:** 2026-02-21
+**Superseded by:**
+- [Code Quality Improvements](./code-quality-improvements.md)
+- [Performance Improvements](./performance-improvements.md)
+- [Developer Experience Improvements](./developer-experience-improvements.md)
 **Reviewers:** Mathuran
 
 ---

@@ -1,7 +1,7 @@
 # [002] Drag Handle Renders Inside Text Instead of Left of Block
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** —
 - **Scope:** S

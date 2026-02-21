@@ -1,7 +1,7 @@
 # [005] Create VS Code Marketplace Publisher Account
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** 006, 008
 - **Scope:** S

@@ -1,7 +1,7 @@
 # [001] Diagnose Undo Transaction Issues
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** None
 - **Blocks:** 002-fix-slash-command-undo, 003-fix-block-movement-undo
 - **Scope:** S

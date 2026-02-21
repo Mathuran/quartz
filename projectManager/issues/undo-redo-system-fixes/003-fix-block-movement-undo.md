@@ -1,7 +1,7 @@
 # [003] Fix Block Movement Undo
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001-diagnose-undo-transactions
 - **Blocks:** 004-configure-history-extension
 - **Scope:** M

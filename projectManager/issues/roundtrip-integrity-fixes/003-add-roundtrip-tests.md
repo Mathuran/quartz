@@ -1,7 +1,7 @@
 # [003] Add Comprehensive Roundtrip Tests
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 002-fix-serializer-gaps
 - **Blocks:** None
 - **Scope:** S

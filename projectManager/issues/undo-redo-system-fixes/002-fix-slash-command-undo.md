@@ -1,7 +1,7 @@
 # [002] Fix Slash Command Undo
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001-diagnose-undo-transactions
 - **Blocks:** 004-configure-history-extension
 - **Scope:** M

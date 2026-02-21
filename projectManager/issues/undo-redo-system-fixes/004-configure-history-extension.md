@@ -1,7 +1,7 @@
 # [004] Configure History Extension
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 002-fix-slash-command-undo, 003-fix-block-movement-undo
 - **Blocks:** None
 - **Scope:** S

@@ -1,7 +1,7 @@
 # [010] Final QA Pass and v1.0.0 Release
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 009
 - **Blocks:** —
 - **Scope:** M

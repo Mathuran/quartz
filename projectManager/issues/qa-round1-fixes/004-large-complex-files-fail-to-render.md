@@ -1,7 +1,7 @@
 # [004] Large and Complex Files Fail to Render — Silent Error
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** —
 - **Blocks:** —
 - **Scope:** M

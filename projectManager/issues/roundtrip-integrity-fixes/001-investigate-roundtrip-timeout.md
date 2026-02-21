@@ -1,7 +1,7 @@
 # [001] Investigate Roundtrip Test Timeout
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** parser-edge-case-fixes (all issues must be complete first)
 - **Blocks:** 002-fix-serializer-gaps
 - **Scope:** S

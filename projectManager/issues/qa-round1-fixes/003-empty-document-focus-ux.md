@@ -1,7 +1,7 @@
 # [003] Empty Document UX — Focus State Invisible, Unclear Where to Click
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** —
 - **Scope:** S
