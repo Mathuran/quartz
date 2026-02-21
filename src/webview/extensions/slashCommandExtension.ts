@@ -31,7 +31,8 @@ export const slashCommandExtension = Extension.create({
 
               // Require space or start-of-block before slash (like Notion)
               // This prevents accidental triggers in URLs like https://
-              const shouldTrigger = textBefore.length === 0 || charBefore === ' ' || charBefore === '\t';
+              const shouldTrigger =
+                textBefore.length === 0 || charBefore === ' ' || charBefore === '\t';
 
               if (shouldTrigger) {
                 isSlashMenuActive = true;

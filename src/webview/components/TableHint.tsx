@@ -26,10 +26,7 @@ export function TableHint({ position }: TableHintProps) {
   if (!position) return null;
 
   return (
-    <div
-      className="quartz-table-hint"
-      style={{ top: position.top }}
-    >
+    <div className="quartz-table-hint" style={{ top: position.top }}>
       <div className="quartz-table-hint-title">Table Shortcuts</div>
       {shortcuts.map((shortcut, index) => (
         <div key={index} className="quartz-table-hint-row">

@@ -21,7 +21,11 @@ import type { Transaction } from '@tiptap/pm/state';
 /**
  * Common handler for inserting a horizontal rule and setting up cursor position.
  */
-function insertHorizontalRule(state: EditorState, tr: Transaction, range: { from: number; to: number }) {
+function insertHorizontalRule(
+  state: EditorState,
+  tr: Transaction,
+  range: { from: number; to: number },
+) {
   // Delete the typed text
   tr.delete(range.from, range.to);
 

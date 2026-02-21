@@ -16,8 +16,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Large heading',
     icon: 'H1',
     aliases: ['h1', 'heading'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 1 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
   },
   {
     id: 'heading2',
@@ -25,8 +24,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Medium heading',
     icon: 'H2',
     aliases: ['h2'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 2 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
   },
   {
     id: 'heading3',
@@ -34,8 +32,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Small heading',
     icon: 'H3',
     aliases: ['h3'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 3 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
   },
   {
     id: 'heading4',
@@ -43,8 +40,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Heading level 4',
     icon: 'H4',
     aliases: ['h4'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 4 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 4 }).run(),
   },
   {
     id: 'heading5',
@@ -52,8 +48,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Heading level 5',
     icon: 'H5',
     aliases: ['h5'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 5 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 5 }).run(),
   },
   {
     id: 'heading6',
@@ -61,8 +56,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Heading level 6',
     icon: 'H6',
     aliases: ['h6'],
-    command: (editor) =>
-      editor.chain().focus().toggleHeading({ level: 6 }).run(),
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 6 }).run(),
   },
   {
     id: 'bulletList',
@@ -70,8 +64,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Unordered list',
     icon: '•',
     aliases: ['bullet', 'ul', 'unordered'],
-    command: (editor) =>
-      editor.chain().focus().toggleBulletList().run(),
+    command: (editor) => editor.chain().focus().toggleBulletList().run(),
   },
   {
     id: 'numberedList',
@@ -79,8 +72,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Ordered list',
     icon: '1.',
     aliases: ['numbered', 'ol', 'ordered'],
-    command: (editor) =>
-      editor.chain().focus().toggleOrderedList().run(),
+    command: (editor) => editor.chain().focus().toggleOrderedList().run(),
   },
   {
     id: 'taskList',
@@ -88,8 +80,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Checklist with checkboxes',
     icon: '☑',
     aliases: ['todo', 'checkbox', 'check'],
-    command: (editor) =>
-      editor.chain().focus().toggleTaskList().run(),
+    command: (editor) => editor.chain().focus().toggleTaskList().run(),
   },
   {
     id: 'codeBlock',
@@ -97,8 +88,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Syntax-highlighted code',
     icon: '{ }',
     aliases: ['code', 'pre', 'snippet'],
-    command: (editor) =>
-      editor.chain().focus().toggleCodeBlock().run(),
+    command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
   },
   {
     id: 'blockquote',
@@ -106,8 +96,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Blockquote',
     icon: '"',
     aliases: ['quote', 'blockquote'],
-    command: (editor) =>
-      editor.chain().focus().toggleBlockquote().run(),
+    command: (editor) => editor.chain().focus().toggleBlockquote().run(),
   },
   {
     id: 'divider',
@@ -115,8 +104,7 @@ export const slashCommands: SlashCommand[] = [
     description: 'Horizontal rule',
     icon: '—',
     aliases: ['divider', 'hr', 'rule', 'line'],
-    command: (editor) =>
-      editor.chain().focus().setHorizontalRule().run(),
+    command: (editor) => editor.chain().focus().setHorizontalRule().run(),
   },
   {
     id: 'table',
@@ -125,11 +113,7 @@ export const slashCommands: SlashCommand[] = [
     icon: '⊞',
     aliases: ['table', 'grid'],
     command: (editor) =>
-      editor
-        .chain()
-        .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-        .run(),
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
   },
   {
     id: 'image',

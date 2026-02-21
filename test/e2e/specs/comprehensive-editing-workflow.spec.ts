@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { EditorPage } from '../pages/editor.page';
 import { loadMarkdown, getEditorMarkdown } from '../fixtures';
 
@@ -35,7 +35,7 @@ test.describe('Comprehensive Editing Workflow', () => {
   test.describe('1. Slash Commands - All Block Types', () => {
     // Helper to set up and trigger slash command properly
     // Uses actual aliases that match the filter (not command IDs)
-    async function setupAndTriggerSlash(page: any, editorPage: EditorPage, alias: string) {
+    async function setupAndTriggerSlash(page: Page, editorPage: EditorPage, alias: string) {
       await loadMarkdown(page, 'Start');
       await page.waitForTimeout(300);
       await editorPage.prosemirror.click();

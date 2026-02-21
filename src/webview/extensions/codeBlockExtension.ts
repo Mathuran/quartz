@@ -38,10 +38,7 @@ export const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
 
           // Get the text content up to the cursor position
           const codeBlockStart = $from.before() + 1; // +1 to get inside the code block
-          const textBeforeCursor = $from.parent.textContent.slice(
-            0,
-            $from.parentOffset
-          );
+          const textBeforeCursor = $from.parent.textContent.slice(0, $from.parentOffset);
 
           // Check if typing this backtick would complete ``` on its own line
           // We need to check if the last two characters are ``
@@ -65,9 +62,7 @@ export const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
           // Calculate positions
           // Delete the `` and the newline before it (if any)
           const deleteFrom =
-            lastNewlineIndex >= 0
-              ? codeBlockStart + lastNewlineIndex
-              : codeBlockStart;
+            lastNewlineIndex >= 0 ? codeBlockStart + lastNewlineIndex : codeBlockStart;
           const deleteTo = from; // Current cursor position (before the third `)
 
           // Delete the partial fence and any trailing newline

@@ -3,9 +3,7 @@ import type { Editor } from '@tiptap/react';
 import { TextSelection } from '@tiptap/pm/state';
 import type { Node as ProseMirrorNode, ResolvedPos } from '@tiptap/pm/model';
 
-function findTopLevelBlock(
-  $pos: ResolvedPos
-): { pos: number; node: ProseMirrorNode } | null {
+function findTopLevelBlock($pos: ResolvedPos): { pos: number; node: ProseMirrorNode } | null {
   if ($pos.depth < 1) return null;
   const pos = $pos.before(1);
   const node = $pos.node(1);
@@ -142,51 +140,37 @@ export const keyboardShortcutsExtension = Extension.create({
           return true;
         }
 
-        this.editor
-          .chain()
-          .focus()
-          .extendMarkRange('link')
-          .setLink({ href: url })
-          .run();
+        this.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
 
         return true;
       },
 
       // Heading 1: Cmd/Ctrl+Alt+1
-      'Mod-Alt-1': () =>
-        this.editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      'Mod-Alt-1': () => this.editor.chain().focus().toggleHeading({ level: 1 }).run(),
 
       // Heading 2: Cmd/Ctrl+Alt+2
-      'Mod-Alt-2': () =>
-        this.editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      'Mod-Alt-2': () => this.editor.chain().focus().toggleHeading({ level: 2 }).run(),
 
       // Heading 3: Cmd/Ctrl+Alt+3
-      'Mod-Alt-3': () =>
-        this.editor.chain().focus().toggleHeading({ level: 3 }).run(),
+      'Mod-Alt-3': () => this.editor.chain().focus().toggleHeading({ level: 3 }).run(),
 
       // Bullet List: Cmd/Ctrl+Shift+8
-      'Mod-Shift-8': () =>
-        this.editor.chain().focus().toggleBulletList().run(),
+      'Mod-Shift-8': () => this.editor.chain().focus().toggleBulletList().run(),
 
       // Numbered List: Cmd/Ctrl+Shift+7
-      'Mod-Shift-7': () =>
-        this.editor.chain().focus().toggleOrderedList().run(),
+      'Mod-Shift-7': () => this.editor.chain().focus().toggleOrderedList().run(),
 
       // Task List: Cmd/Ctrl+Shift+9
-      'Mod-Shift-9': () =>
-        this.editor.chain().focus().toggleTaskList().run(),
+      'Mod-Shift-9': () => this.editor.chain().focus().toggleTaskList().run(),
 
       // Code Block: Cmd/Ctrl+Alt+C
-      'Mod-Alt-c': () =>
-        this.editor.chain().focus().toggleCodeBlock().run(),
+      'Mod-Alt-c': () => this.editor.chain().focus().toggleCodeBlock().run(),
 
       // Blockquote: Cmd/Ctrl+Shift+.
-      'Mod-Shift-.': () =>
-        this.editor.chain().focus().toggleBlockquote().run(),
+      'Mod-Shift-.': () => this.editor.chain().focus().toggleBlockquote().run(),
 
       // Highlight: Cmd/Ctrl+Shift+H
-      'Mod-Shift-h': () =>
-        this.editor.chain().focus().toggleHighlight().run(),
+      'Mod-Shift-h': () => this.editor.chain().focus().toggleHighlight().run(),
 
       // Table editing shortcuts
       'Control-Enter': () => {

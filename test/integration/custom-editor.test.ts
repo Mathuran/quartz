@@ -65,7 +65,7 @@ suite('Custom Editor', () => {
     assert.ok(customEditors.length > 0, 'At least one custom editor');
 
     const quartzEditor = customEditors.find(
-      (e: any) => e.viewType === 'quartz.markdownEditor'
+      (e: { viewType: string; selector: { filenamePattern: string }[] }) => e.viewType === 'quartz.markdownEditor'
     );
     assert.ok(quartzEditor, 'quartz.markdownEditor should be registered');
     assert.strictEqual(quartzEditor.selector[0].filenamePattern, '*.md');

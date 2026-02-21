@@ -2,6 +2,15 @@ import { Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
+/** Typed interface for test harness helpers injected on the browser window */
+interface E2EHarnessWindow extends Window {
+  __loadMarkdown(content: string, fileName: string): void;
+  __getUpdate(index?: number): string | null;
+  __getUpdateCount(): number;
+  __sendExternalChange(content: string): void;
+  __updateConfig(config: Record<string, unknown>): void;
+}
+
 const FIXTURES_DIR = path.resolve(__dirname, 'fixtures');
 const SHARED_FIXTURES_DIR = path.resolve(__dirname, '../integration/fixtures');
 
@@ -27,7 +36,7 @@ export async function loadFixture(page: Page, fixtureName: string): Promise<stri
  */
 export async function loadMarkdown(page: Page, content: string, fileName = 'test.md'): Promise<void> {
   await page.evaluate(
-    ({ content, fileName }) => (window as any).__loadMarkdown(content, fileName),
+    ({ content, fileName }) => (window as unknown as E2EHarnessWindow).__loadMarkdown(content, fileName),
     { content, fileName }
   );
   // Wait for editor to render
@@ -38,14 +47,14 @@ export async function loadMarkdown(page: Page, content: string, fileName = 'test
  * Get the latest serialized markdown from the editor.
  */
 export async function getEditorMarkdown(page: Page): Promise<string | null> {
-  return page.evaluate(() => (window as any).__getUpdate());
+  return page.evaluate(() => (window as unknown as E2EHarnessWindow).__getUpdate());
 }
 
 /**
  * Get the number of updates the editor has sent.
  */
 export async function getUpdateCount(page: Page): Promise<number> {
-  return page.evaluate(() => (window as any).__getUpdateCount());
+  return page.evaluate(() => (window as unknown as E2EHarnessWindow).__getUpdateCount());
 }
 
 /**
@@ -55,11 +64,11 @@ export async function getUpdateCount(page: Page): Promise<number> {
 export async function waitForUpdate(page: Page, afterIndex?: number, timeout = 2000): Promise<string> {
   const targetIndex = afterIndex ?? -1;
   await page.waitForFunction(
-    (idx: number) => (window as any).__getUpdateCount() > idx + 1,
+    (idx: number) => ((window as unknown as { __getUpdateCount(): number }).__getUpdateCount()) > idx + 1,
     targetIndex,
     { timeout }
   );
-  return page.evaluate(() => (window as any).__getUpdate());
+  return page.evaluate(() => (window as unknown as E2EHarnessWindow).__getUpdate());
 }
 
 /**
@@ -67,11 +76,11 @@ export async function waitForUpdate(page: Page, afterIndex?: number, timeout = 2
  */
 export async function waitForNthUpdate(page: Page, n: number, timeout = 2000): Promise<string> {
   await page.waitForFunction(
-    (count: number) => (window as any).__getUpdateCount() >= count,
+    (count: number) => ((window as unknown as { __getUpdateCount(): number }).__getUpdateCount()) >= count,
     n,
     { timeout }
   );
-  return page.evaluate((idx: number) => (window as any).__getUpdate(idx), n - 1);
+  return page.evaluate((idx: number) => ((window as unknown as { __getUpdate(index: number): string }).__getUpdate(idx)), n - 1);
 }
 
 /**
@@ -79,7 +88,7 @@ export async function waitForNthUpdate(page: Page, n: number, timeout = 2000): P
  */
 export async function sendExternalChange(page: Page, content: string): Promise<void> {
   await page.evaluate(
-    (content: string) => (window as any).__sendExternalChange(content),
+    (content: string) => (window as unknown as E2EHarnessWindow).__sendExternalChange(content),
     content
   );
 }
@@ -87,9 +96,9 @@ export async function sendExternalChange(page: Page, content: string): Promise<v
 /**
  * Update the editor configuration.
  */
-export async function updateConfig(page: Page, config: Record<string, any>): Promise<void> {
+export async function updateConfig(page: Page, config: Record<string, unknown>): Promise<void> {
   await page.evaluate(
-    (config: Record<string, any>) => (window as any).__updateConfig(config),
+    (config: Record<string, unknown>) => (window as unknown as E2EHarnessWindow).__updateConfig(config),
     config
   );
 }

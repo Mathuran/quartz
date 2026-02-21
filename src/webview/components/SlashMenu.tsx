@@ -17,8 +17,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     if (!query) return true;
     const q = query.toLowerCase();
     return (
-      cmd.label.toLowerCase().includes(q) ||
-      cmd.aliases.some((a) => a.toLowerCase().includes(q))
+      cmd.label.toLowerCase().includes(q) || cmd.aliases.some((a) => a.toLowerCase().includes(q))
     );
   });
 
@@ -50,19 +49,32 @@ export function SlashMenu({ editor }: SlashMenuProps) {
             // Execute the command's action within this transaction
             // Map command IDs to their chain operations
             switch (cmd.id) {
-              case 'heading1': return commands.toggleHeading({ level: 1 });
-              case 'heading2': return commands.toggleHeading({ level: 2 });
-              case 'heading3': return commands.toggleHeading({ level: 3 });
-              case 'heading4': return commands.toggleHeading({ level: 4 });
-              case 'heading5': return commands.toggleHeading({ level: 5 });
-              case 'heading6': return commands.toggleHeading({ level: 6 });
-              case 'bulletList': return commands.toggleBulletList();
-              case 'numberedList': return commands.toggleOrderedList();
-              case 'taskList': return commands.toggleTaskList();
-              case 'codeBlock': return commands.toggleCodeBlock();
-              case 'blockquote': return commands.toggleBlockquote();
-              case 'divider': return commands.setHorizontalRule();
-              case 'table': return commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true });
+              case 'heading1':
+                return commands.toggleHeading({ level: 1 });
+              case 'heading2':
+                return commands.toggleHeading({ level: 2 });
+              case 'heading3':
+                return commands.toggleHeading({ level: 3 });
+              case 'heading4':
+                return commands.toggleHeading({ level: 4 });
+              case 'heading5':
+                return commands.toggleHeading({ level: 5 });
+              case 'heading6':
+                return commands.toggleHeading({ level: 6 });
+              case 'bulletList':
+                return commands.toggleBulletList();
+              case 'numberedList':
+                return commands.toggleOrderedList();
+              case 'taskList':
+                return commands.toggleTaskList();
+              case 'codeBlock':
+                return commands.toggleCodeBlock();
+              case 'blockquote':
+                return commands.toggleBlockquote();
+              case 'divider':
+                return commands.setHorizontalRule();
+              case 'table':
+                return commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true });
               case 'image': {
                 const url = window.prompt('Enter image URL');
                 if (url) {
@@ -70,7 +82,8 @@ export function SlashMenu({ editor }: SlashMenuProps) {
                 }
                 return true;
               }
-              default: return true;
+              default:
+                return true;
             }
           })
           .run();
@@ -82,7 +95,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
       setIsOpen(false);
       setQuery('');
     },
-    [editor]
+    [editor],
   );
 
   // The slash menu is triggered by the slashCommandExtension
@@ -101,8 +114,8 @@ export function SlashMenu({ editor }: SlashMenuProps) {
       }
     };
 
-    window.addEventListener('slashMenu' as any, handler as any);
-    return () => window.removeEventListener('slashMenu' as any, handler as any);
+    window.addEventListener('slashMenu', handler as EventListener);
+    return () => window.removeEventListener('slashMenu', handler as EventListener);
   }, []);
 
   useEffect(() => {
