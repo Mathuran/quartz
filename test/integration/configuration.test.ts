@@ -31,7 +31,8 @@ suite('Configuration', () => {
     await assert.doesNotReject(async () => {
       await config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
     });
-    assert.strictEqual(config.get('fontSize'), 20);
+    const updated = vscode.workspace.getConfiguration('quartz.editor');
+    assert.strictEqual(updated.get('fontSize'), 20);
   });
 
   test('Changing pageLayout is accepted without error', async () => {
@@ -39,7 +40,8 @@ suite('Configuration', () => {
     await assert.doesNotReject(async () => {
       await config.update('pageLayout', false, vscode.ConfigurationTarget.Global);
     });
-    assert.strictEqual(config.get('pageLayout'), false);
+    const updated = vscode.workspace.getConfiguration('quartz.editor');
+    assert.strictEqual(updated.get('pageLayout'), false);
   });
 
   test('Setting theme to dark is accepted', async () => {
@@ -47,7 +49,8 @@ suite('Configuration', () => {
     await assert.doesNotReject(async () => {
       await config.update('theme', 'dark', vscode.ConfigurationTarget.Global);
     });
-    assert.strictEqual(config.get('theme'), 'dark');
+    const updated = vscode.workspace.getConfiguration('quartz.editor');
+    assert.strictEqual(updated.get('theme'), 'dark');
   });
 
   test('Configuration changes do not require extension reload', async () => {
