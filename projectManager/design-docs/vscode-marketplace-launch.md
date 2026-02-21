@@ -1,7 +1,7 @@
 # VS Code Marketplace Launch — Quartz Markdown Editor
 
 **Author:** Mathuran Sadagopan
-**Status:** DRAFT
+**Status:** COMPLETED
 **Created:** 2026-02-15
 **Last Updated:** 2026-02-15
 **Reviewers:** TBD

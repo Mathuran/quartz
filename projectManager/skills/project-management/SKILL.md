@@ -109,7 +109,7 @@ Every issue specifies:
 - `/design-doc <feature-name>` - Create a new design document
 - `/review-doc <feature-name>` - Review and iterate on a design doc
 - `/create-issues <feature-name>` - Break approved doc into issues
-- `/issue-status` - Show status of all issues
+- `/issue-status` - Show status of all design docs, backlog items, and issues
 
 ## Additional Resources
 

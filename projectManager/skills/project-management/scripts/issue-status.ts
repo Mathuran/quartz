@@ -1,10 +1,10 @@
 #!/usr/bin/env -S deno run --allow-read
 
 /**
- * Issue Status Script
+ * Project Status Script
  *
- * Scans projectManager/issues/ for all issue files, extracts metadata,
- * filters out completed features, and prints a summary report.
+ * Scans projectManager/ for issues, design docs, and backlog items,
+ * extracts metadata, and prints a comprehensive status report.
  *
  * Usage:
  *   deno run --allow-read issue-status.ts [feature-name]
@@ -35,6 +35,24 @@ interface FeatureSummary {
   blocked: number;
   done: number;
   total: number;
+}
+
+interface DesignDoc {
+  filename: string;
+  title: string;
+  status: string;
+  author: string;
+  created: string;
+  lastUpdated: string;
+}
+
+interface BacklogItem {
+  filename: string;
+  title: string;
+  status: string;
+  priority: string;
+  tags: string;
+  created: string;
 }
 
 function parseIssueFile(content: string, filename: string, feature: string): Issue {
@@ -112,7 +130,87 @@ async function scanIssues(issuesDir: string, featureFilter?: string): Promise<Ma
   return features;
 }
 
-function printReport(features: Map<string, FeatureSummary>): string {
+function parseDesignDoc(content: string, filename: string): DesignDoc {
+  const lines = content.split("\n");
+
+  const titleLine = lines.find((l) => l.startsWith("# "));
+  const title = titleLine?.replace(/^#\s*/, "").trim() ?? basename(filename, ".md");
+
+  const getInline = (key: string): string => {
+    const line = lines.find((l) => l.startsWith(`**${key}:**`));
+    if (!line) return "—";
+    return line.replace(`**${key}:**`, "").trim() || "—";
+  };
+
+  return {
+    filename,
+    title,
+    status: getInline("Status"),
+    author: getInline("Author"),
+    created: getInline("Created"),
+    lastUpdated: getInline("Last Updated"),
+  };
+}
+
+function parseBacklogItem(content: string, filename: string): BacklogItem {
+  const lines = content.split("\n");
+
+  const titleLine = lines.find((l) => l.startsWith("# "));
+  const title = titleLine?.replace(/^#\s*/, "").trim() ?? basename(filename, ".md");
+
+  // Backlog items use table format: | **Key** | Value |
+  const getTable = (key: string): string => {
+    const line = lines.find((l) => l.toLowerCase().includes(`**${key.toLowerCase()}**`));
+    if (!line) return "—";
+    const parts = line.split("|").map((p) => p.trim()).filter(Boolean);
+    return parts[1]?.trim() ?? "—";
+  };
+
+  return {
+    filename,
+    title,
+    status: getTable("Status"),
+    priority: getTable("Priority"),
+    tags: getTable("Tags"),
+    created: getTable("Created"),
+  };
+}
+
+async function scanDesignDocs(docsDir: string): Promise<DesignDoc[]> {
+  const docs: DesignDoc[] = [];
+  try {
+    for await (const entry of Deno.readDir(docsDir)) {
+      if (!entry.isFile || !entry.name.endsWith(".md")) continue;
+      const content = await Deno.readTextFile(resolve(docsDir, entry.name));
+      docs.push(parseDesignDoc(content, entry.name));
+    }
+  } catch {
+    // Directory may not exist
+  }
+  docs.sort((a, b) => a.title.localeCompare(b.title));
+  return docs;
+}
+
+async function scanBacklog(backlogDir: string): Promise<BacklogItem[]> {
+  const items: BacklogItem[] = [];
+  try {
+    for await (const entry of Deno.readDir(backlogDir)) {
+      if (!entry.isFile || !entry.name.endsWith(".md")) continue;
+      const content = await Deno.readTextFile(resolve(backlogDir, entry.name));
+      items.push(parseBacklogItem(content, entry.name));
+    }
+  } catch {
+    // Directory may not exist
+  }
+  // Sort by priority (P0 first), then alphabetically
+  items.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority.localeCompare(b.priority);
+    return a.title.localeCompare(b.title);
+  });
+  return items;
+}
+
+function printReport(features: Map<string, FeatureSummary>, designDocs: DesignDoc[], backlogItems: BacklogItem[]): string {
   const lines: string[] = [];
   const push = (s = "") => lines.push(s);
 
@@ -144,10 +242,49 @@ function printReport(features: Map<string, FeatureSummary>): string {
   });
 
   // Header
-  push("# Issue Status Report");
+  push("# Project Status Report");
   push();
 
-  // Summary stats
+  // Design Docs summary
+  if (designDocs.length > 0) {
+    const byStatus = new Map<string, number>();
+    for (const doc of designDocs) {
+      const s = doc.status.toUpperCase();
+      byStatus.set(s, (byStatus.get(s) ?? 0) + 1);
+    }
+
+    push("## Design Documents");
+    push();
+    push("| Document | Status | Author | Last Updated |");
+    push("|----------|--------|--------|--------------|");
+    for (const doc of designDocs) {
+      push(`| ${doc.title} | ${doc.status} | ${doc.author} | ${doc.lastUpdated} |`);
+    }
+    push();
+
+    const statusCounts = [...byStatus.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([s, n]) => `${s}: ${n}`)
+      .join(", ");
+    push(`> ${designDocs.length} docs — ${statusCounts}`);
+    push();
+  }
+
+  // Backlog summary
+  if (backlogItems.length > 0) {
+    push("## Backlog");
+    push();
+    push("| Item | Priority | Tags | Created |");
+    push("|------|----------|------|---------|");
+    for (const item of backlogItems) {
+      push(`| ${item.title} | ${item.priority} | ${item.tags} | ${item.created} |`);
+    }
+    push();
+  }
+
+  // Issue summary stats
+  push("## Issues");
+  push();
   const pct = totalAll > 0 ? Math.round((doneAll / totalAll) * 100) : 0;
   const barFilled = Math.round(pct / 5);
   const bar = "█".repeat(barFilled) + "░".repeat(20 - barFilled);
@@ -274,29 +411,38 @@ function printReport(features: Map<string, FeatureSummary>): string {
 
 // --- Main ---
 
-const projectRoot = resolve(Deno.cwd(), "projectManager/issues");
+const pmRoot = resolve(Deno.cwd(), "projectManager");
+const issuesDir = resolve(pmRoot, "issues");
+const designDocsDir = resolve(pmRoot, "design-docs");
+const backlogDir = resolve(pmRoot, "backlog");
 const featureFilter = Deno.args[0];
 
 try {
-  const features = await scanIssues(projectRoot, featureFilter);
+  const [features, designDocs, backlogItems] = await Promise.all([
+    scanIssues(issuesDir, featureFilter),
+    scanDesignDocs(designDocsDir),
+    scanBacklog(backlogDir),
+  ]);
 
-  if (features.size === 0) {
+  if (features.size === 0 && designDocs.length === 0 && backlogItems.length === 0) {
     if (featureFilter) {
       console.log(`No issues found for feature: ${featureFilter}`);
       console.log(`Available features in projectManager/issues/:`);
-      for await (const entry of Deno.readDir(projectRoot)) {
-        if (entry.isDirectory) console.log(`  - ${entry.name}`);
-      }
+      try {
+        for await (const entry of Deno.readDir(issuesDir)) {
+          if (entry.isDirectory) console.log(`  - ${entry.name}`);
+        }
+      } catch { /* dir may not exist */ }
     } else {
-      console.log("No issues found in projectManager/issues/");
+      console.log("No items found in projectManager/");
     }
     Deno.exit(1);
   }
 
-  console.log(printReport(features));
+  console.log(printReport(features, designDocs, backlogItems));
 } catch (err) {
   if (err instanceof Deno.errors.NotFound) {
-    console.error(`Error: Directory not found: ${projectRoot}`);
+    console.error(`Error: Directory not found: ${pmRoot}`);
     console.error("Make sure you're running from the project root.");
     Deno.exit(1);
   }
