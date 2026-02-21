@@ -28,7 +28,8 @@ export function SlashMenu({ editor }: SlashMenuProps) {
 
   const executeCommand = useCallback(
     (cmd: SlashCommand) => {
-      // Delete the slash trigger text before executing the command
+      // Delete the slash trigger text and execute command in ONE transaction
+      // This ensures undo reverts both operations together
       const { state } = editor;
       const { $from } = state.selection;
       const textBefore = $from.parent.textContent.slice(0, $from.parentOffset);
@@ -40,14 +41,44 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         const deleteFrom = blockStart + slashIndex;
         const deleteTo = $from.pos;
 
-        // Delete the slash and query, then execute the command
+        // Build a single chain that deletes slash text AND executes the command
+        // We use command() to inject the command's action into our chain
         editor
           .chain()
           .deleteRange({ from: deleteFrom, to: deleteTo })
+          .command(({ commands }) => {
+            // Execute the command's action within this transaction
+            // Map command IDs to their chain operations
+            switch (cmd.id) {
+              case 'heading1': return commands.toggleHeading({ level: 1 });
+              case 'heading2': return commands.toggleHeading({ level: 2 });
+              case 'heading3': return commands.toggleHeading({ level: 3 });
+              case 'heading4': return commands.toggleHeading({ level: 4 });
+              case 'heading5': return commands.toggleHeading({ level: 5 });
+              case 'heading6': return commands.toggleHeading({ level: 6 });
+              case 'bulletList': return commands.toggleBulletList();
+              case 'numberedList': return commands.toggleOrderedList();
+              case 'taskList': return commands.toggleTaskList();
+              case 'codeBlock': return commands.toggleCodeBlock();
+              case 'blockquote': return commands.toggleBlockquote();
+              case 'divider': return commands.setHorizontalRule();
+              case 'table': return commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true });
+              case 'image': {
+                const url = window.prompt('Enter image URL');
+                if (url) {
+                  return commands.setImage({ src: url });
+                }
+                return true;
+              }
+              default: return true;
+            }
+          })
           .run();
+      } else {
+        // No slash to delete, just execute the command normally
+        cmd.command(editor);
       }
 
-      cmd.command(editor);
       setIsOpen(false);
       setQuery('');
     },

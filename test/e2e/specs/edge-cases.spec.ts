@@ -452,8 +452,11 @@ test.describe('Edge Cases', () => {
   // ============================================================
 
   test('undo after slash command insertion', async ({ page }) => {
-    await loadMarkdown(page, 'Start');
+    await loadMarkdown(page, 'Some paragraph text');
     await page.waitForTimeout(300);
+
+    // Verify no heading initially
+    await expect(editorPage.heading(1)).not.toBeVisible();
 
     await editorPage.prosemirror.click();
     await page.keyboard.press('End');
@@ -463,15 +466,16 @@ test.describe('Edge Cases', () => {
     await editorPage.triggerSlashCommand('h1');
     await page.waitForTimeout(300);
 
-    // Verify heading was created
+    // Verify heading was created (should be empty heading)
     await expect(editorPage.heading(1)).toBeVisible();
 
-    // Undo
+    // Undo - should remove the heading
     await editorPage.undo();
     await page.waitForTimeout(300);
 
-    // Heading should be removed
+    // Heading should be removed, back to paragraph only
     await expect(editorPage.heading(1)).not.toBeVisible();
+    await expect(editorPage.prosemirror).toContainText('Some paragraph text');
   });
 
   test('undo after block movement', async ({ page }) => {

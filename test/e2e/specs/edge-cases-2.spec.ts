@@ -541,12 +541,12 @@ Final paragraph.`;
     await page.waitForTimeout(500);
 
     // Make a small edit
+    const countBefore = await getUpdateCount(page);
     await editorPage.prosemirror.click();
     await page.keyboard.press('End');
     await page.keyboard.type(' edited');
-    await page.waitForTimeout(500);
 
-    const countBefore = await getUpdateCount(page);
+    // Wait for debounced update after editing
     const output = await waitForUpdate(page, countBefore - 1, 3000);
 
     // Verify all major elements are preserved

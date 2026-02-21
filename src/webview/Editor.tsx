@@ -197,7 +197,13 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       } else {
         setContentWarning(null);
       }
-      editor.commands.setContent(doc);
+      // Replace content without adding to undo history
+      // This prevents undo from reverting past document loads
+      const newDoc = editor.schema.nodeFromJSON(doc);
+      const { tr } = editor.state;
+      tr.replaceWith(0, editor.state.doc.content.size, newDoc.content);
+      tr.setMeta('addToHistory', false);
+      editor.view.dispatch(tr);
 
       // Verify content was preserved after setContent
       setTimeout(() => {
