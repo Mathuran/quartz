@@ -1,0 +1,77 @@
+.quartz-error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  height: 100%;
+  padding: 24px;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+}
+
+.quartz-error-boundary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.2));
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+}
+
+.quartz-error-boundary-icon {
+  color: var(--vscode-editorWarning-foreground, #cca700);
+  margin-bottom: 16px;
+  opacity: 0.85;
+}
+
+.quartz-error-boundary-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--vscode-editor-foreground);
+}
+
+.quartz-error-boundary-message {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+  color: var(--vscode-descriptionForeground, rgba(204, 204, 204, 0.7));
+  word-break: break-word;
+}
+
+.quartz-error-boundary-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.quartz-error-boundary-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: none;
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  line-height: 1.4;
+}
+
+.quartz-error-boundary-btn-primary {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+}
+
+.quartz-error-boundary-btn-primary:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.quartz-error-boundary-btn-secondary {
+  background: var(--vscode-button-secondaryBackground, rgba(90, 93, 94, 0.31));
+  color: var(--vscode-button-secondaryForeground, var(--vscode-editor-foreground));
+}
+
+.quartz-error-boundary-btn-secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground, rgba(90, 93, 94, 0.45));
+}
