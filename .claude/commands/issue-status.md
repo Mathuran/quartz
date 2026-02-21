@@ -13,10 +13,10 @@ Display the status of implementation issues by running the issue-status script.
 
 ## Instructions
 
-1. **Run the Deno status script**:
+1. **Run the status script**:
 
 ```bash
-deno run --allow-read $CLAUDE_PLUGIN_ROOT/skills/project-management/scripts/issue-status.ts $ARGUMENTS.feature-name
+bash $CLAUDE_PLUGIN_ROOT/skills/project-management/scripts/issue-status.sh $ARGUMENTS.feature-name
 ```
 
 If `feature-name` is not provided, omit the argument to show all features.
