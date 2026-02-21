@@ -16,6 +16,8 @@ The projectManager folder uses this structure:
 
 ```
 /projectManager/
+├── backlog/               # Feature requests and ideas
+│   └── feature-name.md    # One file per request
 ├── design-docs/           # Amazon-style design documents
 │   └── FEATURE-NAME.md    # One doc per feature
 ├── issues/                # Implementation issues
@@ -103,6 +105,7 @@ Every issue specifies:
 
 ## Commands Available
 
+- `/feature-request <title>` - Create a new backlog item with duplicate detection
 - `/design-doc <feature-name>` - Create a new design document
 - `/review-doc <feature-name>` - Review and iterate on a design doc
 - `/create-issues <feature-name>` - Break approved doc into issues

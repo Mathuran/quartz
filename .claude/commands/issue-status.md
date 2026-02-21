@@ -9,80 +9,23 @@ arguments:
 
 # Issue Status Report
 
-Display the status of implementation issues.
+Display the status of implementation issues by running the issue-status script.
 
 ## Instructions
 
-1. **Scan for issues**:
-   - If feature-name provided: `projectManager/issues/$ARGUMENTS.feature-name/`
-   - Otherwise: `projectManager/issues/*/`
+1. **Run the Deno status script**:
 
-2. **For each issue file found**, extract:
-   - Issue number (from filename)
-   - Title (from first heading)
-   - Status (from metadata)
-   - Dependencies (from metadata)
-   - Scope (from metadata)
-
-3. **Generate status report** with:
-
-### Summary Statistics
-```
-Total Issues: X
-- TODO: X
-- IN_PROGRESS: X
-- BLOCKED: X
-- DONE: X
-
-Progress: XX% complete
+```bash
+deno run --allow-read $CLAUDE_PLUGIN_ROOT/skills/project-management/scripts/issue-status.ts $ARGUMENTS.feature-name
 ```
 
-### Issues by Status
+If `feature-name` is not provided, omit the argument to show all features.
 
-**BLOCKED**
-| # | Title | Blocked By | Feature |
-|---|-------|------------|---------|
+2. **Present the script output as-is** — it is already formatted as markdown.
 
-**IN_PROGRESS**
-| # | Title | Started | Feature |
-|---|-------|---------|---------|
-
-**TODO (Ready)**
-Issues with all dependencies met:
-| # | Title | Scope | Feature |
-|---|-------|-------|---------|
-
-**TODO (Waiting)**
-Issues waiting on dependencies:
-| # | Title | Waiting On | Feature |
-|---|-------|------------|---------|
-
-**DONE**
-| # | Title | Completed | Feature |
-|---|-------|-----------|---------|
-
-### Dependency Graph
-
-Show which issues are blocking others:
-```
-[001] DONE
-  └─> [002] IN_PROGRESS
-      └─> [005] TODO
-[003] DONE
-  └─> [004] TODO
-      └─> [005] TODO
-```
-
-### Recommendations
-
-Based on the current status, suggest:
-- What to work on next (highest priority ready issue)
-- Any blocked issues that need attention
-- Issues that might be parallelizable
-
-## After Status Check
-
-Suggest next actions:
-- If blocked issues: "Issue X is blocked by Y. Should we discuss unblocking?"
-- If all done: "All issues complete! Ready to mark feature as IMPLEMENTED?"
-- If in progress: "Continue working on X, or start Y which is now ready?"
+3. **Add recommendations** after the script output based on the results:
+   - If there are "Ready to Start" issues: suggest which to work on next (prefer smallest scope first)
+   - If there are blocked issues: suggest how to unblock them
+   - If there are in-progress issues: ask if the user wants to continue them
+   - If all issues are done: suggest marking the feature as IMPLEMENTED
+   - If any features in "Completed Features" look stale (original planning issues superseded by actual work): suggest archiving them

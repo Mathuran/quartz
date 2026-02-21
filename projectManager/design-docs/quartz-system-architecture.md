@@ -1,9 +1,9 @@
 # Quartz System Architecture Design Document
 
 **Author:** Claude (AI Assistant)
-**Status:** DRAFT
+**Status:** APPROVED
 **Created:** 2026-02-15
-**Last Updated:** 2026-02-15
+**Last Updated:** 2026-02-20
 **Reviewers:** Project maintainers
 
 ---
@@ -62,7 +62,7 @@ graph TB
             CORE[Core Extensions<br/>Document, Paragraph, Text]
             BLOCKS[Block Extensions<br/>Heading, List, CodeBlock]
             MARKS[Mark Extensions<br/>Bold, Italic, Link]
-            CUSTOM[Custom Extensions<br/>Keyboard, SlashCommand]
+            CUSTOM[Custom Extensions<br/>Keyboard, SlashCommand, ListInput]
         end
 
         subgraph "UI Components"
@@ -70,6 +70,12 @@ graph TB
             SM[SlashMenu]
             TH[TableHint]
             LD[LinkDialog]
+            RB[RawBlock]
+            PC[PageContainer]
+        end
+
+        subgraph "Utilities"
+            DB[debounce.ts]
         end
     end
 
@@ -121,11 +127,18 @@ sequenceDiagram
 ```
 
 #### Key Files:
-- **`extension.ts`** - Entry point, registers the editor provider
-- **`QuartzEditorProvider.ts`** - Implements `CustomTextEditorProvider`
+- **`src/extension.ts`** - Entry point, registers the editor provider and commands
+- **`src/QuartzEditorProvider.ts`** - Implements `CustomTextEditorProvider`
   - Manages document ↔ webview communication
   - Handles configuration changes
   - Generates secure HTML with CSP headers
+
+#### VS Code Commands:
+| Command | Title |
+|---------|-------|
+| `quartz.openWithQuartz` | Open with Quartz Editor |
+| `quartz.openWithTextEditor` | Open with Text Editor |
+| `quartz.toggleEditor` | Toggle Editor Mode |
 
 ### 4.2 Webview Application Layer
 
@@ -148,8 +161,10 @@ graph LR
 ```
 
 #### Key Files:
-- **`App.tsx`** - Root component, manages VS Code message handling
-- **`Editor.tsx`** - TipTap editor configuration and rendering
+- **`src/webview/App.tsx`** - Root component, manages VS Code message handling
+- **`src/webview/Editor.tsx`** - TipTap editor configuration and rendering
+- **`src/webview/index.tsx`** - Webview entry point
+- **`src/webview/types.ts`** - TypeScript interfaces
 
 ### 4.3 Markdown Processing Pipeline
 
@@ -169,7 +184,7 @@ graph LR
     end
 ```
 
-#### Parser (`parser.ts`)
+#### Parser (`src/markdown/parser.ts`)
 Converts Markdown text to TipTap's JSONContent format:
 
 ```typescript
@@ -196,7 +211,7 @@ Converts Markdown text to TipTap's JSONContent format:
 - Handle task lists, tables, code blocks with language
 - Preserve blockquote nesting
 
-#### Serializer (`serializer.ts`)
+#### Serializer (`src/markdown/serializer.ts`)
 Converts TipTap's JSONContent back to Markdown:
 
 **Key responsibilities:**
@@ -204,6 +219,9 @@ Converts TipTap's JSONContent back to Markdown:
 - Serialize nested lists with proper indentation
 - Handle table alignment markers
 - Preserve code block language annotations
+
+#### Frontmatter (`src/markdown/frontmatter.ts`)
+Extracts and preserves YAML frontmatter from Markdown files.
 
 ### 4.4 TipTap Extension Architecture
 
@@ -215,6 +233,10 @@ graph TB
             PARA[Paragraph]
             TEXT[Text]
             HIST[History]
+            HARD[HardBreak]
+            DROP[Dropcursor]
+            GAP[Gapcursor]
+            PLACE[Placeholder]
         end
 
         subgraph "Block Types"
@@ -245,22 +267,37 @@ graph TB
             LIR[linkInputRule]
             CMR[combinedMarksInputRule]
             TIR[taskListInputRule]
+            LISTR[listInputRule]
+            CBE[codeBlockExtension]
+            HRE[horizontalRuleExtension]
         end
     end
 ```
 
 #### Custom Extensions Detail:
 
-| Extension | Purpose |
-|-----------|---------|
-| `keyboardShortcuts` | Alt+Arrow block movement, table editing, formatting shortcuts |
-| `slashCommandExtension` | Triggers slash menu on `/` in empty blocks |
-| `virtualRenderingExtension` | Hides off-screen blocks for large documents (>1000 blocks) |
-| `linkInputRuleExtension` | Converts `[text](url)` to links on typing |
-| `combinedMarksInputRuleExtension` | Handles `***text***` for bold+italic |
-| `taskListInputRuleExtension` | Converts `- [ ]` to task list items |
-| `codeBlockExtension` | Custom exit behavior for code blocks |
-| `horizontalRuleExtension` | Improved `---` input rules |
+| Extension | File | Purpose |
+|-----------|------|---------|
+| `keyboardShortcuts` | `keyboardShortcuts.ts` | Alt+Arrow block movement, table editing, formatting shortcuts |
+| `slashCommandExtension` | `slashCommandExtension.ts` | Triggers slash menu on `/` in empty blocks |
+| `virtualRenderingExtension` | `virtualRendering.ts` | Hides off-screen blocks for large documents (>1000 blocks) |
+| `linkInputRuleExtension` | `linkInputRule.ts` | Converts `[text](url)` to links on typing |
+| `combinedMarksInputRuleExtension` | `combinedMarksInputRule.ts` | Handles `***text***` for bold+italic, `**`, `*`, `` ` ``, `~~` |
+| `taskListInputRuleExtension` | `taskListInputRule.ts` | Converts `- [ ]` to task list items |
+| `listInputRuleExtension` | `listInputRule.ts` | Strips list markers typed inside existing list items |
+| `codeBlockExtension` | `codeBlockExtension.ts` | Custom code block with lowlight, handles ``` closure |
+| `horizontalRuleExtension` | `horizontalRuleExtension.ts` | Improved `---` input rules |
+
+### 4.5 UI Components
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `FormattingToolbar` | `FormattingToolbar.tsx` | Floating toolbar for text formatting |
+| `SlashMenu` | `SlashMenu.tsx` | Slash command menu UI |
+| `TableHint` | `TableHint.tsx` | Table keyboard shortcuts hint overlay |
+| `LinkDialog` | `LinkDialog.tsx` | Link insertion/editing dialog |
+| `RawBlock` | `RawBlock.tsx` | Raw markdown block display |
+| `PageContainer` | `PageContainer.tsx` | Page layout container with configurable margins |
 
 ---
 
@@ -314,11 +351,16 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph "VS Code Settings"
-        UT[User Theme] --> |quartz.editor.theme| CONFIG
+        UT[Theme] --> |quartz.editor.theme| CONFIG
         UF[Font Family] --> |quartz.editor.fontFamily| CONFIG
         US[Font Size] --> |quartz.editor.fontSize| CONFIG
         UP[Page Layout] --> |quartz.editor.pageLayout| CONFIG
         UW[Page Width] --> |quartz.editor.pageWidth| CONFIG
+        UM[Page Margin] --> |quartz.editor.pageMargin| CONFIG
+        UD[Default Editor] --> |quartz.editor.defaultForMarkdown| CONFIG
+        UI[Image Dir] --> |quartz.editor.imageDir| CONFIG
+        UPF[Preserve Formatting] --> |quartz.editor.preserveFormatting| CONFIG
+        UBH[Block Handles] --> |quartz.editor.showBlockHandles| CONFIG
     end
 
     CONFIG[EditorConfig] --> WEBVIEW[Webview]
@@ -330,12 +372,16 @@ graph LR
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
+| `defaultForMarkdown` | `boolean` | `false` | Set Quartz as default editor for .md files |
 | `theme` | `'auto' \| 'light' \| 'dark'` | `'auto'` | Editor color scheme |
 | `fontFamily` | `string` | `'inherit'` | Font for editor content |
 | `fontSize` | `number` | `16` | Base font size in pixels |
 | `pageLayout` | `boolean` | `true` | Show page-like container |
 | `pageWidth` | `number` | `816` | Page width in pixels |
 | `pageMargin` | `number` | `72` | Page margin in pixels |
+| `imageDir` | `string` | `'./assets'` | Relative path for pasted images |
+| `preserveFormatting` | `boolean` | `true` | Maintain original markdown style on round-trip |
+| `showBlockHandles` | `boolean` | `true` | Show drag handles on block hover |
 
 ---
 
@@ -363,90 +409,191 @@ graph LR
 ```mermaid
 graph TB
     subgraph "Test Pyramid"
-        UNIT[Unit Tests<br/>139 tests<br/>parser, serializer, debounce]
-        INT[Integration Tests<br/>Round-trip tests<br/>All block types]
-        E2E[E2E Tests<br/>Playwright<br/>Editing, formatting, shortcuts]
+        UNIT[Unit Tests<br/>~200 tests<br/>parser, serializer, edge cases]
+        INT[Integration Tests<br/>22 tests<br/>activation, config, roundtrip]
+        E2E[E2E Tests<br/>~230 tests<br/>Playwright: editing, formatting, shortcuts]
     end
 
     UNIT --> INT --> E2E
 ```
 
-### Test Coverage:
-- **Unit Tests (Vitest):** Parser edge cases, serializer output, debounce behavior
-- **Round-trip Tests:** Ensure `parse(serialize(parse(md))) === parse(md)`
-- **E2E Tests (Playwright):** User interactions, keyboard shortcuts, slash commands
+### Test Infrastructure:
+
+| Layer | Framework | Files | Description |
+|-------|-----------|-------|-------------|
+| Unit | Vitest | `test/*.test.ts`, `test/unit/*.test.ts` | Parser, serializer, debounce, edge cases |
+| Integration | VS Code Test | `test/integration/*.test.ts` | Activation, configuration, file roundtrip |
+| E2E | Playwright | `test/e2e/specs/*.spec.ts` | Full user interaction testing |
+| QA | Manual | `test/qa/*.md` | Release checklists and block testing |
+
+### Test File Breakdown:
+
+**Unit Tests (~200 tests):**
+- `parser.test.ts` - Core parser tests
+- `serializer.test.ts` - Core serializer tests
+- `features.test.ts` - Feature-level tests
+- `roundtrip.test.ts` - Round-trip fidelity tests
+- `performance.test.ts` - Performance benchmarks
+- `debounce.test.ts` - Debounce utility tests
+- `unit/parser-edge-cases.test.ts` - Parser edge cases
+- `unit/serializer-edge-cases.test.ts` - Serializer edge cases
+- `unit/roundtrip-all-blocks.test.ts` - Comprehensive block round-trip
+- `unit/additional-edge-cases.test.ts` - Additional edge cases
+
+**E2E Tests (~230 tests across 15 spec files):**
+- `editing.spec.ts`, `inline-formatting.spec.ts` - Core editing
+- `keyboard-shortcuts.spec.ts`, `block-movement.spec.ts` - Keyboard interactions
+- `slash-commands.spec.ts` - Slash command menu
+- `roundtrip.spec.ts`, `block-rendering.spec.ts` - Rendering fidelity
+- `theme.spec.ts`, `page-layout.spec.ts`, `sidebar-alignment.spec.ts` - Visual config
+- `editor-load.spec.ts`, `external-change.spec.ts` - Document lifecycle
+- `comprehensive-editing-workflow.spec.ts` - End-to-end workflows
+- `edge-cases.spec.ts`, `edge-cases-2.spec.ts` - Edge case coverage
+
+**Test Fixtures:**
+- `test/e2e/fixtures/` - Markdown fixtures for E2E tests
+- `test/integration/fixtures/` - Markdown fixtures for integration tests
+- `test/__mocks__/vscode.ts` - VS Code API mock
+
+### NPM Scripts:
+```bash
+npm test              # Vitest unit tests
+npm run test:integration  # VS Code integration tests
+npm run test:e2e      # Playwright E2E tests
+npm run test:all      # All test suites
+```
 
 ---
 
-## 9. File Structure
+## 9. Build System
+
+### Build Tool: esbuild
+
+Two separate bundles are produced:
+
+| Bundle | Target | Entry | Output |
+|--------|--------|-------|--------|
+| Extension | Node.js | `src/extension.ts` | `dist/extension.js` |
+| Webview | Browser | `src/webview/index.tsx` | `dist/webview/index.js` + `dist/webview/index.css` |
+
+### NPM Scripts:
+```bash
+npm run build           # Build both bundles
+npm run build:watch     # Watch mode
+npm run build:webview   # Webview only
+npm run package         # Create .vsix package
+```
+
+### CI/CD:
+- `.github/workflows/ci.yml` - Continuous integration
+- `.github/workflows/test.yml` - Test runner
+- `.github/workflows/release.yml` - Marketplace publishing
+
+---
+
+## 10. File Structure
 
 ```
 quartz/
 ├── src/
-│   ├── extension.ts              # VS Code extension entry
-│   ├── QuartzEditorProvider.ts   # Custom editor provider
+│   ├── extension.ts                    # VS Code extension entry
+│   ├── QuartzEditorProvider.ts         # Custom editor provider
 │   ├── markdown/
-│   │   ├── parser.ts             # MD → JSONContent
-│   │   ├── serializer.ts         # JSONContent → MD
-│   │   └── frontmatter.ts        # YAML extraction
+│   │   ├── parser.ts                   # MD → JSONContent
+│   │   ├── serializer.ts              # JSONContent → MD
+│   │   └── frontmatter.ts            # YAML extraction
 │   └── webview/
-│       ├── index.tsx             # Webview entry
-│       ├── App.tsx               # Root component
-│       ├── Editor.tsx            # TipTap configuration
-│       ├── types.ts              # TypeScript interfaces
-│       ├── components/           # UI components
+│       ├── index.tsx                   # Webview entry
+│       ├── App.tsx                     # Root component
+│       ├── Editor.tsx                  # TipTap configuration
+│       ├── types.ts                    # TypeScript interfaces
+│       ├── components/
 │       │   ├── FormattingToolbar.tsx
 │       │   ├── SlashMenu.tsx
 │       │   ├── TableHint.tsx
 │       │   ├── LinkDialog.tsx
-│       │   └── PageContainer.tsx
-│       ├── extensions/           # Custom TipTap extensions
+│       │   ├── PageContainer.tsx
+│       │   └── RawBlock.tsx
+│       ├── extensions/
 │       │   ├── keyboardShortcuts.ts
 │       │   ├── slashCommandExtension.ts
 │       │   ├── virtualRendering.ts
 │       │   ├── linkInputRule.ts
 │       │   ├── combinedMarksInputRule.ts
 │       │   ├── taskListInputRule.ts
+│       │   ├── listInputRule.ts
 │       │   ├── codeBlockExtension.ts
 │       │   └── horizontalRuleExtension.ts
 │       ├── commands/
-│       │   └── slashCommands.ts  # Slash command definitions
-│       └── styles/
-│           ├── editor.css
-│           └── rawBlock.css
+│       │   └── slashCommands.ts
+│       ├── styles/
+│       │   ├── editor.css
+│       │   └── rawBlock.css
+│       └── utils/
+│           └── debounce.ts
 ├── test/
-│   ├── *.test.ts                 # Unit tests
-│   └── e2e/                      # Playwright tests
-├── dist/                         # Built output
-└── package.json
+│   ├── __mocks__/
+│   │   └── vscode.ts
+│   ├── *.test.ts                       # Unit tests (6 files)
+│   ├── unit/                           # Additional unit tests (4 files)
+│   ├── integration/                    # VS Code integration tests (5 files)
+│   │   └── fixtures/                   # Integration test fixtures
+│   ├── e2e/                            # Playwright E2E tests
+│   │   ├── fixtures/                   # E2E test fixtures
+│   │   ├── pages/
+│   │   │   └── editor.page.ts          # Page object model
+│   │   ├── specs/                      # E2E spec files (15 files)
+│   │   ├── fixtures.ts
+│   │   ├── global-setup.ts
+│   │   ├── global-teardown.ts
+│   │   ├── harness.html
+│   │   └── server.ts
+│   └── qa/                             # Manual QA checklists
+├── dist/                               # Built output
+├── images/                             # Extension icon and screenshots
+├── .github/workflows/                  # CI/CD pipelines
+├── esbuild.js                          # Build configuration
+├── package.json                        # v0.1.1
+├── tsconfig.json                       # Main TypeScript config
+├── tsconfig.webview.json               # Webview TypeScript config
+├── tsconfig.test-integration.json      # Integration test config
+├── vitest.config.ts                    # Vitest configuration
+├── playwright.config.ts                # Playwright configuration
+└── .vscode-test.mjs                    # VS Code test runner config
 ```
 
 ---
 
-## 10. Dependencies
+## 11. Dependencies
 
 ### Runtime Dependencies
 | Package | Version | Purpose |
 |---------|---------|---------|
-| `@tiptap/core` | ^2.x | Rich text editor framework |
-| `@tiptap/react` | ^2.x | React bindings for TipTap |
-| `@tiptap/extension-*` | ^2.x | Various editor extensions |
-| `@tiptap/pm/*` | ^2.x | ProseMirror internals |
-| `markdown-it` | ^14.x | Markdown parsing |
-| `lowlight` | ^3.x | Syntax highlighting |
-| `react` | ^18.x | UI framework |
+| `@tiptap/core` | ^2.11.0 | Rich text editor framework |
+| `@tiptap/react` | ^2.11.0 | React bindings for TipTap |
+| `@tiptap/extension-*` | ^2.11.0 | Editor extensions (26 packages) |
+| `@tiptap/pm` | ^2.11.0 | ProseMirror internals |
+| `@tiptap/suggestion` | ^2.11.0 | Suggestion/autocomplete framework |
+| `markdown-it` | ^14.1.0 | Markdown parsing |
+| `lowlight` | ^3.1.0 | Syntax highlighting engine |
+| `highlight.js` | ^11.9.0 | Language grammars for syntax highlighting |
+| `react` | ^18.2.0 | UI framework |
+| `react-dom` | ^18.2.0 | React DOM renderer |
 
 ### Build Dependencies
-| Package | Purpose |
-|---------|---------|
-| `esbuild` | Fast bundling for extension and webview |
-| `typescript` | Type checking |
-| `vitest` | Unit testing |
-| `playwright` | E2E testing |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `esbuild` | ^0.24.0 | Fast bundling for extension and webview |
+| `typescript` | ^5.3.3 | Type checking |
+| `vitest` | ^2.1.0 | Unit testing |
+| `@playwright/test` | ^1.58.1 | E2E testing |
+| `@vscode/test-cli` | ^0.0.12 | VS Code integration test CLI |
+| `@vscode/test-electron` | ^2.5.2 | VS Code test runtime |
+| `@vscode/vsce` | ^3.7.1 | Extension packaging and publishing |
 
 ---
 
-## 11. Open Questions
+## 12. Open Questions
 
 | Question | Owner | Status |
 |----------|-------|--------|
@@ -456,7 +603,7 @@ quartz/
 
 ---
 
-## 12. Appendix
+## 13. Appendix
 
 ### A. Message Protocol
 

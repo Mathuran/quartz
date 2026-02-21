@@ -120,33 +120,67 @@ Address:
 
 ### 8. Rollout Plan
 
+Structure the rollout around **human validation checkpoints**, not coding effort. The AI agent handles implementation; the human gates quality.
+
+For each phase, define:
+- **Agent delivers:** What the agent produces (code, tests, artifacts)
+- **Human reviews:** What the human validates (behavior, design, edge cases)
+- **Approved when:** Concrete criteria for moving to the next phase
+
+**Example:**
+```markdown
+### Phase 1: Core data model and parser
+- **Agent delivers:** Schema, parser implementation, 20+ unit tests all passing
+- **Human reviews:** Test coverage adequacy, edge case handling, output format
+- **Approved when:** Human confirms test cases cover real-world inputs
+
+### Phase 2: UI integration
+- **Agent delivers:** Component implementation, screenshot of rendered output
+- **Human reviews:** Visual design, interaction feel, accessibility
+- **Approved when:** Human confirms UX matches expectations
+```
+
+Additional rollout considerations:
 - Feature flags strategy
-- Gradual rollout phases
 - Monitoring and alerting
 - Rollback plan
 
-### 9. Dependencies and Risks
+### 9. Human Validation Plan
+
+Identify every point where human judgment is required. Minimize these to avoid bottlenecks, but be explicit about what cannot be delegated.
+
+**Decision points:** Choices that require human input before the agent can proceed (e.g., "Which of these 3 API designs should we use?")
+
+**Review checkpoints:** Points where the agent pauses for human quality review (e.g., "Review the rendered callout styles before proceeding to serialization")
+
+**Acceptance gates:** Final validation before a phase is considered done (e.g., "Manually test the 5 core workflows and confirm they match the spec")
+
+| Checkpoint | Agent Produces | Human Validates | Blocks |
+|------------|---------------|-----------------|--------|
+| ... | ... | ... | ... |
+
+### 10. Dependencies and Risks
 
 **Dependencies:**
 - External teams or services
 - Infrastructure requirements
-- Timeline dependencies
+- Decisions that block agent progress (list explicitly)
 
 **Risks and Mitigations:**
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
 | ... | ... | ... | ... |
 
-### 10. Open Questions
+### 11. Open Questions
 
 List unresolved questions that need input:
 - Technical questions
 - Product questions
-- Timeline questions
+- **Human decision questions** — decisions the agent cannot make autonomously
 
-Mark each with who needs to answer.
+Mark each with who needs to answer. Resolve blocking questions before issuing work to the agent.
 
-### 11. Implementation Issues
+### 12. Implementation Issues
 
 Once the design doc is approved, link to the implementation issues:
 
@@ -164,7 +198,7 @@ Once the design doc is approved, link to the implementation issues:
 
 This section is automatically populated when `/create-issues` is run.
 
-### 12. Appendix (Optional)
+### 13. Appendix (Optional)
 
 - Detailed calculations
 - Full API specifications
@@ -192,5 +226,8 @@ This section is automatically populated when `/create-issues` is run.
 - [ ] Alternatives show thorough thinking
 - [ ] Security considerations addressed
 - [ ] Testing strategy is concrete
+- [ ] Human validation checkpoints are explicit
+- [ ] Scope is expressed in review cycles, not dev-days
+- [ ] Blocking human decisions are identified and resolved (or flagged)
 - [ ] Risks and mitigations identified
 - [ ] Open questions listed with owners
