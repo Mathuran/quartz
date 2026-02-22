@@ -39,32 +39,31 @@ const handlers: TokenHandler[] = [
   tableHandler,
 ];
 
+/** Result of parsing markdown, separating frontmatter from document content */
+export interface ParseResult {
+  doc: JSONContent;
+  frontmatter: string | null;
+}
+
 /** Shared context passed to every handler */
 const context: ParseContext = {
   parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
     return parseInline(tokens);
   },
   parseMarkdown(text: string): JSONContent {
-    return parseMarkdown(text);
+    // Internal context always returns just the doc (used by handlers like htmlBlock)
+    return parseMarkdown(text).doc;
   },
 };
 
-export function parseMarkdown(text: string): JSONContent {
+export function parseMarkdown(text: string): ParseResult {
   if (!text || !text.trim()) {
-    return { type: 'doc', content: [{ type: 'paragraph' }] };
+    return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, frontmatter: null };
   }
 
   const { frontmatter, body } = extractFrontmatter(text);
   const tokens = md.parse(body, {});
   const content: JSONContent[] = [];
-
-  if (frontmatter !== null) {
-    content.push({
-      type: 'codeBlock',
-      attrs: { language: 'yaml' },
-      content: [{ type: 'text', text: frontmatter }],
-    });
-  }
 
   const docContent = tokensToNodes(tokens);
   content.push(...docContent);
@@ -73,7 +72,7 @@ export function parseMarkdown(text: string): JSONContent {
     content.push({ type: 'paragraph' });
   }
 
-  return { type: 'doc', content };
+  return { doc: { type: 'doc', content }, frontmatter };
 }
 
 function tokensToNodes(tokens: MarkdownIt.Token[]): JSONContent[] {

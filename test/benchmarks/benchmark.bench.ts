@@ -10,7 +10,7 @@ const referenceDoc = readFileSync(
 );
 
 // Pre-parse for serialize benchmarks
-const parsedDoc = parseMarkdown(referenceDoc);
+const { doc: parsedDoc, frontmatter: parsedFrontmatter } = parseMarkdown(referenceDoc);
 
 describe('Parser Benchmarks', () => {
   bench('parse reference document (~1000 lines)', () => {
@@ -30,18 +30,20 @@ describe('Parser Benchmarks', () => {
 
 describe('Serializer Benchmarks', () => {
   bench('serialize reference document (~1000 lines)', () => {
-    serializeMarkdown(parsedDoc);
+    serializeMarkdown(parsedDoc, parsedFrontmatter);
   });
 });
 
 describe('Roundtrip Benchmarks', () => {
   bench('full roundtrip (parse + serialize)', () => {
-    const parsed = parseMarkdown(referenceDoc);
-    serializeMarkdown(parsed);
+    const { doc, frontmatter } = parseMarkdown(referenceDoc);
+    serializeMarkdown(doc, frontmatter);
   });
 
   bench('double roundtrip (parse -> serialize -> parse -> serialize)', () => {
-    const first = serializeMarkdown(parseMarkdown(referenceDoc));
-    serializeMarkdown(parseMarkdown(first));
+    const r1 = parseMarkdown(referenceDoc);
+    const first = serializeMarkdown(r1.doc, r1.frontmatter);
+    const r2 = parseMarkdown(first);
+    serializeMarkdown(r2.doc, r2.frontmatter);
   });
 });

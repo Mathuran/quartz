@@ -3,21 +3,21 @@ import { parseMarkdown } from '../src/markdown/parser';
 
 describe('Markdown Parser', () => {
   it('should parse empty string to single empty paragraph', () => {
-    const result = parseMarkdown('');
+    const { doc: result } = parseMarkdown('');
     expect(result.type).toBe('doc');
     expect(result.content).toHaveLength(1);
     expect(result.content![0].type).toBe('paragraph');
   });
 
   it('should parse whitespace-only string to single empty paragraph', () => {
-    const result = parseMarkdown('   \n  \n  ');
+    const { doc: result } = parseMarkdown('   \n  \n  ');
     expect(result.type).toBe('doc');
     expect(result.content).toHaveLength(1);
     expect(result.content![0].type).toBe('paragraph');
   });
 
   it('should parse a simple paragraph', () => {
-    const result = parseMarkdown('Hello world');
+    const { doc: result } = parseMarkdown('Hello world');
     expect(result.content).toHaveLength(1);
     expect(result.content![0].type).toBe('paragraph');
     expect(result.content![0].content![0].text).toBe('Hello world');
@@ -26,7 +26,7 @@ describe('Markdown Parser', () => {
   it('should parse headings H1-H6', () => {
     for (let level = 1; level <= 6; level++) {
       const prefix = '#'.repeat(level);
-      const result = parseMarkdown(`${prefix} Heading ${level}`);
+      const { doc: result } = parseMarkdown(`${prefix} Heading ${level}`);
       const heading = result.content![0];
       expect(heading.type).toBe('heading');
       expect(heading.attrs?.level).toBe(level);
@@ -36,7 +36,7 @@ describe('Markdown Parser', () => {
 
   it('should parse bullet list', () => {
     const md = '- Item 1\n- Item 2\n- Item 3';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('bulletList');
     expect(list.content).toHaveLength(3);
@@ -45,7 +45,7 @@ describe('Markdown Parser', () => {
 
   it('should parse bullet list items without dash prefix in text content', () => {
     const md = '- Item 1\n- Item 2\n- Item 3';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('bulletList');
 
@@ -63,7 +63,7 @@ describe('Markdown Parser', () => {
 
   it('should parse ordered list', () => {
     const md = '1. First\n2. Second\n3. Third';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('orderedList');
     expect(list.content).toHaveLength(3);
@@ -71,7 +71,7 @@ describe('Markdown Parser', () => {
 
   it('should parse ordered list items without number prefix in text content', () => {
     const md = '1. First\n2. Second\n3. Third';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('orderedList');
 
@@ -90,7 +90,7 @@ describe('Markdown Parser', () => {
 
   it('should parse nested bullet list', () => {
     const md = '- Top\n  - Nested\n    - Deep';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('bulletList');
     // First item should contain a nested list
@@ -100,7 +100,7 @@ describe('Markdown Parser', () => {
 
   it('should parse nested lists without markdown prefixes at all levels', () => {
     const md = '- Level 1\n  - Level 2\n    - Level 3';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     // Helper to extract text from a list item
     const getItemText = (item: { content?: { type: string; content?: { type: string; text?: string }[] }[] }) => {
@@ -144,7 +144,7 @@ describe('Markdown Parser', () => {
 
   it('should parse code block with language', () => {
     const md = '```typescript\nconst x = 1;\n```';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const codeBlock = result.content![0];
     expect(codeBlock.type).toBe('codeBlock');
     expect(codeBlock.attrs?.language).toBe('typescript');
@@ -153,14 +153,14 @@ describe('Markdown Parser', () => {
 
   it('should parse code block without language', () => {
     const md = '```\nsome code\n```';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const codeBlock = result.content![0];
     expect(codeBlock.type).toBe('codeBlock');
   });
 
   it('should parse blockquote', () => {
     const md = '> This is a quote';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const blockquote = result.content![0];
     expect(blockquote.type).toBe('blockquote');
     expect(blockquote.content![0].type).toBe('paragraph');
@@ -168,12 +168,12 @@ describe('Markdown Parser', () => {
 
   it('should parse horizontal rule', () => {
     const md = 'Before\n\n---\n\nAfter';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     expect(result.content!.some((n) => n.type === 'horizontalRule')).toBe(true);
   });
 
   it('should parse inline bold', () => {
-    const result = parseMarkdown('This is **bold** text');
+    const { doc: result } = parseMarkdown('This is **bold** text');
     const paragraph = result.content![0];
     const boldNode = paragraph.content!.find(
       (n) => n.marks?.some((m) => m.type === 'bold')
@@ -183,7 +183,7 @@ describe('Markdown Parser', () => {
   });
 
   it('should parse inline italic', () => {
-    const result = parseMarkdown('This is *italic* text');
+    const { doc: result } = parseMarkdown('This is *italic* text');
     const paragraph = result.content![0];
     const italicNode = paragraph.content!.find(
       (n) => n.marks?.some((m) => m.type === 'italic')
@@ -193,7 +193,7 @@ describe('Markdown Parser', () => {
   });
 
   it('should parse inline strikethrough', () => {
-    const result = parseMarkdown('This is ~~struck~~ text');
+    const { doc: result } = parseMarkdown('This is ~~struck~~ text');
     const paragraph = result.content![0];
     const strikeNode = paragraph.content!.find(
       (n) => n.marks?.some((m) => m.type === 'strike')
@@ -203,7 +203,7 @@ describe('Markdown Parser', () => {
   });
 
   it('should parse inline code', () => {
-    const result = parseMarkdown('Use `console.log()` here');
+    const { doc: result } = parseMarkdown('Use `console.log()` here');
     const paragraph = result.content![0];
     const codeNode = paragraph.content!.find(
       (n) => n.marks?.some((m) => m.type === 'code')
@@ -213,7 +213,7 @@ describe('Markdown Parser', () => {
   });
 
   it('should parse links', () => {
-    const result = parseMarkdown('[click here](https://example.com)');
+    const { doc: result } = parseMarkdown('[click here](https://example.com)');
     const paragraph = result.content![0];
     const linkNode = paragraph.content!.find(
       (n) => n.marks?.some((m) => m.type === 'link')
@@ -224,21 +224,20 @@ describe('Markdown Parser', () => {
     expect(linkMark!.attrs!.href).toBe('https://example.com');
   });
 
-  it('should parse frontmatter', () => {
+  it('should parse frontmatter separately from doc', () => {
     const md = '---\ntitle: Test\ndate: 2024-01-01\n---\n\n# Hello';
-    const result = parseMarkdown(md);
-    // First node should be the frontmatter code block
-    const frontmatter = result.content![0];
-    expect(frontmatter.type).toBe('codeBlock');
-    expect(frontmatter.attrs?.language).toBe('yaml');
-    expect(frontmatter.content![0].text).toContain('title: Test');
-    // Second node should be the heading
-    expect(result.content![1].type).toBe('heading');
+    const { doc, frontmatter } = parseMarkdown(md);
+    // Frontmatter should be returned as a separate string
+    expect(frontmatter).toBe('title: Test\ndate: 2024-01-01');
+    // Frontmatter should NOT be present as a codeBlock node in doc.content
+    expect(doc.content![0].type).not.toBe('codeBlock');
+    // First node should be the heading
+    expect(doc.content![0].type).toBe('heading');
   });
 
   it('should parse task list', () => {
     const md = '- [ ] Unchecked\n- [x] Checked';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('taskList');
     expect(list.content).toHaveLength(2);
@@ -248,7 +247,7 @@ describe('Markdown Parser', () => {
 
   it('should parse table', () => {
     const md = '| A | B |\n|---|---|\n| 1 | 2 |';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const table = result.content![0];
     expect(table.type).toBe('table');
     expect(table.content).toHaveLength(2); // header row + 1 body row
@@ -256,7 +255,7 @@ describe('Markdown Parser', () => {
 
   it('should parse image', () => {
     const md = '![alt text](image.png)';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const paragraph = result.content![0];
     const image = paragraph.content!.find((n) => n.type === 'image');
     expect(image).toBeDefined();
@@ -268,12 +267,12 @@ describe('Markdown Parser', () => {
     const lines = Array.from({ length: 1000 }, (_, i) => `Line ${i + 1}`);
     const md = lines.join('\n\n');
     expect(() => parseMarkdown(md)).not.toThrow();
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     expect(result.content!.length).toBeGreaterThan(0);
   });
 
   it('should parse mixed inline marks (bold+italic)', () => {
-    const result = parseMarkdown('***bold and italic***');
+    const { doc: result } = parseMarkdown('***bold and italic***');
     const paragraph = result.content![0];
     expect(paragraph.content).toBeDefined();
     // markdown-it may nest em inside strong, creating multiple text nodes with marks

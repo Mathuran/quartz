@@ -35,7 +35,7 @@ describe('Performance', () => {
   it('should parse 1K-line document without error', () => {
     const md = generateMarkdown(100);
     const start = performance.now();
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const elapsed = performance.now() - start;
 
     expect(result.content!.length).toBeGreaterThan(0);
@@ -44,9 +44,9 @@ describe('Performance', () => {
 
   it('should serialize 1K-line document without error', () => {
     const md = generateMarkdown(100);
-    const parsed = parseMarkdown(md);
+    const { doc } = parseMarkdown(md);
     const start = performance.now();
-    const result = serializeMarkdown(parsed);
+    const result = serializeMarkdown(doc);
     const elapsed = performance.now() - start;
 
     expect(result.length).toBeGreaterThan(0);
@@ -55,8 +55,8 @@ describe('Performance', () => {
 
   it('should round-trip 1K-line document', () => {
     const md = generateMarkdown(100);
-    const parsed = parseMarkdown(md);
-    const serialized = serializeMarkdown(parsed);
+    const { doc, frontmatter } = parseMarkdown(md);
+    const serialized = serializeMarkdown(doc, frontmatter);
 
     // Verify key content is preserved
     expect(serialized).toContain('## Section 1');
@@ -69,7 +69,7 @@ describe('Performance', () => {
   it('should parse 5K-line document in < 500ms', () => {
     const md = generateMarkdown(500);
     const start = performance.now();
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const elapsed = performance.now() - start;
 
     expect(result.content!.length).toBeGreaterThan(0);
@@ -78,9 +78,9 @@ describe('Performance', () => {
 
   it('should serialize 5K-line document in < 500ms', () => {
     const md = generateMarkdown(500);
-    const parsed = parseMarkdown(md);
+    const { doc } = parseMarkdown(md);
     const start = performance.now();
-    const result = serializeMarkdown(parsed);
+    const result = serializeMarkdown(doc);
     const elapsed = performance.now() - start;
 
     expect(result.length).toBeGreaterThan(0);
@@ -90,15 +90,17 @@ describe('Performance', () => {
   it('should handle 10K-line document without crash', () => {
     const md = generateMarkdown(1000);
     expect(() => {
-      const parsed = parseMarkdown(md);
-      serializeMarkdown(parsed);
+      const { doc, frontmatter } = parseMarkdown(md);
+      serializeMarkdown(doc, frontmatter);
     }).not.toThrow();
   });
 
   it('should parse and serialize consistently (no data loss on large docs)', () => {
     const md = generateMarkdown(200);
-    const first = serializeMarkdown(parseMarkdown(md));
-    const second = serializeMarkdown(parseMarkdown(first));
+    const r1 = parseMarkdown(md);
+    const first = serializeMarkdown(r1.doc, r1.frontmatter);
+    const r2 = parseMarkdown(first);
+    const second = serializeMarkdown(r2.doc, r2.frontmatter);
 
     // Second round-trip should be identical to first
     expect(second).toBe(first);

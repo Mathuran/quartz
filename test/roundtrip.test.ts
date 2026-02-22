@@ -3,8 +3,8 @@ import { parseMarkdown } from '../src/markdown/parser';
 import { serializeMarkdown } from '../src/markdown/serializer';
 
 function roundTrip(md: string): string {
-  const parsed = parseMarkdown(md);
-  return serializeMarkdown(parsed);
+  const { doc, frontmatter } = parseMarkdown(md);
+  return serializeMarkdown(doc, frontmatter);
 }
 
 describe('Round-Trip Fidelity', () => {

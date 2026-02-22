@@ -8,7 +8,7 @@ import { serializeMarkdown } from '../../src/markdown/serializer';
  */
 export function assertRoundtrip(markdown: string): void {
   const firstParse = parseMarkdown(markdown);
-  const serialized = serializeMarkdown(firstParse);
+  const serialized = serializeMarkdown(firstParse.doc, firstParse.frontmatter);
   const secondParse = parseMarkdown(serialized);
 
   // Compare the two parsed JSON structures
@@ -20,6 +20,6 @@ export function assertRoundtrip(markdown: string): void {
  * Returns the serialized markdown string.
  */
 export function roundTrip(markdown: string): string {
-  const parsed = parseMarkdown(markdown);
-  return serializeMarkdown(parsed);
+  const { doc, frontmatter } = parseMarkdown(markdown);
+  return serializeMarkdown(doc, frontmatter);
 }

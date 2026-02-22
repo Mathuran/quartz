@@ -12,6 +12,7 @@ import {
   imageSerializer,
   horizontalRuleSerializer,
   detailsSerializer,
+  calloutSerializer,
   serializeInline,
 } from './serializers';
 
@@ -31,6 +32,7 @@ const builtInSerializers: NodeSerializer[] = [
   imageSerializer,
   horizontalRuleSerializer,
   detailsSerializer,
+  calloutSerializer,
 ];
 
 for (const serializer of builtInSerializers) {
@@ -72,8 +74,17 @@ function needsBlankLine(prevType: string, _currentType: string): boolean {
   return true;
 }
 
-export function serializeMarkdown(doc: JSONContent): string {
-  if (!doc.content || doc.content.length === 0) return '';
+export function serializeMarkdown(
+  doc: JSONContent,
+  frontmatter?: string | null,
+): string {
+  let result = '';
+
+  if (frontmatter) {
+    result += `---\n${frontmatter}\n---\n\n`;
+  }
+
+  if (!doc.content || doc.content.length === 0) return result;
   const parts: string[] = [];
   let isFirst = true;
   let prevType = '';
@@ -90,10 +101,11 @@ export function serializeMarkdown(doc: JSONContent): string {
     }
   }
 
-  let result = parts.join('\n');
+  let body = parts.join('\n');
   // Ensure single trailing newline
-  if (result && !result.endsWith('\n')) {
-    result += '\n';
+  if (body && !body.endsWith('\n')) {
+    body += '\n';
   }
+  result += body;
   return result;
 }

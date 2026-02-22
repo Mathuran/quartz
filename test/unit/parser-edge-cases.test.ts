@@ -9,7 +9,7 @@ describe('Markdown Parser Edge Cases', () => {
       '     - Level 3 bullet',
       '       1. Level 4 ordered',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     // Top level is a bullet list
     const bulletList = result.content![0];
@@ -45,7 +45,7 @@ describe('Markdown Parser Edge Cases', () => {
       '> const x = 1;',
       '> ```',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const blockquote = result.content![0];
     expect(blockquote.type).toBe('blockquote');
@@ -60,7 +60,7 @@ describe('Markdown Parser Edge Cases', () => {
     // markdown-it treats pipes inside backticks as column separators,
     // so we must escape the pipe with \| inside the code span.
     const md = '| Header1 | Header2 |\n|---------|----------|\n| `a\\|b` | normal |';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const table = result.content![0];
     expect(table.type).toBe('table');
@@ -85,7 +85,7 @@ describe('Markdown Parser Edge Cases', () => {
     const separator = Array.from({ length: columnCount }, () => '---').join(' | ');
     const row = Array.from({ length: columnCount }, (_, i) => `C${i + 1}`).join(' | ');
     const md = `| ${headers} |\n| ${separator} |\n| ${row} |`;
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const table = result.content![0];
     expect(table.type).toBe('table');
@@ -103,7 +103,7 @@ describe('Markdown Parser Edge Cases', () => {
   });
 
   it('should parse an empty document (only whitespace)', () => {
-    const result = parseMarkdown('   \n\t\n   ');
+    const { doc: result } = parseMarkdown('   \n\t\n   ');
     expect(result.type).toBe('doc');
     expect(result.content).toHaveLength(1);
     expect(result.content![0].type).toBe('paragraph');
@@ -112,18 +112,17 @@ describe('Markdown Parser Edge Cases', () => {
 
   it('should parse a document with only frontmatter and no body', () => {
     const md = '---\ntitle: Test\n---';
-    const result = parseMarkdown(md);
+    const { doc: result, frontmatter } = parseMarkdown(md);
 
     expect(result.type).toBe('doc');
-    // Should have the frontmatter as a codeBlock
-    const frontmatter = result.content![0];
-    expect(frontmatter.type).toBe('codeBlock');
-    expect(frontmatter.attrs?.language).toBe('yaml');
-    expect(frontmatter.content![0].text).toContain('title: Test');
-
-    // After frontmatter, body is empty so there should be a trailing paragraph
-    // or just the frontmatter block (the parser adds an empty paragraph if content is empty)
+    // Frontmatter should be returned separately, not as a codeBlock
+    expect(frontmatter).toBe('title: Test');
+    // Doc should not contain a codeBlock for frontmatter
+    const codeBlocks = result.content!.filter((n) => n.type === 'codeBlock');
+    expect(codeBlocks).toHaveLength(0);
+    // Body is empty so there should be a trailing paragraph
     expect(result.content!.length).toBeGreaterThanOrEqual(1);
+    expect(result.content![0].type).toBe('paragraph');
   });
 
   it('should parse frontmatter with special YAML characters', () => {
@@ -137,17 +136,16 @@ describe('Markdown Parser Edge Cases', () => {
       '',
       'Body text',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result, frontmatter } = parseMarkdown(md);
 
-    const frontmatter = result.content![0];
-    expect(frontmatter.type).toBe('codeBlock');
-    expect(frontmatter.attrs?.language).toBe('yaml');
+    // Frontmatter should be returned as a separate string
+    expect(frontmatter).toContain('title: "key: value"');
+    expect(frontmatter).toContain('tags: [a, b, c]');
+    expect(frontmatter).toContain('meta: {foo: bar}');
+    expect(frontmatter).toContain('comment: "# not a heading"');
 
-    const yamlText = frontmatter.content![0].text!;
-    expect(yamlText).toContain('title: "key: value"');
-    expect(yamlText).toContain('tags: [a, b, c]');
-    expect(yamlText).toContain('meta: {foo: bar}');
-    expect(yamlText).toContain('comment: "# not a heading"');
+    // Doc should not contain frontmatter as a codeBlock
+    expect(result.content![0].type).not.toBe('codeBlock');
 
     // Body should still be parsed as paragraph
     const bodyNode = result.content!.find((n) => n.type === 'paragraph');
@@ -159,7 +157,7 @@ describe('Markdown Parser Edge Cases', () => {
     // Use *** instead of --- to avoid triggering frontmatter detection.
     // The frontmatter regex matches ^---\n...\n--- which would consume the first two ---
     const md = '***\n\n***\n\n***';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const hrNodes = result.content!.filter((n) => n.type === 'horizontalRule');
     expect(hrNodes).toHaveLength(3);
@@ -175,7 +173,7 @@ describe('Markdown Parser Edge Cases', () => {
       'fn main() {}',
       '```',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const codeBlocks = result.content!.filter((n) => n.type === 'codeBlock');
     expect(codeBlocks).toHaveLength(2);
@@ -189,7 +187,7 @@ describe('Markdown Parser Edge Cases', () => {
 
   it('should parse a link with title attribute', () => {
     const md = '[text](https://example.com "my title")';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const paragraph = result.content![0];
     expect(paragraph.type).toBe('paragraph');
@@ -207,7 +205,7 @@ describe('Markdown Parser Edge Cases', () => {
 
   it('should parse an image with empty alt text', () => {
     const md = '![](https://example.com/img.png)';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const paragraph = result.content![0];
     const image = paragraph.content!.find((n) => n.type === 'image');
@@ -218,7 +216,7 @@ describe('Markdown Parser Edge Cases', () => {
   });
 
   it('should parse nested inline marks (bold+italic with ***)', () => {
-    const result = parseMarkdown('***bold italic***');
+    const { doc: result } = parseMarkdown('***bold italic***');
     const paragraph = result.content![0];
     expect(paragraph.content).toBeDefined();
     expect(paragraph.content!.length).toBeGreaterThanOrEqual(1);
@@ -235,7 +233,7 @@ describe('Markdown Parser Edge Cases', () => {
 
   it('should parse an HTML block that is not <details> as a paragraph with raw text', () => {
     const md = '<div>content</div>';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     // Non-details HTML blocks should become paragraphs with text content
     const paragraph = result.content![0];
@@ -245,7 +243,7 @@ describe('Markdown Parser Edge Cases', () => {
 
   it('should parse a paragraph with only inline code and no other text', () => {
     const md = '`justCode`';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const paragraph = result.content![0];
     expect(paragraph.type).toBe('paragraph');
@@ -338,14 +336,14 @@ Check out [Google](https://www.google.com).
 Here is a simple footnote[^1].`;
 
     expect(() => parseMarkdown(content)).not.toThrow();
-    const result = parseMarkdown(content);
+    const { doc: result } = parseMarkdown(content);
     expect(result.type).toBe('doc');
     expect(result.content!.length).toBeGreaterThan(10);
   });
 
   it('should handle an extremely long single line (10K+ characters)', () => {
     const longText = 'A'.repeat(10_500);
-    const result = parseMarkdown(longText);
+    const { doc: result } = parseMarkdown(longText);
 
     expect(result.type).toBe('doc');
     expect(result.content!.length).toBeGreaterThanOrEqual(1);
@@ -370,7 +368,7 @@ Here is a simple footnote[^1].`;
       '',
       'Another paragraph.',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     // Should have: codeBlock, paragraph, codeBlock, paragraph
     expect(result.content!.length).toBe(4);
@@ -392,7 +390,7 @@ Here is a simple footnote[^1].`;
       '',
       'Paragraph after.',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     expect(result.content!.length).toBe(2);
     expect(result.content![0].type).toBe('codeBlock');
@@ -409,7 +407,7 @@ Here is a simple footnote[^1].`;
       'Use `inline code` like this.',
       '```',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     expect(result.content!.length).toBe(1);
     const codeBlock = result.content![0];
@@ -432,7 +430,7 @@ Here is a simple footnote[^1].`;
       'c = 3',
       '```',
     ].join('\n');
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
 
     const codeBlocks = result.content!.filter((n) => n.type === 'codeBlock');
     expect(codeBlocks).toHaveLength(3);

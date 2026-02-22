@@ -3,7 +3,8 @@ import { parseMarkdown } from '../../src/markdown/parser';
 import { serializeMarkdown } from '../../src/markdown/serializer';
 
 function roundTrip(md: string): string {
-  return serializeMarkdown(parseMarkdown(md));
+  const { doc, frontmatter } = parseMarkdown(md);
+  return serializeMarkdown(doc, frontmatter);
 }
 
 describe('Round-Trip All Block Types', () => {

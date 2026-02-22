@@ -71,17 +71,17 @@ interface EditorProps {
 }
 
 /**
- * Safely parse markdown, returning the parsed doc and any error encountered.
+ * Safely parse markdown, returning the parsed doc, frontmatter, and any error encountered.
  */
-function safeParse(markdown: string): { doc: JSONContent; error: string | null } {
+function safeParse(markdown: string): { doc: JSONContent; frontmatter: string | null; error: string | null } {
   if (!markdown || !markdown.trim()) {
-    return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, error: null };
+    return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, frontmatter: null, error: null };
   }
 
   try {
-    const doc = parseMarkdown(markdown);
+    const { doc, frontmatter } = parseMarkdown(markdown);
     console.log('[Quartz] Parsed markdown into', doc.content?.length ?? 0, 'top-level nodes');
-    return { doc, error: null };
+    return { doc, frontmatter, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[Quartz] Failed to parse markdown:', message);
@@ -90,6 +90,7 @@ function safeParse(markdown: string): { doc: JSONContent; error: string | null }
         type: 'doc',
         content: [{ type: 'paragraph', content: [{ type: 'text', text: markdown }] }],
       },
+      frontmatter: null,
       error: `Parse error: ${message}`,
     };
   }
@@ -101,7 +102,8 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const [contentWarning, setContentWarning] = useState<string | null>(null);
   const [tableHintPosition, setTableHintPosition] = useState<{ top: number } | null>(null);
 
-  const { doc: initialDoc, error: parseError } = safeParse(initialContentRef.current);
+  const { doc: initialDoc, frontmatter: initialFrontmatter, error: parseError } = safeParse(initialContentRef.current);
+  const [frontmatter, setFrontmatter] = useState<string | null>(initialFrontmatter);
 
   const editor = useEditor({
     extensions: [
@@ -164,7 +166,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     onUpdate: ({ editor }) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        const markdown = serializeMarkdown(editor.getJSON());
+        const markdown = serializeMarkdown(editor.getJSON(), frontmatter);
         onUpdate(markdown);
       }, 300);
     },
@@ -211,19 +213,23 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   useEffect(() => {
     if (editor && initialContent !== initialContentRef.current) {
       initialContentRef.current = initialContent;
-      const { doc, error } = safeParse(initialContent);
+      const { doc, frontmatter: newFrontmatter, error } = safeParse(initialContent);
+      setFrontmatter(newFrontmatter);
       if (error) {
         setContentWarning(error);
       } else {
         setContentWarning(null);
       }
-      // Replace content without adding to undo history
-      // This prevents undo from reverting past document loads
-      const newDoc = editor.schema.nodeFromJSON(doc);
-      const { tr } = editor.state;
-      tr.replaceWith(0, editor.state.doc.content.size, newDoc.content);
-      tr.setMeta('addToHistory', false);
-      editor.view.dispatch(tr);
+      // Replace content without adding to undo history.
+      // We use setContent (which safely rebuilds the DOM, avoiding insertBefore errors)
+      // but intercept its internal dispatch to suppress the history entry.
+      const origDispatch = editor.view.dispatch.bind(editor.view);
+      editor.view.dispatch = (tr: any) => {
+        tr.setMeta('addToHistory', false);
+        origDispatch(tr);
+      };
+      editor.commands.setContent(doc, false, { preserveWhitespace: true });
+      editor.view.dispatch = origDispatch;
 
       // Verify content was preserved after setContent
       setTimeout(() => {

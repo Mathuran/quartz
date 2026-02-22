@@ -16,7 +16,8 @@ function paragraph(...text: string[]): JSONContent {
 }
 
 function roundTrip(md: string): string {
-  return serializeMarkdown(parseMarkdown(md));
+  const { doc, frontmatter } = parseMarkdown(md);
+  return serializeMarkdown(doc, frontmatter);
 }
 
 describe('Frontmatter Extraction', () => {
@@ -55,7 +56,7 @@ describe('Frontmatter Extraction', () => {
 describe('Nested Blockquote', () => {
   it('should parse multi-paragraph blockquote structure', () => {
     const md = '> first line\n>\n> second line';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const outer = result.content![0];
     expect(outer.type).toBe('blockquote');
     expect(outer.content!.length).toBeGreaterThanOrEqual(2);
@@ -88,7 +89,7 @@ describe('Nested Blockquote', () => {
 describe('Code Block Without Language', () => {
   it('should parse a code block without language identifier', () => {
     const md = '```\nplain code\n```';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const codeBlock = result.content![0];
     expect(codeBlock.type).toBe('codeBlock');
     expect(codeBlock.attrs?.language).toBeUndefined();
@@ -105,7 +106,7 @@ describe('Code Block Without Language', () => {
 describe('Empty List Items', () => {
   it('should parse a list with an empty first item', () => {
     const md = '-\n- text';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const list = result.content![0];
     expect(list.type).toBe('bulletList');
     expect(list.content).toHaveLength(2);
@@ -122,7 +123,7 @@ describe('Empty List Items', () => {
 describe('Multiple Paragraphs', () => {
   it('should parse two paragraphs separated by a blank line', () => {
     const md = 'Para 1\n\nPara 2';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     expect(result.content).toHaveLength(2);
     expect(result.content![0].type).toBe('paragraph');
     expect(result.content![0].content![0].text).toBe('Para 1');
@@ -132,7 +133,7 @@ describe('Multiple Paragraphs', () => {
 
   it('should parse three paragraphs separated by blank lines', () => {
     const md = 'First\n\nSecond\n\nThird';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     expect(result.content).toHaveLength(3);
     expect(result.content![0].content![0].text).toBe('First');
     expect(result.content![1].content![0].text).toBe('Second');
@@ -143,7 +144,7 @@ describe('Multiple Paragraphs', () => {
 describe('Table Round-Trip', () => {
   it('should parse a 3x3 table with headers and serialize back with pipe syntax', () => {
     const md = '| A | B | C |\n|---|---|---|\n| 1 | 2 | 3 |\n| 4 | 5 | 6 |';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const table = result.content![0];
     expect(table.type).toBe('table');
     // 1 header row + 2 body rows
@@ -172,7 +173,7 @@ describe('Table Round-Trip', () => {
 describe('Image in Paragraph Context', () => {
   it('should parse image syntax and produce an image node', () => {
     const md = '![alt text](https://example.com/image.png)';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const paragraph = result.content![0];
     const imageNode = paragraph.content!.find((n) => n.type === 'image');
     expect(imageNode).toBeDefined();
@@ -184,7 +185,7 @@ describe('Image in Paragraph Context', () => {
 describe('Hard Break', () => {
   it('should parse two trailing spaces as a hardBreak node', () => {
     const md = 'line1  \nline2';
-    const result = parseMarkdown(md);
+    const { doc: result } = parseMarkdown(md);
     const paragraph = result.content![0];
     expect(paragraph.content).toBeDefined();
     const hasHardBreak = paragraph.content!.some((n) => n.type === 'hardBreak');

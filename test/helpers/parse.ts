@@ -18,7 +18,7 @@ export function readFixture(name: string): string {
  */
 export function parseFixture(name: string): JSONContent {
   const content = readFixture(name);
-  return parseMarkdown(content);
+  return parseMarkdown(content).doc;
 }
 
 /**
