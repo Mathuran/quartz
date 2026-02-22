@@ -38,7 +38,17 @@ export function App() {
           setConfig(message.config);
           break;
         case 'externalChange':
+          // Suppress outbound updates while the editor processes the external
+          // content — prevents the feedback loop where setContent triggers
+          // onUpdate which would send the content back to the extension host.
+          suppressUpdateRef.current = true;
           setContent(message.content);
+          // Re-enable after the editor has finished processing the update.
+          // The 500ms timeout is a safety net — even if the update flow errors,
+          // user edits will not be permanently suppressed.
+          setTimeout(() => {
+            suppressUpdateRef.current = false;
+          }, 500);
           break;
       }
     };

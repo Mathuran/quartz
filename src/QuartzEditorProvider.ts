@@ -25,30 +25,46 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
+    // Change origin guard: tracks whether a document change originated from the
+    // webview (our own edit) so that we don't echo it back as an external change.
+    let isApplyingWebviewEdit = false;
+
+    // Debounce timer for external change notifications
+    let externalChangeTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    function sendExternalChange() {
+      if (externalChangeTimeout) clearTimeout(externalChangeTimeout);
+      externalChangeTimeout = setTimeout(() => {
+        webviewPanel.webview.postMessage({
+          type: 'externalChange',
+          content: document.getText(),
+        });
+      }, 300);
+    }
+
     // Send document content to webview when it's ready
-    const onWebviewMessage = webviewPanel.webview.onDidReceiveMessage((message) => {
+    const onWebviewMessage = webviewPanel.webview.onDidReceiveMessage(async (message) => {
       switch (message.type) {
         case 'ready':
           this.sendDocumentToWebview(webviewPanel.webview, document);
           this.sendConfigToWebview(webviewPanel.webview);
           return;
         case 'update':
-          this.applyEdits(document, message.content);
+          isApplyingWebviewEdit = true;
+          await this.applyEdits(document, message.content);
+          isApplyingWebviewEdit = false;
           return;
       }
     });
 
     // Handle external document changes
     const onDocumentChange = vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.toString() === document.uri.toString() && e.contentChanges.length > 0) {
-        // Only send if the change didn't come from us
-        if (
-          e.reason !== vscode.TextDocumentChangeReason.Undo &&
-          e.reason !== vscode.TextDocumentChangeReason.Redo
-        ) {
-          // Debounce external change notifications
-        }
-      }
+      if (e.document.uri.toString() !== document.uri.toString()) return;
+      if (e.contentChanges.length === 0) return;
+      if (isApplyingWebviewEdit) return; // Skip our own edits
+
+      // Debounce and send external change to the webview
+      sendExternalChange();
     });
 
     // Handle config changes
@@ -62,6 +78,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     });
 
     webviewPanel.onDidDispose(() => {
+      if (externalChangeTimeout) clearTimeout(externalChangeTimeout);
       onWebviewMessage.dispose();
       onDocumentChange.dispose();
       onConfigChange.dispose();
@@ -99,10 +116,10 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     });
   }
 
-  private applyEdits(document: vscode.TextDocument, content: string): void {
+  private async applyEdits(document: vscode.TextDocument, content: string): Promise<void> {
     const edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
-    vscode.workspace.applyEdit(edit);
+    await vscode.workspace.applyEdit(edit);
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
