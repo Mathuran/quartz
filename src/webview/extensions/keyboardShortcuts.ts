@@ -108,12 +108,21 @@ export function moveListItemsUp(
   const tr = state.tr;
   tr.replaceWith(prevStart, movingEnd, newContent);
 
-  // Restore cursor position
-  const cursorOffset = selection.$from.pos - movingStart;
-  const newCursorPos = prevStart + cursorOffset;
+  // Restore selection (range or cursor)
+  const fromOffset = selection.$from.pos - movingStart;
+  const newFromPos = prevStart + fromOffset;
   try {
-    const $newPos = tr.doc.resolve(Math.min(Math.max(newCursorPos, 0), tr.doc.content.size - 1));
-    tr.setSelection(TextSelection.near($newPos));
+    if (selection.$from.pos !== selection.$to.pos) {
+      // Range selection: preserve both endpoints
+      const toOffset = selection.$to.pos - movingStart;
+      const newToPos = prevStart + toOffset;
+      const clampedFrom = Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1);
+      const clampedTo = Math.min(Math.max(newToPos, 0), tr.doc.content.size - 1);
+      tr.setSelection(TextSelection.create(tr.doc, clampedFrom, clampedTo));
+    } else {
+      const $newPos = tr.doc.resolve(Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1));
+      tr.setSelection(TextSelection.near($newPos));
+    }
   } catch {
     // If we can't set selection, let it be
   }
@@ -170,12 +179,21 @@ export function moveListItemsDown(
   const tr = state.tr;
   tr.replaceWith(movingStart, nextEnd, newContent);
 
-  // Restore cursor position
-  const cursorOffset = selection.$from.pos - movingStart;
-  const newCursorPos = movingStart + nextNode.nodeSize + cursorOffset;
+  // Restore selection (range or cursor)
+  const fromOffset = selection.$from.pos - movingStart;
+  const newFromPos = movingStart + nextNode.nodeSize + fromOffset;
   try {
-    const $newPos = tr.doc.resolve(Math.min(Math.max(newCursorPos, 0), tr.doc.content.size - 1));
-    tr.setSelection(TextSelection.near($newPos));
+    if (selection.$from.pos !== selection.$to.pos) {
+      // Range selection: preserve both endpoints
+      const toOffset = selection.$to.pos - movingStart;
+      const newToPos = movingStart + nextNode.nodeSize + toOffset;
+      const clampedFrom = Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1);
+      const clampedTo = Math.min(Math.max(newToPos, 0), tr.doc.content.size - 1);
+      tr.setSelection(TextSelection.create(tr.doc, clampedFrom, clampedTo));
+    } else {
+      const $newPos = tr.doc.resolve(Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1));
+      tr.setSelection(TextSelection.near($newPos));
+    }
   } catch {
     // If we can't set selection, let it be
   }

@@ -631,6 +631,146 @@ describe('multi-item movement', () => {
       expect(newDoc.child(0).type.name).toBe('paragraph');
     }
   });
+
+  it('should move 3 items (middle of 5-item list) up', () => {
+    const docNode = doc(ul(li(p('A')), li(p('B')), li(p('C')), li(p('D')), li(p('E'))));
+    let bPos = 0;
+    let dPos = 0;
+    docNode.nodesBetween(0, docNode.content.size, (node, pos) => {
+      if (node.isText && node.text === 'B') bPos = pos;
+      if (node.isText && node.text === 'D') dPos = pos;
+    });
+    const state = createStateWithRange(docNode, bPos, dPos + 1);
+    const { editor, getState } = createMockEditor(state);
+
+    const ctx = getMovementContext(state.selection);
+    expect(ctx.mode).toBe('list');
+    if (ctx.mode === 'list') {
+      expect(ctx.fromInfo.index).toBe(1);
+      expect(ctx.toInfo.index).toBe(3);
+      moveListItemsUp(editor, ctx.fromInfo, ctx.toInfo);
+      const list = findFirstList(getState().doc)!;
+      // B, C, D swap above A → [B, C, D, A, E]
+      expect(getListItemTexts(list)).toEqual(['B', 'C', 'D', 'A', 'E']);
+    }
+  });
+
+  it('should move 3 items (middle of 5-item list) down', () => {
+    const docNode = doc(ul(li(p('A')), li(p('B')), li(p('C')), li(p('D')), li(p('E'))));
+    let bPos = 0;
+    let dPos = 0;
+    docNode.nodesBetween(0, docNode.content.size, (node, pos) => {
+      if (node.isText && node.text === 'B') bPos = pos;
+      if (node.isText && node.text === 'D') dPos = pos;
+    });
+    const state = createStateWithRange(docNode, bPos, dPos + 1);
+    const { editor, getState } = createMockEditor(state);
+
+    const ctx = getMovementContext(state.selection);
+    expect(ctx.mode).toBe('list');
+    if (ctx.mode === 'list') {
+      expect(ctx.fromInfo.index).toBe(1);
+      expect(ctx.toInfo.index).toBe(3);
+      moveListItemsDown(editor, ctx.fromInfo, ctx.toInfo);
+      const list = findFirstList(getState().doc)!;
+      // B, C, D swap below E → [A, E, B, C, D]
+      expect(getListItemTexts(list)).toEqual(['A', 'E', 'B', 'C', 'D']);
+    }
+  });
+
+  it('should escalate both directions when all items are selected', () => {
+    const docNode = doc(p('Before'), ul(li(p('A')), li(p('B')), li(p('C'))), p('After'));
+    let aPos = 0;
+    let cPos = 0;
+    docNode.nodesBetween(0, docNode.content.size, (node, pos) => {
+      if (node.isText && node.text === 'A') aPos = pos;
+      if (node.isText && node.text === 'C') cPos = pos;
+    });
+
+    // Move up: all items selected, first is at index 0 → escalates to block move
+    const stateUp = createStateWithRange(docNode, aPos, cPos + 1);
+    const { editor: editorUp, getState: getStateUp } = createMockEditor(stateUp);
+    const ctxUp = getMovementContext(stateUp.selection);
+    expect(ctxUp.mode).toBe('list');
+    if (ctxUp.mode === 'list') {
+      expect(ctxUp.fromInfo.index).toBe(0);
+      expect(ctxUp.toInfo.index).toBe(2);
+      const resultUp = moveListItemsUp(editorUp, ctxUp.fromInfo, ctxUp.toInfo);
+      expect(resultUp).toBe(true);
+      // List should move above "Before"
+      const newDocUp = getStateUp().doc;
+      expect(newDocUp.child(0).type.name).toBe('bulletList');
+      expect(newDocUp.child(1).type.name).toBe('paragraph');
+      expect(newDocUp.child(1).textContent).toBe('Before');
+    }
+
+    // Move down: all items selected, last is at end → escalates to block move
+    const stateDown = createStateWithRange(docNode, aPos, cPos + 1);
+    const { editor: editorDown, getState: getStateDown } = createMockEditor(stateDown);
+    const ctxDown = getMovementContext(stateDown.selection);
+    expect(ctxDown.mode).toBe('list');
+    if (ctxDown.mode === 'list') {
+      expect(ctxDown.fromInfo.index).toBe(0);
+      expect(ctxDown.toInfo.index).toBe(2);
+      const resultDown = moveListItemsDown(editorDown, ctxDown.fromInfo, ctxDown.toInfo);
+      expect(resultDown).toBe(true);
+      // List should move below "After"
+      const newDocDown = getStateDown().doc;
+      expect(newDocDown.child(0).type.name).toBe('paragraph');
+      expect(newDocDown.child(0).textContent).toBe('Before');
+      expect(newDocDown.child(1).type.name).toBe('paragraph');
+      expect(newDocDown.child(1).textContent).toBe('After');
+      expect(newDocDown.child(2).type.name).toBe('bulletList');
+    }
+  });
+
+  it('should preserve range selection after moving 2 items up', () => {
+    const docNode = doc(ul(li(p('A')), li(p('B')), li(p('C')), li(p('D'))));
+    let bPos = 0;
+    let cPos = 0;
+    docNode.nodesBetween(0, docNode.content.size, (node, pos) => {
+      if (node.isText && node.text === 'B') bPos = pos;
+      if (node.isText && node.text === 'C') cPos = pos;
+    });
+    const state = createStateWithRange(docNode, bPos, cPos + 1);
+    const { editor, getState } = createMockEditor(state);
+
+    const ctx = getMovementContext(state.selection);
+    if (ctx.mode === 'list') {
+      moveListItemsUp(editor, ctx.fromInfo, ctx.toInfo);
+      const newState = getState();
+      const { from, to } = newState.selection;
+      // Selection should still span content in B and C (now at positions 0 and 1)
+      expect(from).not.toBe(to); // Should be a range, not collapsed
+      // Verify the selected content covers the moved items
+      const selectedText = newState.doc.textBetween(from, to);
+      expect(selectedText).toContain('B');
+    }
+  });
+
+  it('should preserve range selection after moving 2 items down', () => {
+    const docNode = doc(ul(li(p('A')), li(p('B')), li(p('C')), li(p('D'))));
+    let aPos = 0;
+    let bPos = 0;
+    docNode.nodesBetween(0, docNode.content.size, (node, pos) => {
+      if (node.isText && node.text === 'A') aPos = pos;
+      if (node.isText && node.text === 'B') bPos = pos;
+    });
+    const state = createStateWithRange(docNode, aPos, bPos + 1);
+    const { editor, getState } = createMockEditor(state);
+
+    const ctx = getMovementContext(state.selection);
+    if (ctx.mode === 'list') {
+      moveListItemsDown(editor, ctx.fromInfo, ctx.toInfo);
+      const newState = getState();
+      const { from, to } = newState.selection;
+      // Selection should still be a range, not collapsed
+      expect(from).not.toBe(to);
+      // Verify the selected content covers the moved items
+      const selectedText = newState.doc.textBetween(from, to);
+      expect(selectedText).toContain('A');
+    }
+  });
 });
 
 describe('block mode fallback (unchanged behavior)', () => {
