@@ -17,7 +17,7 @@ Conduct a thorough review of the design document for: **$ARGUMENTS.feature-name*
    `projectManager/design-docs/$ARGUMENTS.feature-name.md`
 
 2. **Read the review questions guide** at:
-   `$CLAUDE_PLUGIN_ROOT/skills/project-management/references/review-questions.md`
+   `.claude/skills/project-management/references/review-questions.md`
 
 3. **Analyze the document** for:
    - Completeness: Are all required sections present and substantive?

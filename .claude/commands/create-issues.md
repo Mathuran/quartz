@@ -32,7 +32,7 @@ Issues are executed by AI coding agents that are ~10x faster than human develope
    - If not approved, suggest using `/review-doc $ARGUMENTS.feature-name` first
 
 2. **Read the issue template** at:
-   `$CLAUDE_PLUGIN_ROOT/skills/project-management/references/issue-template.md`
+   `.claude/skills/project-management/references/issue-template.md`
 
 3. **Read the Human Validation Plan** from the design doc:
    - Use the validation checkpoints as the primary guide for issue boundaries
@@ -78,7 +78,7 @@ Issues are executed by AI coding agents that are ~10x faster than human develope
    - Format links as: `[001](../issues/FEATURE-NAME/001-issue-name.md)`
 
 7. **Validate the issue set**:
-   - Run dependency check: `bash $CLAUDE_PLUGIN_ROOT/skills/project-management/scripts/check-dependencies.sh projectManager/issues/$ARGUMENTS.feature-name/`
+   - Run dependency check: `bash .claude/skills/project-management/scripts/check-dependencies.sh projectManager/issues/$ARGUMENTS.feature-name/`
    - Ensure no circular dependencies
    - Ensure all issues are reachable
    - Verify bidirectional links (design doc ↔ issues)

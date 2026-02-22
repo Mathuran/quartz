@@ -160,7 +160,7 @@ Every new feature should include tests at the appropriate levels:
 
 ## Project Management
 
-Uses structured project management via `projectManager/`. See `projectManager/skills/project-management/SKILL.md` for the full workflow.
+Uses structured project management via `projectManager/`. See `.claude/skills/project-management/SKILL.md` for the full workflow.
 
 **Commands:**
 - `/feature-request <title>` — Create a backlog item
@@ -168,3 +168,4 @@ Uses structured project management via `projectManager/`. See `projectManager/sk
 - `/review-doc <feature-name>` — Review a design document
 - `/create-issues <feature-name>` — Break design doc into issues
 - `/issue-status [feature-name]` — Show issue status
+- `/commit` — Stage, lint, format, test, and commit changes

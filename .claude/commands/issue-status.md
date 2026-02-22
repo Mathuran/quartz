@@ -16,7 +16,7 @@ Display the status of implementation issues by running the issue-status script.
 1. **Run the status script**:
 
 ```bash
-bash $CLAUDE_PLUGIN_ROOT/skills/project-management/scripts/issue-status.sh $ARGUMENTS.feature-name
+bash .claude/skills/project-management/scripts/issue-status.sh $ARGUMENTS.feature-name
 ```
 
 If `feature-name` is not provided, omit the argument to show all features.

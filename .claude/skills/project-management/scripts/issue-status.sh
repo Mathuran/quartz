@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-# Resolve project root (script lives in projectManager/skills/project-management/scripts/)
+# Resolve project root (script lives in .claude/skills/project-management/scripts/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 PM_ROOT="$PROJECT_ROOT/projectManager"

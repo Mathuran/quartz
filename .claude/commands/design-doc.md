@@ -39,7 +39,7 @@ This project is built by AI coding agents that are ~10x faster than human develo
    `projectManager/design-docs/$ARGUMENTS.feature-name.md`
 
 3. **Use the Amazon 6-pager structure** from the project-management skill.
-   Read the template at: `$CLAUDE_PLUGIN_ROOT/skills/project-management/references/design-doc-template.md`
+   Read the template at: `.claude/skills/project-management/references/design-doc-template.md`
 
 4. **Gather requirements from the user** before writing (skip what's already known from backlog):
    - Ask what problem this feature solves
