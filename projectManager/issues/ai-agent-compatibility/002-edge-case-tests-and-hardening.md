@@ -1,7 +1,7 @@
 # [002] Edge Case Tests and Hardening
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** -
 - **Scope:** S
