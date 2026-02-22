@@ -1,7 +1,7 @@
 # [001] Wire Up External Change Handler and Feedback Loop Prevention
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** -
 - **Blocks:** 002
 - **Scope:** S

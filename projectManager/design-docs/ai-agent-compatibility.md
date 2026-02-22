@@ -248,7 +248,7 @@ These tests should pass once the wiring is complete. If they were previously ski
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/ai-agent-compatibility/001-wire-external-change-handler.md) | Wire Up External Change Handler and Feedback Loop Prevention | TODO | S |
+| [001](../issues/ai-agent-compatibility/001-wire-external-change-handler.md) | Wire Up External Change Handler and Feedback Loop Prevention | DONE | S |
 | [002](../issues/ai-agent-compatibility/002-edge-case-tests-and-hardening.md) | Edge Case Tests and Hardening | TODO | S |
 
-**Progress:** 0/2 issues complete (0%)
+**Progress:** 1/2 issues complete (50%)
