@@ -1,7 +1,7 @@
 # Callouts and Admonitions Design Document
 
 **Author:** Claude
-**Status:** APPROVED
+**Status:** COMPLETED
 **Created:** 2026-02-21
 **Last Updated:** 2026-02-22
 **Reviewers:** Mathuran

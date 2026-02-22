@@ -1,9 +1,9 @@
 # Responsive Editor Width for Large Screens — Design Document
 
 **Author:** Agent
-**Status:** DRAFT
+**Status:** APPROVED
 **Created:** 2026-02-21
-**Last Updated:** 2026-02-21 (reviewed)
+**Last Updated:** 2026-02-22 (Review Round 1 — APPROVED)
 **Reviewers:** Mathuran
 **Backlog Item:** [responsive-editor-width-large-screens](../backlog/responsive-editor-width-large-screens.md)
 
