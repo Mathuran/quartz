@@ -1,0 +1,119 @@
+/* Frontmatter Banner */
+.quartz-frontmatter-banner {
+  border-left: 3px solid var(--vscode-textLink-foreground, #3794ff);
+  background: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+  border-bottom: 1px solid var(--vscode-panel-border, #2d2d2d);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+/* Header row — clickable to toggle collapse */
+.quartz-frontmatter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.quartz-frontmatter-header:hover {
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.quartz-frontmatter-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Chevron icon — rotates when expanded */
+.quartz-frontmatter-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--vscode-descriptionForeground, #8b8b8b);
+  transition: transform 0.15s ease;
+  transform: rotate(90deg);
+}
+
+.quartz-frontmatter-chevron.collapsed {
+  transform: rotate(0deg);
+}
+
+/* Label */
+.quartz-frontmatter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-descriptionForeground, #8b8b8b);
+  letter-spacing: 0.3px;
+}
+
+/* Remove button */
+.quartz-frontmatter-remove-btn {
+  border: none;
+  background: none;
+  color: var(--vscode-descriptionForeground, #8b8b8b);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.quartz-frontmatter-header:hover .quartz-frontmatter-remove-btn {
+  opacity: 0.7;
+}
+
+.quartz-frontmatter-remove-btn:hover {
+  background: rgba(127, 127, 127, 0.15);
+  opacity: 1 !important;
+}
+
+/* Textarea — raw YAML editing */
+.quartz-frontmatter-textarea {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--vscode-editor-font-family, 'Fira Code', 'Cascadia Code', Consolas, monospace);
+  font-size: var(--vscode-editor-font-size, 13px);
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  padding: 0 12px 12px;
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+  overflow: hidden;
+  tab-size: 2;
+}
+
+.quartz-frontmatter-textarea::placeholder {
+  color: var(--vscode-input-placeholderForeground, #8b8b8b);
+  opacity: 0.6;
+}
+
+/* "+ Add frontmatter" link — shown when no frontmatter exists */
+.quartz-frontmatter-add {
+  margin-bottom: 8px;
+}
+
+.quartz-frontmatter-add-btn {
+  border: none;
+  background: none;
+  color: var(--vscode-textLink-foreground, #3794ff);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.quartz-frontmatter-add-btn:hover {
+  opacity: 1;
+  background: rgba(127, 127, 127, 0.1);
+}

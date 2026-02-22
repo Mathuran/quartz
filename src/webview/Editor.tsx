@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -36,6 +36,7 @@ import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
 import { FormattingToolbar } from './components/FormattingToolbar';
 import { TableHint } from './components/TableHint';
+import { FrontmatterBanner } from './components/FrontmatterBanner';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 // import { dragHandleExtension } from './extensions/dragHandle'; // REMOVED
@@ -119,6 +120,12 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     error: parseError,
   } = safeParse(initialContentRef.current);
   const [frontmatter, setFrontmatter] = useState<string | null>(initialFrontmatter);
+  const frontmatterRef = useRef<string | null>(frontmatter);
+
+  // Keep the ref in sync so TipTap's onUpdate closure always reads the latest value
+  useEffect(() => {
+    frontmatterRef.current = frontmatter;
+  }, [frontmatter]);
 
   const editor = useEditor({
     extensions: [
@@ -182,7 +189,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     onUpdate: ({ editor }) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        const markdown = serializeMarkdown(editor.getJSON(), frontmatter);
+        const markdown = serializeMarkdown(editor.getJSON(), frontmatterRef.current);
         onUpdate(markdown);
       }, 300);
     },
@@ -269,6 +276,31 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     };
   }, []);
 
+  // Handle frontmatter changes from the banner textarea
+  const handleFrontmatterChange = useCallback(
+    (yaml: string) => {
+      setFrontmatter(yaml);
+      frontmatterRef.current = yaml;
+      // Trigger a full document save with the updated frontmatter
+      if (editor) {
+        const markdown = serializeMarkdown(editor.getJSON(), yaml || null);
+        onUpdate(markdown);
+      }
+    },
+    [editor, onUpdate],
+  );
+
+  // Remove frontmatter entirely
+  const handleFrontmatterRemove = useCallback(() => {
+    setFrontmatter(null);
+    frontmatterRef.current = null;
+    // Trigger a save without frontmatter
+    if (editor) {
+      const markdown = serializeMarkdown(editor.getJSON(), null);
+      onUpdate(markdown);
+    }
+  }, [editor, onUpdate]);
+
   if (!editor) return null;
 
   return (
@@ -284,6 +316,11 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
       <TableHint position={tableHintPosition} />
+      <FrontmatterBanner
+        frontmatter={frontmatter}
+        onChange={handleFrontmatterChange}
+        onRemove={handleFrontmatterRemove}
+      />
       <EditorContent
         editor={editor}
         style={{
