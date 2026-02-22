@@ -120,11 +120,6 @@
           "default": true,
           "description": "Enable letter-sized page view"
         },
-        "quartz.editor.pageWidth": {
-          "type": "number",
-          "default": 816,
-          "description": "Page width in pixels (height = width × √2)"
-        },
         "quartz.editor.pageMargin": {
           "type": "number",
           "default": 72,

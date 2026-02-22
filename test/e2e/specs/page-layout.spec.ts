@@ -19,12 +19,10 @@ test.describe('Page Layout', () => {
       fontFamily: 'inherit',
       fontSize: 16,
       pageLayout: true,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     await page.waitForTimeout(200);
@@ -47,12 +45,10 @@ test.describe('Page Layout', () => {
       fontFamily: 'inherit',
       fontSize: 16,
       pageLayout: false,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     await page.waitForTimeout(200);
@@ -71,12 +67,10 @@ test.describe('Page Layout', () => {
       fontFamily: 'inherit',
       fontSize: 20,
       pageLayout: true,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     await page.waitForTimeout(200);

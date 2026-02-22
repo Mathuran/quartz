@@ -19,12 +19,10 @@ test.describe('Theme Rendering', () => {
       fontFamily: 'inherit',
       fontSize: 16,
       pageLayout: true,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update
@@ -41,12 +39,10 @@ test.describe('Theme Rendering', () => {
       fontFamily: 'inherit',
       fontSize: 16,
       pageLayout: true,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update
@@ -63,12 +59,10 @@ test.describe('Theme Rendering', () => {
       fontFamily: 'inherit',
       fontSize: 16,
       pageLayout: true,
-      pageWidth: 816,
       pageMargin: 72,
       imageDir: './assets',
       preserveFormatting: true,
       showBlockHandles: true,
-      sidebarPosition: 'left',
     });
 
     // Editor should still be visible after config update

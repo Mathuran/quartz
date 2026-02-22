@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import type { EditorConfig } from '../types';
 
+const PAGE_WIDTH = 900;
+const NARROW_BREAKPOINT = 900;
+
 interface PageContainerProps {
   config: EditorConfig;
   children: React.ReactNode;
@@ -14,7 +17,7 @@ export function PageContainer({ config, children }: PageContainerProps) {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setIsNarrow(entry.contentRect.width < 600);
+        setIsNarrow(entry.contentRect.width < NARROW_BREAKPOINT);
       }
     });
     observer.observe(containerRef.current);
@@ -23,16 +26,13 @@ export function PageContainer({ config, children }: PageContainerProps) {
 
   const usePageLayout = config.pageLayout && !isNarrow;
 
-  // Editor aligns opposite to sidebar: sidebar left → editor right, sidebar right → editor left
-  const alignClass = config.sidebarPosition === 'left' ? 'align-right' : 'align-left';
-
   return (
-    <div ref={containerRef} className={`quartz-page-wrapper ${alignClass}`}>
+    <div ref={containerRef} className="quartz-page-wrapper align-center">
       {usePageLayout ? (
         <div
           className="quartz-page"
           style={{
-            maxWidth: `${config.pageWidth}px`,
+            maxWidth: `${PAGE_WIDTH}px`,
             padding: `${config.pageMargin}px`,
           }}
         >

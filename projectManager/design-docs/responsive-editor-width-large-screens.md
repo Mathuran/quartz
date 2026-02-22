@@ -1,7 +1,7 @@
 # Responsive Editor Width for Large Screens — Design Document
 
 **Author:** Agent
-**Status:** APPROVED
+**Status:** COMPLETED
 **Created:** 2026-02-21
 **Last Updated:** 2026-02-22 (Review Round 1 — APPROVED)
 **Reviewers:** Mathuran
@@ -220,7 +220,13 @@ This is a single-phase change. The implementation is ~15 lines of code in one fi
 
 ## 12. Implementation Issues
 
-*To be populated after design doc approval via `/create-issues`.*
+**Progress: 1/1 issues complete**
+
+| # | Title | Scope | Status | Human Reviews |
+|---|-------|-------|--------|---------------|
+| [001](../issues/responsive-editor-width-large-screens/001-responsive-page-width.md) | Fixed 900px centered page width | S | DONE | Visual check approved |
+
+**Implementation note:** During review, the approach evolved from dynamic √2-based scaling to a fixed 900px centered layout. The dynamic scaling caused unwanted width changes on sidebar toggle, and a fixed centered width (matching Notion's design language) was preferred.
 
 ## Appendix
 

@@ -69,10 +69,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle config changes
     const onConfigChange = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (
-        e.affectsConfiguration('quartz.editor') ||
-        e.affectsConfiguration('workbench.sideBar.location')
-      ) {
+      if (e.affectsConfiguration('quartz.editor')) {
         this.sendConfigToWebview(webviewPanel.webview);
       }
     });
@@ -95,10 +92,6 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
   private sendConfigToWebview(webview: vscode.Webview): void {
     const config = vscode.workspace.getConfiguration('quartz.editor');
-    const workbenchConfig = vscode.workspace.getConfiguration('workbench');
-    const sidebarPosition = workbenchConfig.get<string>('sideBar.location', 'left') as
-      | 'left'
-      | 'right';
     webview.postMessage({
       type: 'configUpdate',
       config: {
@@ -106,12 +99,10 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         fontFamily: config.get<string>('fontFamily', 'inherit'),
         fontSize: config.get<number>('fontSize', 16),
         pageLayout: config.get<boolean>('pageLayout', true),
-        pageWidth: config.get<number>('pageWidth', 816),
         pageMargin: config.get<number>('pageMargin', 72),
         imageDir: config.get<string>('imageDir', './assets'),
         preserveFormatting: config.get<boolean>('preserveFormatting', true),
         showBlockHandles: config.get<boolean>('showBlockHandles', true),
-        sidebarPosition,
       },
     });
   }

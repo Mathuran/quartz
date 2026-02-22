@@ -44,14 +44,8 @@ body {
   overflow: visible;
 }
 
-.quartz-page-wrapper.align-left {
-  justify-content: flex-start;
-  padding-left: 24px;
-}
-
-.quartz-page-wrapper.align-right {
-  justify-content: flex-end;
-  padding-right: 24px;
+.quartz-page-wrapper.align-center {
+  justify-content: center;
 }
 
 .quartz-page {

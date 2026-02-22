@@ -3,12 +3,10 @@ export interface EditorConfig {
   fontFamily: string;
   fontSize: number;
   pageLayout: boolean;
-  pageWidth: number;
   pageMargin: number;
   imageDir: string;
   preserveFormatting: boolean;
   showBlockHandles: boolean;
-  sidebarPosition: 'left' | 'right';
 }
 
 export interface EditorMessage {

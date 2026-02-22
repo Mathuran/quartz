@@ -22,7 +22,6 @@ suite('Configuration', () => {
     assert.strictEqual(config.get('theme'), 'auto');
     assert.strictEqual(config.get('fontSize'), 16);
     assert.strictEqual(config.get('pageLayout'), true);
-    assert.strictEqual(config.get('pageWidth'), 816);
     assert.strictEqual(config.get('fontFamily'), 'inherit');
   });
 
