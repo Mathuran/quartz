@@ -14,7 +14,9 @@ export interface ListItemInfo {
   parentPos: number;
 }
 
-export function findTopLevelBlock($pos: ResolvedPos): { pos: number; node: ProseMirrorNode } | null {
+export function findTopLevelBlock(
+  $pos: ResolvedPos,
+): { pos: number; node: ProseMirrorNode } | null {
   if ($pos.depth < 1) return null;
   const pos = $pos.before(1);
   const node = $pos.node(1);
@@ -61,7 +63,11 @@ export function getMovementContext(selection: Selection): MovementContext {
  * Move list item(s) up within their parent list.
  * If already at the top, escalate to block-level movement.
  */
-export function moveListItemsUp(editor: Editor, fromInfo: ListItemInfo, toInfo: ListItemInfo): boolean {
+export function moveListItemsUp(
+  editor: Editor,
+  fromInfo: ListItemInfo,
+  toInfo: ListItemInfo,
+): boolean {
   const firstIndex = fromInfo.index;
 
   // Boundary: first item(s) → escalate to block movement
@@ -120,7 +126,11 @@ export function moveListItemsUp(editor: Editor, fromInfo: ListItemInfo, toInfo: 
  * Move list item(s) down within their parent list.
  * If already at the bottom, escalate to block-level movement.
  */
-export function moveListItemsDown(editor: Editor, fromInfo: ListItemInfo, toInfo: ListItemInfo): boolean {
+export function moveListItemsDown(
+  editor: Editor,
+  fromInfo: ListItemInfo,
+  toInfo: ListItemInfo,
+): boolean {
   const lastIndex = toInfo.index;
   const parent = fromInfo.parent;
 

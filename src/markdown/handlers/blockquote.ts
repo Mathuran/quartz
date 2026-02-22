@@ -2,6 +2,7 @@ import type MarkdownIt from 'markdown-it';
 import type { JSONContent } from '@tiptap/core';
 import type { TokenHandler, ParseContext } from './types';
 import { parseListItems, isTaskItem, convertToTaskItem } from './list';
+import { detectCallout } from './callout';
 
 export const blockquoteHandler: TokenHandler = {
   canHandle(token: MarkdownIt.Token): boolean {
@@ -14,15 +15,54 @@ export const blockquoteHandler: TokenHandler = {
     context: ParseContext,
   ): { nodes: JSONContent[]; consumed: number } {
     const blockquoteContent = parseBlockquote(tokens, index + 1, context);
+    const nodes = blockquoteContent.nodes;
+    const consumed = blockquoteContent.endIndex - index + 1;
+
+    // Check if the first child is a callout marker paragraph
+    if (nodes.length > 0 && nodes[0].type === 'paragraph') {
+      const detection = detectCallout(nodes[0]);
+      if (detection) {
+        const { match, remainingContent } = detection;
+        // Build callout content:
+        // If the marker paragraph had remaining inline content (softbreak case),
+        // create a new paragraph from it and prepend to the rest
+        const calloutContent: JSONContent[] = [];
+
+        if (remainingContent) {
+          calloutContent.push({
+            type: 'paragraph',
+            content: remainingContent,
+          });
+        }
+        // Add all nodes after the first (marker) paragraph
+        calloutContent.push(...nodes.slice(1));
+
+        return {
+          nodes: [
+            {
+              type: 'callout',
+              attrs: {
+                calloutType: match.calloutType,
+                title: match.title,
+                collapsed: match.collapsed,
+                foldable: match.foldable,
+              },
+              content: calloutContent.length > 0 ? calloutContent : [{ type: 'paragraph' }],
+            },
+          ],
+          consumed,
+        };
+      }
+    }
 
     return {
       nodes: [
         {
           type: 'blockquote',
-          content: blockquoteContent.nodes,
+          content: nodes,
         },
       ],
-      consumed: blockquoteContent.endIndex - index + 1,
+      consumed,
     };
   },
 };

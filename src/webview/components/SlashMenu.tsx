@@ -82,6 +82,22 @@ export function SlashMenu({ editor }: SlashMenuProps) {
                 }
                 return true;
               }
+              case 'callout':
+                return commands.setCallout({ calloutType: 'note' });
+              case 'callout-warning':
+                return commands.setCallout({ calloutType: 'warning' });
+              case 'callout-tip':
+                return commands.setCallout({ calloutType: 'tip' });
+              case 'callout-danger':
+                return commands.setCallout({ calloutType: 'danger' });
+              case 'callout-info':
+                return commands.setCallout({ calloutType: 'info' });
+              case 'callout-example':
+                return commands.setCallout({ calloutType: 'example' });
+              case 'callout-quote':
+                return commands.setCallout({ calloutType: 'quote' });
+              case 'callout-abstract':
+                return commands.setCallout({ calloutType: 'abstract' });
               default:
                 return true;
             }

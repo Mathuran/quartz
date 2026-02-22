@@ -43,7 +43,10 @@ import { virtualRenderingExtension } from './extensions/virtualRendering';
 import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { inputRulesExtension } from './extensions/inputRules';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
+import { CalloutExtension } from './extensions/calloutExtension';
 import type { EditorConfig } from './types';
+
+import './styles/callout.css';
 
 // Create lowlight without languages initially — languages are loaded lazily
 // to reduce the initial bundle size by ~120 KB. The empty lowlight still renders
@@ -73,9 +76,17 @@ interface EditorProps {
 /**
  * Safely parse markdown, returning the parsed doc, frontmatter, and any error encountered.
  */
-function safeParse(markdown: string): { doc: JSONContent; frontmatter: string | null; error: string | null } {
+function safeParse(markdown: string): {
+  doc: JSONContent;
+  frontmatter: string | null;
+  error: string | null;
+} {
   if (!markdown || !markdown.trim()) {
-    return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, frontmatter: null, error: null };
+    return {
+      doc: { type: 'doc', content: [{ type: 'paragraph' }] },
+      frontmatter: null,
+      error: null,
+    };
   }
 
   try {
@@ -102,7 +113,11 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const [contentWarning, setContentWarning] = useState<string | null>(null);
   const [tableHintPosition, setTableHintPosition] = useState<{ top: number } | null>(null);
 
-  const { doc: initialDoc, frontmatter: initialFrontmatter, error: parseError } = safeParse(initialContentRef.current);
+  const {
+    doc: initialDoc,
+    frontmatter: initialFrontmatter,
+    error: parseError,
+  } = safeParse(initialContentRef.current);
   const [frontmatter, setFrontmatter] = useState<string | null>(initialFrontmatter);
 
   const editor = useEditor({
@@ -116,6 +131,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       ListItem,
       inputRulesExtension,
       CustomCodeBlockLowlight.configure({ lowlight }),
+      CalloutExtension,
       Blockquote,
       HorizontalRule,
       Bold,
@@ -224,7 +240,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       // We use setContent (which safely rebuilds the DOM, avoiding insertBefore errors)
       // but intercept its internal dispatch to suppress the history entry.
       const origDispatch = editor.view.dispatch.bind(editor.view);
-      editor.view.dispatch = (tr: any) => {
+      editor.view.dispatch = (tr: Parameters<typeof origDispatch>[0]) => {
         tr.setMeta('addToHistory', false);
         origDispatch(tr);
       };

@@ -11,4 +11,5 @@ export { tableSerializer } from './table';
 export { imageSerializer } from './image';
 export { horizontalRuleSerializer } from './horizontalRule';
 export { detailsSerializer } from './details';
+export { calloutSerializer } from './callout';
 export { serializeInline } from './inline';

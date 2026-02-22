@@ -1,0 +1,96 @@
+.quartz-callout {
+  border-left: 4px solid var(--callout-color);
+  background: var(--callout-bg);
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 8px 0;
+}
+
+.quartz-callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--callout-color);
+  margin-bottom: 4px;
+}
+
+.quartz-callout-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.quartz-callout-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.quartz-callout-type-select {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--callout-color);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.quartz-callout-type-select:hover,
+.quartz-callout-type-select:focus {
+  border-color: var(--callout-color);
+}
+
+.quartz-callout-title {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--callout-color);
+  font-weight: 600;
+  font-size: inherit;
+  outline: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.quartz-callout-title::placeholder {
+  color: var(--callout-color);
+  opacity: 0.5;
+}
+
+.quartz-callout-fold {
+  background: transparent;
+  border: none;
+  color: var(--callout-color);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 3px;
+  transition: transform 0.15s ease;
+}
+
+.quartz-callout-fold:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.quartz-callout-fold.collapsed {
+  transform: rotate(-90deg);
+}
+
+.quartz-callout-content {
+  margin-top: 8px;
+}
+
+/* Type-specific colors */
+.quartz-callout[data-callout-type="note"]     { --callout-color: #448aff; --callout-bg: rgba(68, 138, 255, 0.07); }
+.quartz-callout[data-callout-type="tip"]      { --callout-color: #00bfa5; --callout-bg: rgba(0, 191, 165, 0.07); }
+.quartz-callout[data-callout-type="warning"]  { --callout-color: #ff9100; --callout-bg: rgba(255, 145, 0, 0.07); }
+.quartz-callout[data-callout-type="danger"]   { --callout-color: #ff1744; --callout-bg: rgba(255, 23, 68, 0.07); }
+.quartz-callout[data-callout-type="info"]     { --callout-color: #448aff; --callout-bg: rgba(68, 138, 255, 0.07); }
+.quartz-callout[data-callout-type="example"]  { --callout-color: #7c4dff; --callout-bg: rgba(124, 77, 255, 0.07); }
+.quartz-callout[data-callout-type="quote"]    { --callout-color: #9e9e9e; --callout-bg: rgba(158, 158, 158, 0.07); }
+.quartz-callout[data-callout-type="abstract"] { --callout-color: #00b8d4; --callout-bg: rgba(0, 184, 212, 0.07); }

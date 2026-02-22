@@ -74,10 +74,7 @@ function needsBlankLine(prevType: string, _currentType: string): boolean {
   return true;
 }
 
-export function serializeMarkdown(
-  doc: JSONContent,
-  frontmatter?: string | null,
-): string {
+export function serializeMarkdown(doc: JSONContent, frontmatter?: string | null): string {
   let result = '';
 
   if (frontmatter) {
