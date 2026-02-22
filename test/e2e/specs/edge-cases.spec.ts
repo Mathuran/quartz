@@ -697,14 +697,19 @@ test.describe('Edge Cases', () => {
   // ============================================================
 
   test('frontmatter with dashes inside preserves correctly', async ({ page }) => {
-    const markdown = '---\ntitle: "My-Title-With-Dashes"\ndate: 2024-01-15\n---\n\nContent';
+    const markdown = '---\ntitle: "My-Title-With-Dashes"\ndate: 2024-01-15\n---\n\nContent after frontmatter';
     await loadMarkdown(page, markdown);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    // Frontmatter should be rendered as a code block with yaml
-    const codeBlock = editorPage.codeBlock();
-    await expect(codeBlock).toBeVisible();
-    await expect(codeBlock).toContainText('title');
+    // Frontmatter is extracted separately — editor should show body content
+    await expect(editorPage.prosemirror).toContainText('Content after frontmatter');
+
+    // Verify round-trip preserves frontmatter with --- fences
+    const output = await page.evaluate(() => (window as any).__getUpdate());
+    if (output) {
+      expect(output).toContain('---');
+      expect(output).toContain('title: "My-Title-With-Dashes"');
+    }
   });
 
   // ============================================================

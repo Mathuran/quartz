@@ -20,7 +20,7 @@ export class EditorPage {
 
   async goto() {
     await this.page.goto('/test/e2e/harness.html');
-    await this.page.waitForSelector('#root');
+    await this.page.waitForSelector('.ProseMirror', { timeout: 10_000 });
   }
 
   // Block-level queries

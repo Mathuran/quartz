@@ -159,7 +159,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "test:integration": "tsc -p tsconfig.test-integration.json && vscode-test",
-    "test:e2e": "npx playwright test",
+    "test:e2e": "npx playwright test --max-failures=1 --retries=0",
     "serve:e2e": "npm run build:webview && npx tsx test/e2e/server.ts",
     "bench": "vitest bench --run",
     "test:all": "npm test && npm run test:integration && npm run test:e2e",
