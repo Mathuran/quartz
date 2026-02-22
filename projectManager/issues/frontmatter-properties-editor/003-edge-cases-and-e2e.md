@@ -1,7 +1,7 @@
 # [003] Edge Cases, Polish, and E2E Tests
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 002
 - **Blocks:** -
 - **Scope:** S

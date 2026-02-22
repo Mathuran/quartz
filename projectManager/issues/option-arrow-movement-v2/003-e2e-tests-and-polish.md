@@ -1,7 +1,7 @@
 # [003] E2E Tests and Polish
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001, 002
 - **Blocks:** -
 - **Scope:** S

@@ -44,6 +44,8 @@ export default defineConfig({
         'specs/external-change.spec.ts',
         'specs/roundtrip.spec.ts',
         'specs/slash-commands.spec.ts',
+        'specs/frontmatter-banner.spec.ts',
+        'specs/list-item-movement.spec.ts',
       ],
       dependencies: ['interactions'],
     },
@@ -59,8 +61,5 @@ export default defineConfig({
     },
   ],
   outputDir: './playwright-results',
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list'],
-  ],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
 });
