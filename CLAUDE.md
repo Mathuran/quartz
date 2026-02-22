@@ -59,13 +59,82 @@ npm run test:all         # All test suites
 npm run package          # Create .vsix
 ```
 
-## Testing Conventions
+## Testing Architecture
 
-- **Unit tests** use Vitest — files in `test/` and `test/unit/`
-- **E2E tests** use Playwright — specs in `test/e2e/specs/`, page objects in `test/e2e/pages/`
-- **Integration tests** use `@vscode/test-cli` — files in `test/integration/`
-- Round-trip fidelity: `parse(serialize(parse(md))) === parse(md)` must hold for all supported block types
-- E2E test server: `npm run serve:e2e` starts a local server with `test/e2e/harness.html`
+Tests are organized into three tiers that run in dependency order — foundational tests fail fast before expensive tests execute.
+
+### Test Pyramid
+
+```
+                    ┌─────────────┐
+                    │   E2E (15)  │  Playwright — full browser tests
+                   ┌┴─────────────┴┐
+                   │Integration (5)│  @vscode/test-cli — VS Code runtime
+                  ┌┴───────────────┴┐
+                  │  Unit (16 files) │  Vitest — pure function tests
+                  └─────────────────┘
+```
+
+### Execution Order (all tiers)
+
+Each tier runs tests in dependency order. If a foundational test fails, dependent tests are skipped.
+
+**Unit tests (Vitest)** — `npm test`
+Uses Vitest `projects` with `sequence.groupOrder` for ordered execution:
+
+| Order | Project | What it validates | Files |
+|-------|---------|-------------------|-------|
+| 0 | `parser` | Can we parse markdown into JSON? | `parser.test.ts`, `parser-edge-cases.test.ts`, `callout-parser.test.ts` |
+| 1 | `serializer` | Can we serialize JSON back to markdown? | `serializer.test.ts`, `serializer-edge-cases.test.ts`, `callout-serializer.test.ts` |
+| 2 | `roundtrip` | Does `parse(serialize(parse(md))) === parse(md)`? | `roundtrip.test.ts`, `roundtrip-all-blocks.test.ts`, `callout-roundtrip.test.ts`, `frontmatter-roundtrip.test.ts` |
+| 3 | `features` | Do individual features work? | `features.test.ts`, `fixtures.test.ts`, `debounce.test.ts`, `list-item-movement.test.ts` |
+| 4 | `edge-cases` | Stress tests and performance | `additional-edge-cases.test.ts`, `performance.test.ts` |
+
+**Integration tests** — `npm run test:integration`
+Uses `@vscode/test-cli` inside a real VS Code instance:
+
+| Order | What it validates |
+|-------|-------------------|
+| 1 | Extension activates (`smoke.test.ts`, `activation.test.ts`) |
+| 2 | Custom editor registers (`custom-editor.test.ts`) |
+| 3 | Configuration applies (`configuration.test.ts`) |
+| 4 | File roundtrip works (`file-roundtrip.test.ts`) |
+
+**E2E tests (Playwright)** — `npm run test:e2e`
+Uses Playwright `projects` with `dependencies` for ordered execution:
+
+| Order | Project | What it validates | Specs |
+|-------|---------|-------------------|-------|
+| 1 | `foundational` | Editor loads, blocks render, inline marks render | `editor-load`, `block-rendering`, `inline-formatting` |
+| 2 | `interactions` | Typing, shortcuts, theme, layout, sidebar | `editing`, `keyboard-shortcuts`, `theme`, `page-layout`, `sidebar-alignment` |
+| 3 | `features` | Block movement, external changes, roundtrip, slash commands | `block-movement`, `external-change`, `roundtrip`, `slash-commands` |
+| 4 | `integration` | Edge cases and full workflow | `edge-cases`, `edge-cases-2`, `comprehensive-editing-workflow` |
+
+### When Adding New Tests
+
+1. **Identify the tier:** Unit (pure functions), Integration (VS Code runtime), E2E (browser)
+2. **Identify the level:** Place the test in the correct project/group based on what it depends on
+3. **Add to the config:** Update `vitest.config.ts` or `playwright.config.ts` to include the new file in the right project
+4. **Naming:** Unit tests in `test/unit/<feature>.test.ts`, E2E specs in `test/e2e/specs/<feature>.spec.ts`
+5. **Round-trip rule:** Any new block type MUST have a roundtrip test proving `parse(serialize(parse(md))) === parse(md)`
+
+### When Adding a New Feature (test checklist)
+
+Every new feature should include tests at the appropriate levels:
+
+- [ ] **Parser test** — Does the markdown parse into the expected JSON structure?
+- [ ] **Serializer test** — Does the JSON serialize back to the expected markdown?
+- [ ] **Roundtrip test** — Is `parse(serialize(parse(md))) === parse(md)` preserved?
+- [ ] **Feature test** — Does the feature-specific behavior work? (e.g., keyboard shortcuts, slash commands)
+- [ ] **Edge case tests** — What happens with empty content, nested structures, rapid input?
+- [ ] **E2E test** — Does the feature work end-to-end in the browser?
+
+### Test Infrastructure
+
+- **E2E test server:** `npm run serve:e2e` starts a local server with `test/e2e/harness.html`
+- **Page objects:** `test/e2e/pages/EditorPage.ts` — shared browser interaction helpers
+- **Fixtures:** `test/e2e/fixtures/` (E2E), `test/fixtures/` (unit) — shared markdown test data
+- **Mocks:** `test/__mocks__/vscode.ts` — VS Code API mock for unit tests
 
 ## Code Conventions
 
