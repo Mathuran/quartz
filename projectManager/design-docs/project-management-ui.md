@@ -1,7 +1,7 @@
 # Project Management UI — Quartz VS Code Extension
 
 **Author:** Mathuran Sadagopan
-**Status:** DRAFT
+**Status:** ARCHIVED
 **Created:** 2026-02-04
 **Last Updated:** 2026-02-04
 **Reviewers:** TBD

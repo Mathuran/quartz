@@ -1,7 +1,7 @@
 # Claude Code Integration — Quartz VS Code Extension
 
 **Author:** Mathuran Sadagopan
-**Status:** DRAFT
+**Status:** ARCHIVED
 **Created:** 2026-02-03
 **Last Updated:** 2026-02-03 (Rev 2 — refactored to use Claude Agent SDK)
 **Reviewers:** TBD
