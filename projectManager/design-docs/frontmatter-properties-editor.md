@@ -452,8 +452,8 @@ Add `quartz.showFrontmatterBanner` setting (default: `true`). When disabled, fal
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/frontmatter-properties-editor/001-parser-serializer-roundtrip-fix.md) | Frontmatter Parser/Serializer Roundtrip Fix | TODO | S |
+| [001](../issues/frontmatter-properties-editor/001-parser-serializer-roundtrip-fix.md) | Frontmatter Parser/Serializer Roundtrip Fix | DONE | S |
 | [002](../issues/frontmatter-properties-editor/002-frontmatter-banner-component.md) | FrontmatterBanner Component and Two-Way Sync | TODO | M |
 | [003](../issues/frontmatter-properties-editor/003-edge-cases-and-e2e.md) | Edge Cases, Polish, and E2E Tests | TODO | S |
 
-**Progress:** 0/3 issues complete (0%)
+**Progress:** 1/3 issues complete (33%)

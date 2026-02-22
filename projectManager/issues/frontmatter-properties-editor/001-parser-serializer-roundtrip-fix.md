@@ -1,7 +1,7 @@
 # [001] Frontmatter Parser/Serializer Roundtrip Fix
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** -
 - **Blocks:** 002
 - **Scope:** S

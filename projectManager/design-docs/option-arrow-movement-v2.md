@@ -462,8 +462,8 @@ Revert changes to `keyboardShortcuts.ts` and `editor.css`. Risk is very low — 
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/option-arrow-movement-v2/001-list-item-movement-core.md) | Single List Item Movement + Boundary Escalation | TODO | M |
+| [001](../issues/option-arrow-movement-v2/001-list-item-movement-core.md) | Single List Item Movement + Boundary Escalation | DONE | M |
 | [002](../issues/option-arrow-movement-v2/002-multi-item-movement.md) | Multi-Item List Movement | TODO | S |
 | [003](../issues/option-arrow-movement-v2/003-e2e-tests-and-polish.md) | E2E Tests and Polish | TODO | S |
 
-**Progress:** 0/3 issues complete (0%)
+**Progress:** 1/3 issues complete (33%)

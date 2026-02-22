@@ -1,7 +1,7 @@
 # [001] Single List Item Movement + Boundary Escalation
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** -
 - **Blocks:** 002, 003
 - **Scope:** M
