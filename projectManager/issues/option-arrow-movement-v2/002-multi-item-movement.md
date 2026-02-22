@@ -1,7 +1,7 @@
 # [002] Multi-Item List Movement
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** 003
 - **Scope:** S

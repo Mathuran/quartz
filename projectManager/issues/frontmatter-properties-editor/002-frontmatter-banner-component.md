@@ -1,7 +1,7 @@
 # [002] FrontmatterBanner Component and Two-Way Sync
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** 003
 - **Scope:** M

@@ -28,9 +28,9 @@ function countProperties(yaml: string): number {
  */
 function loadCollapsedState(): boolean {
   try {
-    const state = (
-      window as unknown as { vscodeApi?: VsCodeApi }
-    ).vscodeApi?.getState() as Record<string, unknown> | undefined;
+    const state = (window as unknown as { vscodeApi?: VsCodeApi }).vscodeApi?.getState() as
+      | Record<string, unknown>
+      | undefined;
     // Fall back: try to read from the global vscode api if available
     if (state && typeof state.frontmatterCollapsed === 'boolean') {
       return state.frontmatterCollapsed;
@@ -46,8 +46,7 @@ function loadCollapsedState(): boolean {
  */
 function saveCollapsedState(collapsed: boolean): void {
   try {
-    const vscodeApi = (window as unknown as { vscodeApi?: VsCodeApi })
-      .vscodeApi;
+    const vscodeApi = (window as unknown as { vscodeApi?: VsCodeApi }).vscodeApi;
     if (vscodeApi) {
       const currentState = (vscodeApi.getState() as Record<string, unknown>) || {};
       vscodeApi.setState({ ...currentState, frontmatterCollapsed: collapsed });
