@@ -73,7 +73,6 @@ body {
 .quartz-editor-content {
   outline: none;
   line-height: 1.7;
-  padding-left: 36px;
   min-height: 200px;
   cursor: text;
 }

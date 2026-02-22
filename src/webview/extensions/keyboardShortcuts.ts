@@ -108,21 +108,14 @@ export function moveListItemsUp(
   const tr = state.tr;
   tr.replaceWith(prevStart, movingEnd, newContent);
 
-  // Restore selection (range or cursor)
-  const fromOffset = selection.$from.pos - movingStart;
-  const newFromPos = prevStart + fromOffset;
+  // Restore selection — items shifted left by prevNode.nodeSize
+  const shift = prevNode.nodeSize;
   try {
-    if (selection.$from.pos !== selection.$to.pos) {
-      // Range selection: preserve both endpoints
-      const toOffset = selection.$to.pos - movingStart;
-      const newToPos = prevStart + toOffset;
-      const clampedFrom = Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1);
-      const clampedTo = Math.min(Math.max(newToPos, 0), tr.doc.content.size - 1);
-      tr.setSelection(TextSelection.create(tr.doc, clampedFrom, clampedTo));
-    } else {
-      const $newPos = tr.doc.resolve(Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1));
-      tr.setSelection(TextSelection.near($newPos));
-    }
+    const newFrom = Math.min(Math.max(selection.$from.pos - shift, 0), tr.doc.content.size);
+    const newTo = Math.min(Math.max(selection.$to.pos - shift, 0), tr.doc.content.size);
+    const $newFrom = tr.doc.resolve(newFrom);
+    const $newTo = tr.doc.resolve(newTo);
+    tr.setSelection(TextSelection.between($newFrom, $newTo));
   } catch {
     // If we can't set selection, let it be
   }
@@ -179,21 +172,14 @@ export function moveListItemsDown(
   const tr = state.tr;
   tr.replaceWith(movingStart, nextEnd, newContent);
 
-  // Restore selection (range or cursor)
-  const fromOffset = selection.$from.pos - movingStart;
-  const newFromPos = movingStart + nextNode.nodeSize + fromOffset;
+  // Restore selection — items shifted right by nextNode.nodeSize
+  const shift = nextNode.nodeSize;
   try {
-    if (selection.$from.pos !== selection.$to.pos) {
-      // Range selection: preserve both endpoints
-      const toOffset = selection.$to.pos - movingStart;
-      const newToPos = movingStart + nextNode.nodeSize + toOffset;
-      const clampedFrom = Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1);
-      const clampedTo = Math.min(Math.max(newToPos, 0), tr.doc.content.size - 1);
-      tr.setSelection(TextSelection.create(tr.doc, clampedFrom, clampedTo));
-    } else {
-      const $newPos = tr.doc.resolve(Math.min(Math.max(newFromPos, 0), tr.doc.content.size - 1));
-      tr.setSelection(TextSelection.near($newPos));
-    }
+    const newFrom = Math.min(Math.max(selection.$from.pos + shift, 0), tr.doc.content.size);
+    const newTo = Math.min(Math.max(selection.$to.pos + shift, 0), tr.doc.content.size);
+    const $newFrom = tr.doc.resolve(newFrom);
+    const $newTo = tr.doc.resolve(newTo);
+    tr.setSelection(TextSelection.between($newFrom, $newTo));
   } catch {
     // If we can't set selection, let it be
   }
@@ -234,12 +220,14 @@ export function moveBlockUp(editor: Editor): boolean {
   tr.insert(prevBlock.pos, movingContent.content);
   tr.insert(prevBlock.pos + movingContent.size, prevContent.content);
 
-  const cursorOffset = $from.pos - startPos;
-  const newCursorPos = prevBlock.pos + cursorOffset;
-
+  // Restore selection — blocks shifted left by prevBlock.node.nodeSize
+  const shift = prevBlock.node.nodeSize;
   try {
-    const $newPos = tr.doc.resolve(Math.min(newCursorPos, tr.doc.content.size - 1));
-    tr.setSelection(TextSelection.near($newPos));
+    const newFrom = Math.min(Math.max($from.pos - shift, 0), tr.doc.content.size);
+    const newTo = Math.min(Math.max($to.pos - shift, 0), tr.doc.content.size);
+    const $newFrom = tr.doc.resolve(newFrom);
+    const $newTo = tr.doc.resolve(newTo);
+    tr.setSelection(TextSelection.between($newFrom, $newTo));
   } catch {
     // If we can't set selection, just let it be at the start
   }
@@ -279,12 +267,14 @@ export function moveBlockDown(editor: Editor): boolean {
   tr.insert(startPos, nextContent.content);
   tr.insert(startPos + nextContent.size, movingContent.content);
 
-  const cursorOffset = $from.pos - startPos;
-  const newCursorPos = startPos + nextContent.size + cursorOffset;
-
+  // Restore selection — blocks shifted right by nextBlock.nodeSize
+  const shift = nextBlock.nodeSize;
   try {
-    const $newPos = tr.doc.resolve(Math.min(newCursorPos, tr.doc.content.size - 1));
-    tr.setSelection(TextSelection.near($newPos));
+    const newFrom = Math.min(Math.max($from.pos + shift, 0), tr.doc.content.size);
+    const newTo = Math.min(Math.max($to.pos + shift, 0), tr.doc.content.size);
+    const $newFrom = tr.doc.resolve(newFrom);
+    const $newTo = tr.doc.resolve(newTo);
+    tr.setSelection(TextSelection.between($newFrom, $newTo));
   } catch {
     // If we can't set selection, just let it be at the start
   }
