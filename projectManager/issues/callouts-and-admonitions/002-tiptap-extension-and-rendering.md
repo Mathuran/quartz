@@ -1,7 +1,7 @@
 # [002] CalloutExtension and Visual Rendering
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** 003
 - **Scope:** M

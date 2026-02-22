@@ -1,7 +1,7 @@
 # [003] Slash Commands, Type Dropdown, and E2E Tests
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001, 002
 - **Blocks:** -
 - **Scope:** M

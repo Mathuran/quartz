@@ -603,8 +603,8 @@ Several community TipTap extensions exist for callout/admonition blocks.
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/callouts-and-admonitions/001-parser-and-serializer.md) | Callout Parser and Serializer | TODO | M |
-| [002](../issues/callouts-and-admonitions/002-tiptap-extension-and-rendering.md) | CalloutExtension and Visual Rendering | TODO | M |
-| [003](../issues/callouts-and-admonitions/003-slash-commands-type-dropdown-and-e2e.md) | Slash Commands, Type Dropdown, and E2E Tests | TODO | M |
+| [001](../issues/callouts-and-admonitions/001-parser-and-serializer.md) | Callout Parser and Serializer | DONE | M |
+| [002](../issues/callouts-and-admonitions/002-tiptap-extension-and-rendering.md) | CalloutExtension and Visual Rendering | DONE | M |
+| [003](../issues/callouts-and-admonitions/003-slash-commands-type-dropdown-and-e2e.md) | Slash Commands, Type Dropdown, and E2E Tests | DONE | M |
 
-**Progress:** 0/3 issues complete (0%)
+**Progress:** 3/3 issues complete (100%)
