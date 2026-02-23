@@ -40,7 +40,7 @@ import { FrontmatterBanner } from './components/FrontmatterBanner';
 import { slashCommandExtension } from './extensions/slashCommandExtension';
 import { keyboardShortcutsExtension } from './extensions/keyboardShortcuts';
 // import { dragHandleExtension } from './extensions/dragHandle'; // REMOVED
-import { virtualRenderingExtension } from './extensions/virtualRendering';
+// import { virtualRenderingExtension } from './extensions/virtualRendering'; // REMOVED
 import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { inputRulesExtension } from './extensions/inputRules';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
@@ -162,7 +162,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       slashCommandExtension,
       keyboardShortcutsExtension,
       // dragHandleExtension, // REMOVED
-      virtualRenderingExtension,
+      // virtualRenderingExtension, // REMOVED
       linkInputRuleExtension,
     ],
     content: initialDoc,
