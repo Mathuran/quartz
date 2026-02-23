@@ -12,10 +12,14 @@ A **Notion-style block-based WYSIWYG markdown editor** that lives inside VS Code
 - **Slash commands** — Type `/` to insert any block type
 - **Keyboard shortcuts** — Cmd+B for bold, Cmd+I for italic, and more
 - **Round-trip fidelity** — Your markdown formatting is preserved when you save
+- **Callouts** — 8 Obsidian-style admonition types (`> [!note]`, `> [!warning]`, etc.) with collapsible content and custom titles
+- **Frontmatter** — Collapsible YAML frontmatter banner with raw editing
+- **AI agent compatible** — Editor auto-refreshes when external tools (Claude Code, Cursor, Copilot) modify the file, with no data loss or feedback loops
 - **Page layout mode** — Optional document-style view with configurable margins
 - **Syntax highlighting** — Code blocks with language-aware highlighting
 - **Tables** — Full table editing with Tab navigation
 - **Task lists** — Interactive checkboxes that save to markdown
+- **List reordering** — Move list items up/down with Option+Arrow keys
 - **Theme support** — Automatic, light, or dark themes
 
 ### Slash Commands
@@ -29,6 +33,36 @@ Type `/` anywhere to quickly insert blocks:
 Create and edit tables with full keyboard navigation:
 
 ![Table Editing](https://raw.githubusercontent.com/Mathuran/quartz/main/images/quartzTableDemo.png)
+
+### Callouts
+
+8 Obsidian-style admonition types with colored borders and icons:
+
+![Callouts](https://raw.githubusercontent.com/Mathuran/quartz/main/images/calloutDemo.png)
+
+### Frontmatter
+
+Collapsible YAML frontmatter banner for document metadata:
+
+![Frontmatter](https://raw.githubusercontent.com/Mathuran/quartz/main/images/frontmatterDemo.png)
+
+### Task Lists
+
+Interactive checkboxes that save directly to markdown:
+
+![Task Lists](https://raw.githubusercontent.com/Mathuran/quartz/main/images/taskListDemo.png)
+
+### Code Blocks
+
+Syntax-highlighted code blocks with language detection:
+
+![Code Blocks](https://raw.githubusercontent.com/Mathuran/quartz/main/images/codeBlockDemo.png)
+
+### Dark Theme
+
+Full dark theme support that matches your VS Code theme:
+
+![Dark Theme](https://raw.githubusercontent.com/Mathuran/quartz/main/images/darkThemeDemo.png)
 
 ## Installation
 
@@ -59,8 +93,8 @@ All settings are under `quartz.editor.*` in VS Code Settings:
 | `fontFamily` | `"inherit"` | Font family (inherit uses VS Code's font) |
 | `fontSize` | `16` | Font size in pixels |
 | `pageLayout` | `true` | Enable letter-sized page view |
-| `pageWidth` | `816` | Page width in pixels |
 | `pageMargin` | `72` | Inner page margin in pixels |
+| `imageDir` | `"./assets"` | Relative path for pasted images |
 | `preserveFormatting` | `true` | Maintain original markdown style on round-trip |
 | `showBlockHandles` | `true` | Show drag handles on block hover |
 
@@ -78,6 +112,8 @@ All settings are under `quartz.editor.*` in VS Code Settings:
 | Task list | `Cmd+Shift+9` | `Ctrl+Shift+9` |
 | Indent | `Tab` | `Tab` |
 | Unindent | `Shift+Tab` | `Shift+Tab` |
+| Move line up | `Opt+↑` | `Alt+↑` |
+| Move line down | `Opt+↓` | `Alt+↓` |
 
 ## Block Input Rules
 
@@ -99,7 +135,7 @@ Type these at the start of a line to create blocks:
 
 - Some advanced markdown features (e.g., footnotes, definition lists) are displayed as raw text
 - Images require absolute URLs or workspace-relative paths
-- Maximum recommended file size: 500 lines for optimal performance
+- Maximum recommended file size: 10,000 lines for optimal performance
 
 ## Contributing
 
