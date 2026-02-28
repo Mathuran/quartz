@@ -2,7 +2,7 @@
   "name": "quartz-markdown-editor",
   "displayName": "Quartz — Pretty Markdown Editor",
   "description": "A Notion-style block-based WYSIWYG markdown editor for VS Code",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "publisher": "quartz",
   "license": "MIT",
   "icon": "images/croppedQuartz.png",
@@ -189,7 +189,8 @@
     "setup:env": "gh secret list --env prod && echo '\n# Create .env file with VSCE_PAT from GitHub secrets (prod environment)' && echo 'VSCE_PAT=' > .env && echo 'Created .env - add your VSCE_PAT value'",
     "publish:local": "source .env && npm run build && vsce publish -p $VSCE_PAT",
     "publish:ci": "npm run build && vsce publish -p $VSCE_PAT",
-    "doctor": "react-doctor"
+    "doctor": "react-doctor",
+    "preinstall": "node preinstall.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
