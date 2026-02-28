@@ -1,6 +1,7 @@
 import { Extension } from '@tiptap/core';
 import type { Editor } from '@tiptap/react';
 import { TextSelection } from '@tiptap/pm/state';
+import { liftListItem, sinkListItem } from '@tiptap/pm/schema-list';
 import type { Selection } from '@tiptap/pm/state';
 import { Fragment } from '@tiptap/pm/model';
 import type { Node as ProseMirrorNode, ResolvedPos } from '@tiptap/pm/model';
@@ -286,6 +287,43 @@ export const keyboardShortcutsExtension = Extension.create({
 
   addKeyboardShortcuts() {
     return {
+      // Tab / Shift-Tab: override TaskItem's global handler
+      'Tab': () => {
+        if (this.editor.isActive('table')) return false;
+        if (this.editor.isActive('taskItem')) {
+          return sinkListItem(this.editor.state.schema.nodes.taskItem)(
+            this.editor.state,
+            this.editor.view.dispatch,
+          );
+        }
+        if (this.editor.isActive('listItem')) {
+          return sinkListItem(this.editor.state.schema.nodes.listItem)(
+            this.editor.state,
+            this.editor.view.dispatch,
+          );
+        }
+        if (this.editor.isActive('codeBlock')) {
+          return this.editor.commands.insertContent('\t');
+        }
+        return false;
+      },
+      'Shift-Tab': () => {
+        if (this.editor.isActive('table')) return false;
+        if (this.editor.isActive('taskItem')) {
+          return liftListItem(this.editor.state.schema.nodes.taskItem)(
+            this.editor.state,
+            this.editor.view.dispatch,
+          );
+        }
+        if (this.editor.isActive('listItem')) {
+          return liftListItem(this.editor.state.schema.nodes.listItem)(
+            this.editor.state,
+            this.editor.view.dispatch,
+          );
+        }
+        return false;
+      },
+
       // Clipboard operations
       'Mod-c': () => {
         return false;
