@@ -303,7 +303,7 @@ export const keyboardShortcutsExtension = Extension.create({
           );
         }
         if (this.editor.isActive('codeBlock')) {
-          return this.editor.commands.insertContent('\t');
+          return this.editor.commands.insertContent('  ');
         }
         return false;
       },
