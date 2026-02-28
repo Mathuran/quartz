@@ -5,7 +5,7 @@ import type { Selection } from '@tiptap/pm/state';
 import { Fragment } from '@tiptap/pm/model';
 import type { Node as ProseMirrorNode, ResolvedPos } from '@tiptap/pm/model';
 
-export interface ListItemInfo {
+interface ListItemInfo {
   depth: number;
   node: ProseMirrorNode;
   pos: number;
@@ -14,9 +14,7 @@ export interface ListItemInfo {
   parentPos: number;
 }
 
-export function findTopLevelBlock(
-  $pos: ResolvedPos,
-): { pos: number; node: ProseMirrorNode } | null {
+function findTopLevelBlock($pos: ResolvedPos): { pos: number; node: ProseMirrorNode } | null {
   if ($pos.depth < 1) return null;
   const pos = $pos.before(1);
   const node = $pos.node(1);
@@ -41,7 +39,7 @@ export function findListItemAround($pos: ResolvedPos): ListItemInfo | null {
   return null;
 }
 
-export type MovementContext =
+type MovementContext =
   | { mode: 'list'; fromInfo: ListItemInfo; toInfo: ListItemInfo }
   | { mode: 'block' };
 
@@ -188,7 +186,7 @@ export function moveListItemsDown(
   return true;
 }
 
-export function moveBlockUp(editor: Editor): boolean {
+function moveBlockUp(editor: Editor): boolean {
   const { state, dispatch } = editor.view;
   const { selection, doc } = state;
   const { $from, $to } = selection;
@@ -236,7 +234,7 @@ export function moveBlockUp(editor: Editor): boolean {
   return true;
 }
 
-export function moveBlockDown(editor: Editor): boolean {
+function moveBlockDown(editor: Editor): boolean {
   const { state, dispatch } = editor.view;
   const { selection, doc } = state;
   const { $from, $to } = selection;

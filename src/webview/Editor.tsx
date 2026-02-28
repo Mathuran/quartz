@@ -111,14 +111,13 @@ function safeParse(markdown: string): {
 export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
-  const [contentWarning, setContentWarning] = useState<string | null>(null);
+  const [contentWarning, setContentWarning] = useState<string | null>(() => {
+    const { error } = safeParse(initialContentRef.current);
+    return error;
+  });
   const [showTableHint, setShowTableHint] = useState(false);
 
-  const {
-    doc: initialDoc,
-    frontmatter: initialFrontmatter,
-    error: parseError,
-  } = safeParse(initialContentRef.current);
+  const { doc: initialDoc, frontmatter: initialFrontmatter } = safeParse(initialContentRef.current);
   const [frontmatter, setFrontmatter] = useState<string | null>(initialFrontmatter);
   const frontmatterRef = useRef<string | null>(frontmatter);
 
@@ -205,13 +204,6 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       },
     },
   });
-
-  // Show parse error as warning
-  useEffect(() => {
-    if (parseError) {
-      setContentWarning(parseError);
-    }
-  }, [parseError]);
 
   // Update content when external changes come in
   useEffect(() => {

@@ -72,18 +72,6 @@ export async function waitForUpdate(page: Page, afterIndex?: number, timeout = 2
 }
 
 /**
- * Wait for the nth update (1-based).
- */
-export async function waitForNthUpdate(page: Page, n: number, timeout = 2000): Promise<string> {
-  await page.waitForFunction(
-    (count: number) => ((window as unknown as { __getUpdateCount(): number }).__getUpdateCount()) >= count,
-    n,
-    { timeout }
-  );
-  return page.evaluate((idx: number) => ((window as unknown as { __getUpdate(index: number): string }).__getUpdate(idx)), n - 1);
-}
-
-/**
  * Send an external change to the editor (simulates file modified externally).
  */
 export async function sendExternalChange(page: Page, content: string): Promise<void> {

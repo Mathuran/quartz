@@ -127,7 +127,7 @@ export function LinkDialog({
 
   return (
     <div className="quartz-link-dialog-overlay">
-      <div className="quartz-link-dialog" ref={dialogRef} onKeyDown={handleKeyDown}>
+      <div className="quartz-link-dialog" ref={dialogRef} role="dialog" onKeyDown={handleKeyDown}>
         <div className="quartz-link-dialog-title">Insert Link</div>
 
         <div className="quartz-link-dialog-field">

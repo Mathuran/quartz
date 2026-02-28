@@ -40,7 +40,7 @@ const handlers: TokenHandler[] = [
 ];
 
 /** Result of parsing markdown, separating frontmatter from document content */
-export interface ParseResult {
+interface ParseResult {
   doc: JSONContent;
   frontmatter: string | null;
 }

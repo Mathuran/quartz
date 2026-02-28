@@ -137,7 +137,18 @@ export function FrontmatterBanner({ frontmatter, onChange, onRemove }: Frontmatt
 
   return (
     <div className="quartz-frontmatter-banner" data-collapsed={collapsed ? 'true' : 'false'}>
-      <div className="quartz-frontmatter-header" onClick={handleToggle}>
+      <div
+        className="quartz-frontmatter-header"
+        role="button"
+        tabIndex={0}
+        onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
+      >
         <div className="quartz-frontmatter-header-left">
           <span className={`quartz-frontmatter-chevron ${collapsed ? 'collapsed' : ''}`}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">

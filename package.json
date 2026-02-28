@@ -161,7 +161,8 @@
     "package": "vsce package",
     "setup:env": "gh secret list --env prod && echo '\n# Create .env file with VSCE_PAT from GitHub secrets (prod environment)' && echo 'VSCE_PAT=' > .env && echo 'Created .env - add your VSCE_PAT value'",
     "publish:local": "source .env && npm run build && vsce publish -p $VSCE_PAT",
-    "publish:ci": "npm run build && vsce publish -p $VSCE_PAT"
+    "publish:ci": "npm run build && vsce publish -p $VSCE_PAT",
+    "doctor": "react-doctor"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
@@ -179,6 +180,7 @@
     "eslint": "^10.0.1",
     "eslint-plugin-security": "^4.0.0",
     "prettier": "^3.8.1",
+    "react-doctor": "^0.0.29",
     "typescript": "^5.3.3",
     "vitest": "^2.1.0"
   },

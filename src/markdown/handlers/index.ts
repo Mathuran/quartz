@@ -1,5 +1,3 @@
-export type { TokenHandler, ParseContext } from './types';
-export { parseInline } from './inline';
 export { headingHandler } from './heading';
 export { paragraphHandler } from './paragraph';
 export { bulletListHandler, orderedListHandler } from './list';

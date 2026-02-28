@@ -1,5 +1,3 @@
-export type { NodeSerializer, SerializeContext } from './types';
-
 export { headingSerializer } from './heading';
 export { paragraphSerializer } from './paragraph';
 export { bulletListSerializer } from './bulletList';

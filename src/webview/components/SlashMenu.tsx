@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 import { slashCommands, type SlashCommand } from '../commands/slashCommands';
 
@@ -12,17 +12,21 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
+  const prevQueryRef = useRef(query);
 
-  const filteredCommands = slashCommands.filter((cmd) => {
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return (
-      cmd.label.toLowerCase().includes(q) || cmd.aliases.some((a) => a.toLowerCase().includes(q))
-    );
-  });
-
-  useEffect(() => {
-    setSelectedIndex(0);
+  const filteredCommands = useMemo(() => {
+    // Reset selection when query changes (derived state instead of useEffect)
+    if (query !== prevQueryRef.current) {
+      prevQueryRef.current = query;
+      setSelectedIndex(0);
+    }
+    return slashCommands.filter((cmd) => {
+      if (!query) return true;
+      const q = query.toLowerCase();
+      return (
+        cmd.label.toLowerCase().includes(q) || cmd.aliases.some((a) => a.toLowerCase().includes(q))
+      );
+    });
   }, [query]);
 
   const executeCommand = useCallback(

@@ -27,8 +27,8 @@ export function TableHint({ visible }: TableHintProps) {
 
   return (
     <div className="quartz-table-hint">
-      {shortcuts.map((shortcut, index) => (
-        <div key={index} className="quartz-table-hint-item">
+      {shortcuts.map((shortcut) => (
+        <div key={shortcut.label} className="quartz-table-hint-item">
           <kbd className="quartz-table-hint-keys">{shortcut.keys}</kbd>
           <span className="quartz-table-hint-label">{shortcut.label}</span>
         </div>

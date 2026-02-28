@@ -3,14 +3,14 @@ import type { JSONContent } from '@tiptap/core';
 const CALLOUT_REGEX =
   /^\[!(note|tip|warning|danger|info|example|quote|abstract)\]([+-])?\s*(.*)?$/i;
 
-export interface CalloutMatch {
+interface CalloutMatch {
   calloutType: string;
   title: string;
   collapsed: boolean;
   foldable: boolean;
 }
 
-export interface CalloutDetection {
+interface CalloutDetection {
   match: CalloutMatch;
   /** Remaining inline content from the first paragraph after removing the callout marker.
    *  If non-empty, this should become the first paragraph of the callout content. */
