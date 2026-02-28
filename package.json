@@ -2,7 +2,7 @@
   "name": "quartz-markdown-editor",
   "displayName": "Quartz — Pretty Markdown Editor",
   "description": "A Notion-style block-based WYSIWYG markdown editor for VS Code",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "publisher": "quartz",
   "license": "MIT",
   "icon": "images/croppedQuartz.png",
