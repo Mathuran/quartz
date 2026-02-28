@@ -34,6 +34,7 @@ import { parseMarkdown } from '../markdown/parser';
 import { serializeMarkdown } from '../markdown/serializer';
 import { PageContainer } from './components/PageContainer';
 import { SlashMenu } from './components/SlashMenu';
+import { TableOfContents } from './components/TableOfContents';
 import { FormattingToolbar } from './components/FormattingToolbar';
 import { TableHint } from './components/TableHint';
 import { FrontmatterBanner } from './components/FrontmatterBanner';
@@ -48,6 +49,9 @@ import { CalloutExtension } from './extensions/calloutExtension';
 import type { EditorConfig } from './types';
 
 import './styles/callout.css';
+import './styles/codeBlock.css';
+import './styles/codeBlockThemes.css';
+import './styles/tableOfContents.css';
 
 // Create lowlight without languages initially — languages are loaded lazily
 // to reduce the initial bundle size by ~120 KB. The empty lowlight still renders
@@ -288,6 +292,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       )}
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
+      <TableOfContents editor={editor} />
       <TableHint visible={showTableHint} />
       <FrontmatterBanner
         frontmatter={frontmatter}

@@ -35,6 +35,13 @@ export function App() {
         case 'configUpdate':
           setConfig(message.config);
           break;
+        case 'scrollToHeading':
+          window.dispatchEvent(
+            new CustomEvent('scrollToHeadingRequest', {
+              detail: { line: message.index },
+            }),
+          );
+          break;
         case 'externalChange':
           // Suppress outbound updates while the editor processes the external
           // content — prevents the feedback loop where setContent triggers

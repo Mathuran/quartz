@@ -36,6 +36,15 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "quartz.outline",
+          "name": "Document Outline",
+          "when": "activeCustomEditorId == quartz.markdownEditor"
+        }
+      ]
+    },
     "customEditors": [
       {
         "viewType": "quartz.markdownEditor",
@@ -64,6 +73,17 @@
         "title": "Toggle Editor Mode",
         "category": "Quartz",
         "icon": "$(symbol-keyword)"
+      },
+      {
+        "command": "quartz.scrollToHeading",
+        "title": "Scroll to Heading",
+        "category": "Quartz"
+      },
+      {
+        "command": "quartz.refreshOutline",
+        "title": "Refresh Outline",
+        "category": "Quartz",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -71,6 +91,13 @@
         {
           "command": "quartz.toggleEditor",
           "when": "resourceExtname == .md",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "quartz.refreshOutline",
+          "when": "view == quartz.outline",
           "group": "navigation"
         }
       ],

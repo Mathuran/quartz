@@ -59,6 +59,8 @@ export default defineConfig({
             'test/fixtures.test.ts',
             'test/debounce.test.ts',
             'test/unit/list-item-movement.test.ts',
+          'test/unit/heading-extractor.test.ts',
+          'test/unit/heading-extractor-extension.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 3 },

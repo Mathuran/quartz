@@ -46,6 +46,7 @@ export default defineConfig({
         'specs/slash-commands.spec.ts',
         'specs/frontmatter-banner.spec.ts',
         'specs/list-item-movement.spec.ts',
+        'specs/table-of-contents.spec.ts',
       ],
       dependencies: ['interactions'],
     },

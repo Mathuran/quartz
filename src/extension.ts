@@ -1,9 +1,56 @@
 import * as vscode from 'vscode';
 import { QuartzEditorProvider } from './QuartzEditorProvider';
+import { QuartzOutlineProvider, type OutlineItem } from './QuartzOutlineProvider';
+import { QuartzDocumentSymbolProvider } from './QuartzDocumentSymbolProvider';
 
 export function activate(context: vscode.ExtensionContext) {
+  // Set up outline provider
+  const outlineProvider = new QuartzOutlineProvider();
+  QuartzEditorProvider.setOutlineProvider(outlineProvider);
+
   const provider = QuartzEditorProvider.register(context);
   context.subscriptions.push(provider);
+
+  // Register TreeView for document outline
+  context.subscriptions.push(
+    vscode.window.createTreeView('quartz.outline', {
+      treeDataProvider: outlineProvider,
+    }),
+  );
+
+  // Register DocumentSymbolProvider for VS Code's built-in Outline view
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSymbolProvider(
+      { language: 'markdown' },
+      new QuartzDocumentSymbolProvider(),
+    ),
+  );
+
+  // Scroll to heading command (used by TreeView click)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('quartz.scrollToHeading', (item: OutlineItem) => {
+      outlineProvider.scrollToHeading(item);
+    }),
+  );
+
+  // Refresh outline command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('quartz.refreshOutline', () => {
+      // Re-read the active document if there's an active panel
+      const panel = QuartzEditorProvider.getActiveWebviewPanel();
+      if (panel) {
+        // The outline will refresh when the document change event fires
+        // For manual refresh, we can trigger it via the active tab's document
+        const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+        if (activeTab?.input && typeof activeTab.input === 'object' && 'uri' in activeTab.input) {
+          const uri = (activeTab.input as { uri: vscode.Uri }).uri;
+          vscode.workspace.openTextDocument(uri).then((doc) => {
+            outlineProvider.updateDocument(doc, panel);
+          });
+        }
+      }
+    }),
+  );
 
   // Register commands for toggling between editors
   context.subscriptions.push(

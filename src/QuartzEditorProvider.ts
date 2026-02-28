@@ -1,7 +1,19 @@
 import * as vscode from 'vscode';
+import type { QuartzOutlineProvider } from './QuartzOutlineProvider';
 
 export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = 'quartz.markdownEditor';
+
+  private static outlineProvider: QuartzOutlineProvider | undefined;
+  private static activeWebviewPanel: vscode.WebviewPanel | undefined;
+
+  public static setOutlineProvider(provider: QuartzOutlineProvider): void {
+    QuartzEditorProvider.outlineProvider = provider;
+  }
+
+  public static getActiveWebviewPanel(): vscode.WebviewPanel | undefined {
+    return QuartzEditorProvider.activeWebviewPanel;
+  }
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
     const provider = new QuartzEditorProvider(context);
@@ -24,6 +36,12 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     };
 
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+
+    // Track active panel and notify outline provider
+    QuartzEditorProvider.activeWebviewPanel = webviewPanel;
+    if (QuartzEditorProvider.outlineProvider) {
+      QuartzEditorProvider.outlineProvider.updateDocument(document, webviewPanel);
+    }
 
     // Change origin guard: tracks whether a document change originated from the
     // webview (our own edit) so that we don't echo it back as an external change.
@@ -65,6 +83,11 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
       // Debounce and send external change to the webview
       sendExternalChange();
+
+      // Refresh outline with latest content
+      if (QuartzEditorProvider.outlineProvider) {
+        QuartzEditorProvider.outlineProvider.updateDocument(e.document, webviewPanel);
+      }
     });
 
     // Handle config changes
@@ -79,6 +102,13 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
       onWebviewMessage.dispose();
       onDocumentChange.dispose();
       onConfigChange.dispose();
+
+      if (QuartzEditorProvider.activeWebviewPanel === webviewPanel) {
+        QuartzEditorProvider.activeWebviewPanel = undefined;
+      }
+      if (QuartzEditorProvider.outlineProvider) {
+        QuartzEditorProvider.outlineProvider.clearDocument();
+      }
     });
   }
 

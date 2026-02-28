@@ -288,7 +288,7 @@ export const keyboardShortcutsExtension = Extension.create({
   addKeyboardShortcuts() {
     return {
       // Tab / Shift-Tab: override TaskItem's global handler
-      'Tab': () => {
+      Tab: () => {
         if (this.editor.isActive('table')) return false;
         if (this.editor.isActive('taskItem')) {
           return sinkListItem(this.editor.state.schema.nodes.taskItem)(
@@ -401,6 +401,12 @@ export const keyboardShortcutsExtension = Extension.create({
 
       // Highlight: Cmd/Ctrl+Shift+H
       'Mod-Shift-h': () => this.editor.chain().focus().toggleHighlight().run(),
+
+      // Table of Contents: Cmd/Ctrl+/
+      'Mod-/': () => {
+        window.dispatchEvent(new CustomEvent('tableOfContents', { detail: { type: 'open' } }));
+        return true;
+      },
 
       // Table editing shortcuts
       'Control-Enter': () => {

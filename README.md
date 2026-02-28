@@ -20,6 +20,7 @@ A **Notion-style block-based WYSIWYG markdown editor** that lives inside VS Code
 - **Tables** — Full table editing with Tab navigation
 - **Task lists** — Interactive checkboxes that save to markdown
 - **List reordering** — Move list items up/down with Option+Arrow keys
+- **Table of Contents** — Quick-pick overlay (`Cmd+/`) to search and jump to any heading, plus a Document Outline sidebar in the Explorer
 - **Theme support** — Automatic, light, or dark themes
 
 ### Slash Commands
@@ -39,6 +40,12 @@ Create and edit tables with full keyboard navigation:
 8 Obsidian-style admonition types with colored borders and icons:
 
 ![Callouts](https://raw.githubusercontent.com/Mathuran/quartz/main/images/calloutDemo.png)
+
+### Table of Contents
+
+Press `Cmd+/` (`Ctrl+/` on Windows/Linux) to open a quick-pick overlay for jumping to any heading. Filter by typing, navigate with arrow keys, and press Enter to scroll:
+
+![Table of Contents](https://raw.githubusercontent.com/Mathuran/quartz/main/images/tocDemo.png)
 
 ### Frontmatter
 
@@ -114,6 +121,7 @@ All settings are under `quartz.editor.*` in VS Code Settings:
 | Unindent | `Shift+Tab` | `Shift+Tab` |
 | Move line up | `Opt+↑` | `Alt+↑` |
 | Move line down | `Opt+↓` | `Alt+↓` |
+| Table of Contents | `Cmd+/` | `Ctrl+/` |
 
 ## Block Input Rules
 
