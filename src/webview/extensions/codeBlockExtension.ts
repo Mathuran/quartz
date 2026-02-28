@@ -1,5 +1,7 @@
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
+import { CodeBlockNodeView } from '../components/CodeBlockNodeView';
 
 const codeBlockExitKey = new PluginKey('codeBlockExit');
 
@@ -88,6 +90,10 @@ export const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
     });
 
     return [...parentPlugins, exitPlugin];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(CodeBlockNodeView);
   },
 
   addKeyboardShortcuts() {

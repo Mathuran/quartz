@@ -1,0 +1,155 @@
+/* Code Block NodeView — language selector header and dropdown */
+
+.quartz-codeblock {
+  position: relative;
+}
+
+.quartz-codeblock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  font-size: 12px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+  user-select: none;
+}
+
+.quartz-codeblock:hover .quartz-codeblock-header,
+.quartz-codeblock:focus-within .quartz-codeblock-header {
+  opacity: 1;
+}
+
+.quartz-codeblock-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.quartz-codeblock-lang-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--vscode-foreground, #ccc);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  opacity: 0.8;
+}
+
+.quartz-codeblock-lang-btn:hover {
+  border-color: var(--vscode-input-border, rgba(255, 255, 255, 0.15));
+  opacity: 1;
+}
+
+.quartz-codeblock-copy-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--vscode-foreground, #ccc);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quartz-codeblock-copy-btn:hover {
+  border-color: var(--vscode-input-border, rgba(255, 255, 255, 0.15));
+  opacity: 1;
+}
+
+/* Language Dropdown */
+.quartz-codeblock-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  min-width: 200px;
+  max-height: 300px;
+  background: var(--vscode-dropdown-background, #252526);
+  border: 1px solid var(--vscode-dropdown-border, #454545);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.quartz-codeblock-dropdown-search {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--vscode-dropdown-border, #454545);
+  flex-shrink: 0;
+}
+
+.quartz-codeblock-dropdown-search input {
+  width: 100%;
+  background: var(--vscode-input-background, #3c3c3c);
+  border: 1px solid var(--vscode-input-border, #454545);
+  color: var(--vscode-input-foreground, #ccc);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.quartz-codeblock-dropdown-search input:focus {
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.quartz-codeblock-dropdown-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.quartz-codeblock-dropdown-section {
+  padding: 4px 0;
+}
+
+.quartz-codeblock-dropdown-label {
+  padding: 4px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--vscode-descriptionForeground, #888);
+  font-weight: 600;
+}
+
+.quartz-codeblock-dropdown-item {
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--vscode-foreground, #ccc);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quartz-codeblock-dropdown-item:hover,
+.quartz-codeblock-dropdown-item[data-active="true"] {
+  background: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.quartz-codeblock-dropdown-item[data-selected="true"] {
+  color: var(--vscode-list-activeSelectionForeground, #fff);
+  font-weight: 600;
+}
+
+.quartz-codeblock-dropdown-item[data-selected="true"]::after {
+  content: "✓";
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Content area — keep the existing pre styling from editor.css */
+.quartz-codeblock pre {
+  margin: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}

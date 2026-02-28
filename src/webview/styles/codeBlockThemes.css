@@ -1,0 +1,279 @@
+/*
+ * Syntax highlighting themes for code blocks.
+ * Dark theme: GitHub Dark   — applied when VS Code is in a dark or high-contrast dark theme.
+ * Light theme: GitHub Light — applied when VS Code is in a light or high-contrast light theme.
+ *
+ * Background is forced to transparent because the editor's --quartz-code-bg handles it.
+ */
+
+/* ========================================================================
+   Dark theme (GitHub Dark)
+   ======================================================================== */
+body[data-vscode-theme-kind="vscode-dark"] .hljs,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs {
+  background: transparent;
+  color: #c9d1d9;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-doctag,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-keyword,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-meta .hljs-keyword,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-template-tag,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-template-variable,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-type,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-variable.language_,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-doctag,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-keyword,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-meta .hljs-keyword,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-template-tag,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-template-variable,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-type,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-title,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-title.class_,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-title.class_.inherited__,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-title.function_,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-title,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-title.class_,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-title.class_.inherited__,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-title.function_ {
+  color: #d2a8ff;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-attr,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-attribute,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-literal,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-meta,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-number,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-operator,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-selector-attr,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-selector-class,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-selector-id,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-variable,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-attr,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-attribute,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-literal,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-meta,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-number,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-operator,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-selector-attr,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-selector-class,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-selector-id,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-variable {
+  color: #79c0ff;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-string,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-meta .hljs-string,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-regexp,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-string,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-meta .hljs-string,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-regexp {
+  color: #a5d6ff;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-built_in,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-symbol,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-built_in,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-symbol {
+  color: #ffa657;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-comment,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-code,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-formula,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-comment,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-code,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-formula {
+  color: #8b949e;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-name,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-quote,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-selector-pseudo,
+body[data-vscode-theme-kind="vscode-dark"] .hljs-selector-tag,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-name,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-quote,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-selector-pseudo,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-selector-tag {
+  color: #7ee787;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-subst,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-subst {
+  color: #c9d1d9;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-section,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-section {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-bullet,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-bullet {
+  color: #f2cc60;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-emphasis,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-emphasis {
+  color: #c9d1d9;
+  font-style: italic;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-strong,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-strong {
+  color: #c9d1d9;
+  font-weight: bold;
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-addition,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-addition {
+  color: #aff5b4;
+  background-color: rgba(46, 160, 67, 0.15);
+}
+
+body[data-vscode-theme-kind="vscode-dark"] .hljs-deletion,
+body[data-vscode-theme-kind="vscode-high-contrast"] .hljs-deletion {
+  color: #ffdcd7;
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+/* ========================================================================
+   Light theme (GitHub Light)
+   ======================================================================== */
+body[data-vscode-theme-kind="vscode-light"] .hljs,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs {
+  background: transparent;
+  color: #24292e;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-doctag,
+body[data-vscode-theme-kind="vscode-light"] .hljs-keyword,
+body[data-vscode-theme-kind="vscode-light"] .hljs-meta .hljs-keyword,
+body[data-vscode-theme-kind="vscode-light"] .hljs-template-tag,
+body[data-vscode-theme-kind="vscode-light"] .hljs-template-variable,
+body[data-vscode-theme-kind="vscode-light"] .hljs-type,
+body[data-vscode-theme-kind="vscode-light"] .hljs-variable.language_,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-doctag,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-keyword,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-meta .hljs-keyword,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-template-tag,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-template-variable,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-type,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-variable.language_ {
+  color: #d73a49;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-title,
+body[data-vscode-theme-kind="vscode-light"] .hljs-title.class_,
+body[data-vscode-theme-kind="vscode-light"] .hljs-title.class_.inherited__,
+body[data-vscode-theme-kind="vscode-light"] .hljs-title.function_,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-title,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-title.class_,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-title.class_.inherited__,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-title.function_ {
+  color: #6f42c1;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-attr,
+body[data-vscode-theme-kind="vscode-light"] .hljs-attribute,
+body[data-vscode-theme-kind="vscode-light"] .hljs-literal,
+body[data-vscode-theme-kind="vscode-light"] .hljs-meta,
+body[data-vscode-theme-kind="vscode-light"] .hljs-number,
+body[data-vscode-theme-kind="vscode-light"] .hljs-operator,
+body[data-vscode-theme-kind="vscode-light"] .hljs-selector-attr,
+body[data-vscode-theme-kind="vscode-light"] .hljs-selector-class,
+body[data-vscode-theme-kind="vscode-light"] .hljs-selector-id,
+body[data-vscode-theme-kind="vscode-light"] .hljs-variable,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-attr,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-attribute,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-literal,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-meta,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-number,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-operator,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-selector-attr,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-selector-class,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-selector-id,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-variable {
+  color: #005cc5;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-string,
+body[data-vscode-theme-kind="vscode-light"] .hljs-meta .hljs-string,
+body[data-vscode-theme-kind="vscode-light"] .hljs-regexp,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-string,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-meta .hljs-string,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-regexp {
+  color: #032f62;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-built_in,
+body[data-vscode-theme-kind="vscode-light"] .hljs-symbol,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-built_in,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-symbol {
+  color: #e36209;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-comment,
+body[data-vscode-theme-kind="vscode-light"] .hljs-code,
+body[data-vscode-theme-kind="vscode-light"] .hljs-formula,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-comment,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-code,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-formula {
+  color: #6a737d;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-name,
+body[data-vscode-theme-kind="vscode-light"] .hljs-quote,
+body[data-vscode-theme-kind="vscode-light"] .hljs-selector-pseudo,
+body[data-vscode-theme-kind="vscode-light"] .hljs-selector-tag,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-name,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-quote,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-selector-pseudo,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-selector-tag {
+  color: #22863a;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-subst,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-subst {
+  color: #24292e;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-section,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-section {
+  color: #005cc5;
+  font-weight: bold;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-bullet,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-bullet {
+  color: #735c0f;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-emphasis,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-emphasis {
+  color: #24292e;
+  font-style: italic;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-strong,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-strong {
+  color: #24292e;
+  font-weight: bold;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-addition,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-addition {
+  color: #22863a;
+  background-color: rgba(52, 208, 88, 0.15);
+}
+
+body[data-vscode-theme-kind="vscode-light"] .hljs-deletion,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .hljs-deletion {
+  color: #b31d28;
+  background-color: rgba(255, 220, 215, 0.3);
+}
