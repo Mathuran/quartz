@@ -445,52 +445,46 @@ body {
   opacity: 1;
 }
 
-/* Table Hint Card */
+/* Table Hint Toolbar */
 .quartz-table-hint {
-  position: fixed;
-  right: 16px;
-  width: 170px;
-  font-size: 12px;
-  color: var(--quartz-fg);
-  padding: 12px;
-  background: var(--quartz-bg);
-  border: 1px solid var(--quartz-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  z-index: 100;
-}
-
-.quartz-table-hint-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--quartz-fg);
-  opacity: 0.6;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--quartz-border);
-}
-
-.quartz-table-hint-row {
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--quartz-fg);
+  background: color-mix(in srgb, var(--quartz-bg) 75%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--quartz-border);
+  z-index: 100;
+  opacity: 0.95;
+}
+
+.quartz-table-hint:hover {
+  opacity: 1;
+}
+
+.quartz-table-hint-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .quartz-table-hint-keys {
   font-family: inherit;
   font-size: 11px;
   background: var(--quartz-border);
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
+  padding: 1px 5px;
+  border-radius: 3px;
 }
 
 .quartz-table-hint-label {
-  font-size: 12px;
-  opacity: 0.8;
+  font-size: 11px;
+  opacity: 0.95;
 }
 
 /* Link Dialog */

@@ -112,7 +112,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
   const [contentWarning, setContentWarning] = useState<string | null>(null);
-  const [tableHintPosition, setTableHintPosition] = useState<{ top: number } | null>(null);
+  const [showTableHint, setShowTableHint] = useState(false);
 
   const {
     doc: initialDoc,
@@ -196,26 +196,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     onSelectionUpdate: ({ editor }) => {
       const inTable =
         editor.isActive('table') || editor.isActive('tableCell') || editor.isActive('tableHeader');
-      if (inTable) {
-        // Find the table element and position the hint alongside it
-        const { $from } = editor.state.selection;
-        let tableDepth = $from.depth;
-        while (tableDepth > 0 && $from.node(tableDepth).type.name !== 'table') {
-          tableDepth--;
-        }
-        if (tableDepth > 0) {
-          const tableStart = $from.before(tableDepth);
-          const dom = editor.view.nodeDOM(tableStart);
-          if (dom instanceof HTMLElement) {
-            const rect = dom.getBoundingClientRect();
-            setTableHintPosition({
-              top: rect.top,
-            });
-            return;
-          }
-        }
-      }
-      setTableHintPosition(null);
+      setShowTableHint(inTable);
     },
     editorProps: {
       attributes: {
@@ -315,7 +296,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       )}
       <FormattingToolbar editor={editor} />
       <SlashMenu editor={editor} />
-      <TableHint position={tableHintPosition} />
+      <TableHint visible={showTableHint} />
       <FrontmatterBanner
         frontmatter={frontmatter}
         onChange={handleFrontmatterChange}

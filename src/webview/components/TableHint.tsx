@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface TableHintProps {
-  position: { top: number } | null;
+  visible: boolean;
 }
 
 // Detect OS for correct shortcut symbols
@@ -13,23 +13,22 @@ const backspaceKey = isMac ? '\u232b' : 'Bksp';
 
 const shortcuts = [
   { keys: `${ctrlKey}${enterKey}`, label: 'Add row' },
-  { keys: `${ctrlKey}${shiftKey}${enterKey}`, label: 'Add column' },
-  { keys: `${ctrlKey}${backspaceKey}`, label: 'Delete row' },
-  { keys: `${ctrlKey}${shiftKey}${backspaceKey}`, label: 'Delete column' },
+  { keys: `${ctrlKey}${shiftKey}${enterKey}`, label: 'Add col' },
+  { keys: `${ctrlKey}${backspaceKey}`, label: 'Del row' },
+  { keys: `${ctrlKey}${shiftKey}${backspaceKey}`, label: 'Del col' },
 ];
 
 /**
  * TableHint displays keyboard shortcuts for table editing.
- * Shows as a card on the left side when cursor is inside a table cell.
+ * Shows as a centered toolbar bar at the top when cursor is inside a table.
  */
-export function TableHint({ position }: TableHintProps) {
-  if (!position) return null;
+export function TableHint({ visible }: TableHintProps) {
+  if (!visible) return null;
 
   return (
-    <div className="quartz-table-hint" style={{ top: position.top }}>
-      <div className="quartz-table-hint-title">Table Shortcuts</div>
+    <div className="quartz-table-hint">
       {shortcuts.map((shortcut, index) => (
-        <div key={index} className="quartz-table-hint-row">
+        <div key={index} className="quartz-table-hint-item">
           <kbd className="quartz-table-hint-keys">{shortcut.keys}</kbd>
           <span className="quartz-table-hint-label">{shortcut.label}</span>
         </div>
