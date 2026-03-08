@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Editor } from './Editor';
+import { DiffSplitView } from './components/DiffSplitView';
+import { ExternalChangeBanner } from './components/ExternalChangeBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { computeDiff } from './diff/diffEngine';
+import { computeAlignment } from './diff/alignment';
+import type { DiffResult, AlignedRow } from './diff/types';
 import type { EditorConfig } from './types';
 
 declare function acquireVsCodeApi(): {
@@ -24,6 +29,17 @@ export function App() {
     showBlockHandles: true,
   });
   const suppressUpdateRef = useRef(false);
+
+  // External change pending state
+  const [pendingExternalChange, setPendingExternalChange] = useState<string | null>(null);
+
+  // Diff view state
+  const [diffViewState, setDiffViewState] = useState<{
+    active: boolean;
+    diffResult: DiffResult | null;
+    alignedRows: AlignedRow[];
+    sourceLabel: string;
+  }>({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -55,6 +71,32 @@ export function App() {
             suppressUpdateRef.current = false;
           }, 500);
           break;
+        case 'externalChangeAvailable':
+          // Diff review enabled: show notification banner instead of silent replace
+          setPendingExternalChange(message.content as string);
+          break;
+        case 'triggerGitDiff':
+          vscode.postMessage({ type: 'requestGitDiff' });
+          break;
+        case 'openDiffView': {
+          const { oldContent, newContent, sourceLabel } = message as {
+            oldContent: string;
+            newContent: string;
+            sourceLabel: string;
+          };
+          const diffResult = computeDiff(oldContent, newContent);
+          const alignedRows = computeAlignment(diffResult.diffs);
+          // Check if there are actual changes
+          if (
+            diffResult.summary.added + diffResult.summary.removed + diffResult.summary.modified ===
+            0
+          ) {
+            vscode.postMessage({ type: 'diffNoChanges' });
+          } else {
+            setDiffViewState({ active: true, diffResult, alignedRows, sourceLabel });
+          }
+          break;
+        }
       }
     };
 
@@ -69,13 +111,69 @@ export function App() {
     vscode.postMessage({ type: 'update', content: markdown });
   }, []);
 
+  const handleCloseDiff = useCallback(() => {
+    setDiffViewState({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
+  }, []);
+
+  // External change handlers
+  const handleExternalAccept = useCallback(() => {
+    if (!pendingExternalChange) return;
+    suppressUpdateRef.current = true;
+    setContent(pendingExternalChange);
+    setPendingExternalChange(null);
+    vscode.postMessage({ type: 'applyExternalChange' });
+    setTimeout(() => {
+      suppressUpdateRef.current = false;
+    }, 500);
+  }, [pendingExternalChange]);
+
+  const handleExternalDismiss = useCallback(() => {
+    setPendingExternalChange(null);
+    vscode.postMessage({ type: 'dismissExternalChange' });
+  }, []);
+
+  const handleExternalViewChanges = useCallback(() => {
+    if (!pendingExternalChange || !content) return;
+    const diffResult = computeDiff(content, pendingExternalChange);
+    const alignedRows = computeAlignment(diffResult.diffs);
+    setPendingExternalChange(null);
+    setDiffViewState({
+      active: true,
+      diffResult,
+      alignedRows,
+      sourceLabel: 'External change',
+    });
+  }, [pendingExternalChange, content]);
+
   if (content === null) {
     return <div className="quartz-loading">Loading...</div>;
+  }
+
+  if (diffViewState.active && diffViewState.diffResult) {
+    return (
+      <div className="quartz-app">
+        <ErrorBoundary>
+          <DiffSplitView
+            diffResult={diffViewState.diffResult}
+            alignedRows={diffViewState.alignedRows}
+            sourceLabel={diffViewState.sourceLabel}
+            onClose={handleCloseDiff}
+          />
+        </ErrorBoundary>
+      </div>
+    );
   }
 
   return (
     <div className="quartz-app">
       <ErrorBoundary>
+        {pendingExternalChange && (
+          <ExternalChangeBanner
+            onViewChanges={handleExternalViewChanges}
+            onAccept={handleExternalAccept}
+            onDismiss={handleExternalDismiss}
+          />
+        )}
         <Editor initialContent={content} config={config} onUpdate={handleUpdate} />
       </ErrorBoundary>
     </div>

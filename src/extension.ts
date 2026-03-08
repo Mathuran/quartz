@@ -52,6 +52,35 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   );
 
+  // View Git Changes command
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'quartz.viewGitChanges',
+      async (resourceState?: { resourceUri?: vscode.Uri }) => {
+        const diffEnabled = vscode.workspace
+          .getConfiguration('quartz.diffReview')
+          .get<boolean>('enabled', true);
+        if (!diffEnabled) {
+          vscode.window.showInformationMessage('Diff review is disabled. Enable it in settings.');
+          return;
+        }
+
+        // When invoked from SCM context menu, resourceState contains the file URI
+        const uri = resourceState?.resourceUri;
+        if (uri) {
+          QuartzEditorProvider.queueDiffForUri(uri);
+          await vscode.commands.executeCommand(
+            'vscode.openWith',
+            uri,
+            QuartzEditorProvider.viewType,
+          );
+        } else {
+          await QuartzEditorProvider.requestGitDiffForActivePanel();
+        }
+      },
+    ),
+  );
+
   // Register commands for toggling between editors
   context.subscriptions.push(
     vscode.commands.registerCommand('quartz.openWithQuartz', async () => {

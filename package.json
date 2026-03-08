@@ -84,6 +84,12 @@
         "title": "Refresh Outline",
         "category": "Quartz",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "quartz.viewGitChanges",
+        "title": "View Git Changes",
+        "category": "Quartz",
+        "icon": "$(diff)"
       }
     ],
     "menus": {
@@ -92,12 +98,24 @@
           "command": "quartz.toggleEditor",
           "when": "resourceExtname == .md",
           "group": "navigation"
+        },
+        {
+          "command": "quartz.viewGitChanges",
+          "when": "activeCustomEditorId == quartz.markdownEditor && config.quartz.diffReview.enabled",
+          "group": "navigation"
         }
       ],
       "view/title": [
         {
           "command": "quartz.refreshOutline",
           "when": "view == quartz.outline",
+          "group": "navigation"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "quartz.viewGitChanges",
+          "when": "resourceExtname == .md && config.quartz.diffReview.enabled",
           "group": "navigation"
         }
       ],
@@ -166,6 +184,11 @@
           "type": "boolean",
           "default": true,
           "description": "Show drag handles on block hover"
+        },
+        "quartz.diffReview.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable block-level diff review for git changes"
         }
       }
     }

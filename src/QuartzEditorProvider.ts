@@ -6,6 +6,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
   private static outlineProvider: QuartzOutlineProvider | undefined;
   private static activeWebviewPanel: vscode.WebviewPanel | undefined;
+  private static pendingDiffUris = new Set<string>();
 
   public static setOutlineProvider(provider: QuartzOutlineProvider): void {
     QuartzEditorProvider.outlineProvider = provider;
@@ -38,10 +39,18 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
     // Track active panel and notify outline provider
+    const docKey = document.uri.toString();
     QuartzEditorProvider.activeWebviewPanel = webviewPanel;
     if (QuartzEditorProvider.outlineProvider) {
       QuartzEditorProvider.outlineProvider.updateDocument(document, webviewPanel);
     }
+
+    // Update active panel when this panel gains focus
+    webviewPanel.onDidChangeViewState((e) => {
+      if (e.webviewPanel.active) {
+        QuartzEditorProvider.activeWebviewPanel = webviewPanel;
+      }
+    });
 
     // Change origin guard: tracks whether a document change originated from the
     // webview (our own edit) so that we don't echo it back as an external change.
@@ -53,10 +62,21 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     function sendExternalChange() {
       if (externalChangeTimeout) clearTimeout(externalChangeTimeout);
       externalChangeTimeout = setTimeout(() => {
-        webviewPanel.webview.postMessage({
-          type: 'externalChange',
-          content: document.getText(),
-        });
+        const diffReviewEnabled = vscode.workspace
+          .getConfiguration('quartz.diffReview')
+          .get<boolean>('enabled', true);
+
+        if (diffReviewEnabled) {
+          webviewPanel.webview.postMessage({
+            type: 'externalChangeAvailable',
+            content: document.getText(),
+          });
+        } else {
+          webviewPanel.webview.postMessage({
+            type: 'externalChange',
+            content: document.getText(),
+          });
+        }
       }, 300);
     }
 
@@ -66,11 +86,22 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         case 'ready':
           this.sendDocumentToWebview(webviewPanel.webview, document);
           this.sendConfigToWebview(webviewPanel.webview);
+          // If this URI was queued for diff (e.g. from SCM context menu), trigger it now
+          if (QuartzEditorProvider.pendingDiffUris.has(docKey)) {
+            QuartzEditorProvider.pendingDiffUris.delete(docKey);
+            this.openGitDiff(webviewPanel.webview, document);
+          }
           return;
         case 'update':
           isApplyingWebviewEdit = true;
           await this.applyEdits(document, message.content);
           isApplyingWebviewEdit = false;
+          return;
+        case 'requestGitDiff':
+          await this.openGitDiff(webviewPanel.webview, document);
+          return;
+        case 'diffNoChanges':
+          vscode.window.showInformationMessage('No changes compared to HEAD.');
           return;
       }
     });
@@ -135,6 +166,73 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         showBlockHandles: config.get<boolean>('showBlockHandles', true),
       },
     });
+  }
+
+  /**
+   * Queue a URI so that when its webview sends `ready`, the diff opens automatically.
+   * Called from the SCM context menu before opening the file with `vscode.openWith`.
+   */
+  public static queueDiffForUri(uri: vscode.Uri): void {
+    QuartzEditorProvider.pendingDiffUris.add(uri.toString());
+  }
+
+  /**
+   * Request the active webview to open a git diff view.
+   * Called from the `quartz.viewGitChanges` command.
+   */
+  public static async requestGitDiffForActivePanel(): Promise<void> {
+    const panel = QuartzEditorProvider.activeWebviewPanel;
+    if (!panel) {
+      vscode.window.showWarningMessage('No active Quartz editor.');
+      return;
+    }
+    panel.webview.postMessage({ type: 'triggerGitDiff' });
+  }
+
+  private async openGitDiff(webview: vscode.Webview, document: vscode.TextDocument): Promise<void> {
+    try {
+      const gitExtension = vscode.extensions.getExtension('vscode.git');
+      if (!gitExtension) {
+        vscode.window.showWarningMessage('Git extension is not available.');
+        return;
+      }
+
+      const git = gitExtension.isActive
+        ? gitExtension.exports.getAPI(1)
+        : (await gitExtension.activate()).getAPI(1);
+      const repo = git.getRepository(document.uri);
+      if (!repo) {
+        vscode.window.showWarningMessage('This file is not in a git repository.');
+        return;
+      }
+
+      // Get the file path relative to the repo root
+      const repoRoot = repo.rootUri.fsPath;
+      const filePath = document.uri.fsPath;
+      const relativePath = filePath.startsWith(repoRoot)
+        ? filePath.slice(repoRoot.length + 1)
+        : filePath;
+
+      let oldContent: string;
+      try {
+        oldContent = await repo.show('HEAD', relativePath);
+      } catch {
+        // File doesn't exist at HEAD (new file)
+        oldContent = '';
+      }
+
+      const newContent = document.getText();
+
+      webview.postMessage({
+        type: 'openDiffView',
+        oldContent,
+        newContent,
+        sourceLabel: 'vs HEAD',
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      vscode.window.showErrorMessage(`Failed to get git diff: ${message}`);
+    }
   }
 
   private async applyEdits(document: vscode.TextDocument, content: string): Promise<void> {

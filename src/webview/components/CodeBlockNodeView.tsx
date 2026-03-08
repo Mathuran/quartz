@@ -45,7 +45,7 @@ function getDisplayName(langId: string): string {
   return entry ? entry.label : langId;
 }
 
-export function CodeBlockNodeView({ node, updateAttributes, editor }: NodeViewProps) {
+export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: NodeViewProps) {
   const language = (node.attrs.language as string) || '';
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');

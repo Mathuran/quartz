@@ -1,0 +1,234 @@
+/* Diff Review — Split-View Layout */
+.quartz-diff-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+}
+
+.quartz-diff-split {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.quartz-diff-panel {
+  flex: 1 1 50%;
+  overflow-y: auto;
+  position: relative;
+  min-width: 0;
+}
+
+.quartz-diff-panel-left {
+  border-right: 1px solid var(--quartz-border);
+}
+
+/* Panel headers */
+.quartz-diff-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--quartz-fg);
+  opacity: 0.7;
+  background: color-mix(in srgb, var(--quartz-bg) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--quartz-border);
+}
+
+.quartz-diff-panel-header-label {
+  flex: 1;
+}
+
+.quartz-diff-panel-header-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Read-only left panel styling */
+.quartz-diff-panel-left .ProseMirror {
+  cursor: default;
+}
+
+/* Diff highlight decorations */
+
+/* Added block — green background + left border */
+.quartz-diff-added {
+  background: var(--vscode-diffEditor-insertedTextBackground, rgba(156, 220, 254, 0.07));
+  border-left: 3px solid var(--vscode-diffEditorGutter-insertedLineBackground, #2ea04370);
+  padding-left: 8px;
+  margin-left: -11px;
+}
+
+/* Removed block — red background + left border */
+.quartz-diff-removed {
+  background: var(--vscode-diffEditor-removedTextBackground, rgba(255, 0, 0, 0.06));
+  border-left: 3px solid var(--vscode-diffEditorGutter-removedLineBackground, #f8514970);
+  padding-left: 8px;
+  margin-left: -11px;
+}
+
+/* Modified block — amber/yellow background + left border */
+.quartz-diff-modified {
+  background: rgba(227, 179, 65, 0.08);
+  border-left: 3px solid rgba(227, 179, 65, 0.5);
+  padding-left: 8px;
+  margin-left: -11px;
+}
+
+/* Placeholder row — dashed border with label */
+.quartz-diff-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2em;
+  margin: 0.5em 0;
+  padding: 8px 16px;
+  border: 1px dashed var(--quartz-border);
+  border-radius: 4px;
+  color: var(--quartz-fg);
+  opacity: 0.4;
+  font-size: 12px;
+  font-style: italic;
+  user-select: none;
+}
+
+/* Diff Review Bar */
+.quartz-diff-review-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--vscode-menu-background, #252526);
+  border-bottom: 1px solid var(--vscode-menu-border, #454545);
+  font-size: 13px;
+  color: var(--quartz-fg);
+  flex-shrink: 0;
+}
+
+.quartz-diff-review-summary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quartz-diff-review-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.quartz-diff-review-stat-added {
+  color: var(--vscode-diffEditorGutter-insertedLineBackground, #2ea043);
+}
+
+.quartz-diff-review-stat-removed {
+  color: var(--vscode-diffEditorGutter-removedLineBackground, #f85149);
+}
+
+.quartz-diff-review-stat-modified {
+  color: #e3b341;
+}
+
+.quartz-diff-review-source {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+.quartz-diff-review-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quartz-diff-review-btn {
+  border: none;
+  background: none;
+  color: var(--quartz-fg);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.quartz-diff-review-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quartz-diff-review-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.quartz-diff-review-btn:disabled:hover {
+  background: none;
+}
+
+.quartz-diff-review-btn-close {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+}
+
+.quartz-diff-review-btn-close:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+/* External Change Banner */
+.quartz-external-change-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--vscode-inputValidation-infoBackground, #063b49);
+  border: 1px solid var(--vscode-inputValidation-infoBorder, #007acc);
+  color: var(--quartz-fg);
+  font-size: 13px;
+  border-radius: 4px;
+  margin: 8px 16px 0;
+}
+
+.quartz-external-change-banner-text {
+  font-weight: 500;
+}
+
+.quartz-external-change-banner-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.quartz-external-change-btn {
+  border: none;
+  background: transparent;
+  color: var(--quartz-fg);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.quartz-external-change-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quartz-external-change-btn-accept {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+}
+
+.quartz-external-change-btn-accept:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
