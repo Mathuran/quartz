@@ -76,7 +76,15 @@ export function App() {
           setPendingExternalChange(message.content as string);
           break;
         case 'triggerGitDiff':
-          vscode.postMessage({ type: 'requestGitDiff' });
+          // Toggle: if diff is already open, close it; otherwise request diff
+          setDiffViewState((prev) => {
+            if (prev.active) {
+              vscode.postMessage({ type: 'diffViewClosed' });
+              return { active: false, diffResult: null, alignedRows: [], sourceLabel: '' };
+            }
+            vscode.postMessage({ type: 'requestGitDiff' });
+            return prev;
+          });
           break;
         case 'openDiffView': {
           const { oldContent, newContent, sourceLabel } = message as {
@@ -94,6 +102,7 @@ export function App() {
             vscode.postMessage({ type: 'diffNoChanges' });
           } else {
             setDiffViewState({ active: true, diffResult, alignedRows, sourceLabel });
+            vscode.postMessage({ type: 'diffViewOpened' });
           }
           break;
         }
@@ -113,6 +122,7 @@ export function App() {
 
   const handleCloseDiff = useCallback(() => {
     setDiffViewState({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
+    vscode.postMessage({ type: 'diffViewClosed' });
   }, []);
 
   // External change handlers
@@ -143,6 +153,7 @@ export function App() {
       alignedRows,
       sourceLabel: 'External change',
     });
+    vscode.postMessage({ type: 'diffViewOpened' });
   }, [pendingExternalChange, content]);
 
   if (content === null) {

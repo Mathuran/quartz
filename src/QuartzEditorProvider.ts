@@ -103,6 +103,12 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         case 'diffNoChanges':
           vscode.window.showInformationMessage('No changes compared to HEAD.');
           return;
+        case 'diffViewOpened':
+          vscode.commands.executeCommand('setContext', 'quartz.diffViewActive', true);
+          return;
+        case 'diffViewClosed':
+          vscode.commands.executeCommand('setContext', 'quartz.diffViewActive', false);
+          return;
       }
     });
 

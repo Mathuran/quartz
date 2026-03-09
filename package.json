@@ -70,7 +70,7 @@
       },
       {
         "command": "quartz.toggleEditor",
-        "title": "Toggle Editor Mode",
+        "title": "Toggle Quartz Mode",
         "category": "Quartz",
         "icon": "$(symbol-keyword)"
       },
@@ -90,6 +90,12 @@
         "title": "View Git Changes",
         "category": "Quartz",
         "icon": "$(diff)"
+      },
+      {
+        "command": "quartz.closeDiffView",
+        "title": "Close Diff View",
+        "category": "Quartz",
+        "icon": "$(close)"
       }
     ],
     "menus": {
@@ -101,7 +107,12 @@
         },
         {
           "command": "quartz.viewGitChanges",
-          "when": "activeCustomEditorId == quartz.markdownEditor && config.quartz.diffReview.enabled",
+          "when": "activeCustomEditorId == quartz.markdownEditor && config.quartz.diffReview.enabled && !quartz.diffViewActive",
+          "group": "navigation"
+        },
+        {
+          "command": "quartz.closeDiffView",
+          "when": "activeCustomEditorId == quartz.markdownEditor && quartz.diffViewActive",
           "group": "navigation"
         }
       ],

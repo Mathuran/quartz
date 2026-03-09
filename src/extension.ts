@@ -81,6 +81,13 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
+  // Close Diff View command (toggle back to editor)
+  context.subscriptions.push(
+    vscode.commands.registerCommand('quartz.closeDiffView', async () => {
+      await QuartzEditorProvider.requestGitDiffForActivePanel();
+    }),
+  );
+
   // Register commands for toggling between editors
   context.subscriptions.push(
     vscode.commands.registerCommand('quartz.openWithQuartz', async () => {
