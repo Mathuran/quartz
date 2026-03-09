@@ -142,6 +142,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
       if (QuartzEditorProvider.activeWebviewPanel === webviewPanel) {
         QuartzEditorProvider.activeWebviewPanel = undefined;
+        vscode.commands.executeCommand('setContext', 'quartz.diffViewActive', false);
       }
       if (QuartzEditorProvider.outlineProvider) {
         QuartzEditorProvider.outlineProvider.clearDocument();
