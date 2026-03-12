@@ -1,7 +1,7 @@
 # [003] Default Editor Association for Cross-File Search
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001, 002
 - **Blocks:** None
 - **Scope:** XS

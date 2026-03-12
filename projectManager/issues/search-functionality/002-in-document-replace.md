@@ -1,7 +1,7 @@
 # [002] In-Document Find and Replace
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** 001
 - **Blocks:** 003
 - **Scope:** XS

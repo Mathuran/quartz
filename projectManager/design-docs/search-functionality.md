@@ -1,7 +1,7 @@
 # Search Functionality Design Document
 
 **Author:** AI Agent
-**Status:** APPROVED
+**Status:** IMPLEMENTED
 **Created:** 2026-03-07
 **Last Updated:** 2026-03-07
 **Reviewers:** Mathuran
@@ -401,11 +401,11 @@ async function ensureDefaultEditor() {
 
 | # | Title | Status | Scope |
 |---|-------|--------|-------|
-| [001](../issues/search-functionality/001-in-document-find.md) | In-Document Find with Match Highlighting | TODO | S |
-| [002](../issues/search-functionality/002-in-document-replace.md) | In-Document Find and Replace | TODO | XS |
-| [003](../issues/search-functionality/003-cross-file-search.md) | Default Editor Association for Cross-File Search | TODO | XS |
+| [001](../issues/search-functionality/001-in-document-find.md) | In-Document Find with Match Highlighting | DONE | S |
+| [002](../issues/search-functionality/002-in-document-replace.md) | In-Document Find and Replace | DONE | XS |
+| [003](../issues/search-functionality/003-cross-file-search.md) | Default Editor Association for Cross-File Search | DONE | XS |
 
-**Progress:** 0/3 issues complete (0%)
+**Progress:** 3/3 issues complete (100%)
 
 ## 13. Appendix
 

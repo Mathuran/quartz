@@ -1,7 +1,7 @@
 # [001] In-Document Find with Match Highlighting
 
 ## Metadata
-- **Status:** TODO
+- **Status:** DONE
 - **Depends On:** None
 - **Blocks:** 002, 003
 - **Scope:** S
