@@ -134,6 +134,9 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   );
 
+  // Set Quartz as the default editor for .md files (if not already configured)
+  ensureDefaultEditorAssociation();
+
   context.subscriptions.push(
     vscode.commands.registerCommand('quartz.toggleEditor', async () => {
       const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
@@ -162,6 +165,29 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }),
   );
+}
+
+/**
+ * Set Quartz as the default editor for *.md files so that VS Code's
+ * built-in search results open in Quartz instead of the text editor.
+ * Only sets the association if the user hasn't configured one already.
+ */
+async function ensureDefaultEditorAssociation(): Promise<void> {
+  try {
+    const config = vscode.workspace.getConfiguration('workbench');
+    const associations = config.get<Record<string, string>>('editorAssociations') || {};
+
+    // Don't override if user already has a *.md association
+    if (associations['*.md']) return;
+
+    await config.update(
+      'editorAssociations',
+      { ...associations, '*.md': 'quartz.markdownEditor' },
+      vscode.ConfigurationTarget.Global,
+    );
+  } catch {
+    // Silently fail — this is a nice-to-have, not critical
+  }
 }
 
 export function deactivate() {}

@@ -63,6 +63,7 @@ export default defineConfig({
           'test/unit/heading-extractor-extension.test.ts',
           'test/unit/diff-engine.test.ts',
           'test/unit/diff-alignment.test.ts',
+          'test/unit/search-engine.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 3 },

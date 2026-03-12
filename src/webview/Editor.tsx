@@ -46,12 +46,15 @@ import { linkInputRuleExtension } from './extensions/linkInputRule';
 import { inputRulesExtension } from './extensions/inputRules';
 import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
 import { CalloutExtension } from './extensions/calloutExtension';
+import { SearchHighlightExtension } from './extensions/searchHighlightExtension';
+import { SearchBar } from './components/SearchBar';
 import type { EditorConfig } from './types';
 
 import './styles/callout.css';
 import './styles/codeBlock.css';
 import './styles/codeBlockThemes.css';
 import './styles/tableOfContents.css';
+import './styles/search.css';
 
 // Create lowlight without languages initially — languages are loaded lazily
 // to reduce the initial bundle size by ~120 KB. The empty lowlight still renders
@@ -167,6 +170,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       // dragHandleExtension, // REMOVED
       // virtualRenderingExtension, // REMOVED
       linkInputRuleExtension,
+      SearchHighlightExtension,
     ],
     content: initialDoc,
     onCreate: ({ editor }) => {
@@ -291,6 +295,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
         </div>
       )}
       <FormattingToolbar editor={editor} />
+      <SearchBar editor={editor} />
       <SlashMenu editor={editor} />
       <TableOfContents editor={editor} />
       <TableHint visible={showTableHint} />

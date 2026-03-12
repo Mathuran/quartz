@@ -402,6 +402,18 @@ export const keyboardShortcutsExtension = Extension.create({
       // Highlight: Cmd/Ctrl+Shift+H
       'Mod-Shift-h': () => this.editor.chain().focus().toggleHighlight().run(),
 
+      // Find: Cmd/Ctrl+F
+      'Mod-f': () => {
+        window.dispatchEvent(new CustomEvent('quartz:openSearch', { detail: { replace: false } }));
+        return true;
+      },
+
+      // Find and Replace: Cmd/Ctrl+H
+      'Mod-h': () => {
+        window.dispatchEvent(new CustomEvent('quartz:openSearch', { detail: { replace: true } }));
+        return true;
+      },
+
       // Table of Contents: Cmd/Ctrl+/
       'Mod-/': () => {
         window.dispatchEvent(new CustomEvent('tableOfContents', { detail: { type: 'open' } }));
