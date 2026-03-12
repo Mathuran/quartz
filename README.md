@@ -21,7 +21,28 @@ A **Notion-style block-based WYSIWYG markdown editor** that lives inside VS Code
 - **Task lists** — Interactive checkboxes that save to markdown
 - **List reordering** — Move list items up/down with Option+Arrow keys
 - **Table of Contents** — Quick-pick overlay (`Cmd+/`) to search and jump to any heading, plus a Document Outline sidebar in the Explorer
+- **Find & Replace** — `Cmd+F` for in-document search with match highlighting, `Cmd+H` for find and replace
+- **Editor toggle buttons** — Switch between Quartz, plain text, and diff view from the editor title bar
 - **Theme support** — Automatic, light, or dark themes
+
+### Editor Toggle Buttons
+
+The editor title bar includes quick-access toggle buttons:
+
+![Editor Toggles](https://raw.githubusercontent.com/Mathuran/quartz/main/images/editorToggles.png)
+
+- **Switch to plain text** — Open the file in VS Code's default text editor
+- **Switch to Quartz** — Open the file in the Quartz visual editor
+- **View git diff** — Toggle inline diff view to review uncommitted changes
+- **Split diff view** — Side-by-side comparison of current vs. last committed version
+
+These buttons let you seamlessly move between visual editing, raw markdown, and code review without leaving the editor.
+
+### Find & Replace
+
+Press `Cmd+F` (`Ctrl+F` on Windows/Linux) to open the search bar. Highlights all matches with next/previous navigation, case sensitivity, and whole word toggles. `Cmd+H` opens find and replace:
+
+![Find and Replace](https://raw.githubusercontent.com/Mathuran/quartz/main/images/findReplaceDemo.png)
 
 ### Slash Commands
 
@@ -83,11 +104,10 @@ Or manually:
 
 ## Usage
 
-1. Open any `.md` file
-2. Right-click → **"Open With..."** → **"Quartz Markdown Editor"**
-3. Start editing!
+1. Open any `.md` file — Quartz automatically sets itself as the default markdown editor on first install
+2. Start editing!
 
-To set Quartz as the default editor for markdown files, enable `quartz.editor.defaultForMarkdown` in VS Code settings.
+To switch to the plain text editor, use the toggle button in the editor title bar or run **"Quartz: Toggle Editor"** from the Command Palette.
 
 ## Configuration
 
@@ -121,6 +141,8 @@ All settings are under `quartz.editor.*` in VS Code Settings:
 | Unindent | `Shift+Tab` | `Shift+Tab` |
 | Move line up | `Opt+↑` | `Alt+↑` |
 | Move line down | `Opt+↓` | `Alt+↓` |
+| Find | `Cmd+F` | `Ctrl+F` |
+| Find & Replace | `Cmd+H` | `Ctrl+H` |
 | Table of Contents | `Cmd+/` | `Ctrl+/` |
 
 ## Block Input Rules
