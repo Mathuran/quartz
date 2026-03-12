@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/react';
+import { isValidUrl } from '../../utils/urlValidator';
 
 export interface SlashCommand {
   id: string;
@@ -187,7 +188,7 @@ export const slashCommands: SlashCommand[] = [
     aliases: ['image', 'img', 'picture'],
     command: (editor) => {
       const url = window.prompt('Enter image URL');
-      if (url) {
+      if (url && isValidUrl(url)) {
         editor.chain().focus().setImage({ src: url }).run();
       }
     },

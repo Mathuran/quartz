@@ -1,29 +1,5 @@
 import { Extension, markInputRule } from '@tiptap/core';
-
-/**
- * Validates a URL to ensure it's safe to use as a link href.
- * Blocks javascript: protocol to prevent XSS attacks.
- */
-function isValidUrl(url: string): boolean {
-  const trimmedUrl = url.trim().toLowerCase();
-
-  // Block javascript: protocol
-  if (trimmedUrl.startsWith('javascript:')) {
-    return false;
-  }
-
-  // Block data: URLs that could contain scripts
-  if (trimmedUrl.startsWith('data:') && !trimmedUrl.startsWith('data:image/')) {
-    return false;
-  }
-
-  // Block vbscript: protocol
-  if (trimmedUrl.startsWith('vbscript:')) {
-    return false;
-  }
-
-  return true;
-}
+import { isValidUrl } from '../../utils/urlValidator';
 
 /**
  * Regex for markdown link syntax: [text](url)

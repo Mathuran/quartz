@@ -1,5 +1,6 @@
 import type MarkdownIt from 'markdown-it';
 import type { JSONContent } from '@tiptap/core';
+import { isValidUrl } from '../../utils/urlValidator';
 
 /**
  * Parse inline tokens (bold, italic, strikethrough, code, links, images, etc.)
@@ -80,6 +81,7 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
 
       case 'image': {
         const src = token.attrGet('src') || '';
+        if (!isValidUrl(src)) break;
         const alt = token.attrGet('alt') || token.content || '';
         result.push({
           type: 'image',
