@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" fill="none" stroke="#8e8e93" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Quartz crystal favicon -->
+  <path d="M100 10 L155 55 L155 190 L130 250 L70 250 L45 190 L45 55 Z" />
+  <line x1="100" y1="10" x2="100" y2="75" />
+  <line x1="45" y1="55" x2="100" y2="75" />
+  <line x1="155" y1="55" x2="100" y2="75" />
+  <line x1="100" y1="75" x2="70" y2="250" />
+  <line x1="100" y1="75" x2="130" y2="250" />
+  <line x1="45" y1="190" x2="100" y2="75" />
+</svg>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quartz Editor Demo</title>
+  <link rel="stylesheet" href="/dist/webview/index.css">
+  <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    #root { height: 100%; }
+  </style>
+  <script>
+    // Mock VS Code API before any module code runs
+    window.acquireVsCodeApi = function() {
+      const state = {};
+      return {
+        postMessage: function(message) {
+          // When the editor sends 'ready', load sample markdown
+          if (message && message.type === 'ready') {
+            setTimeout(function() {
+              window.postMessage({
+                type: 'loadDocument',
+                content: SAMPLE_MD,
+                fileName: 'readme.md'
+              }, '*');
+              // Send config to enable all features
+              window.postMessage({
+                type: 'configUpdate',
+                config: {
+                  showFormattingToolbar: true,
+                  showSlashCommands: true,
+                  showTableOfContents: false,
+                  renderFrontmatter: true,
+                  theme: 'auto',
+                  fontFamily: 'system',
+                  fontSize: 'medium',
+                  lineHeight: 'normal',
+                  editorMaxWidth: 'narrow',
+                }
+              }, '*');
+            }, 100);
+          }
+        },
+        getState: function() { return state; },
+        setState: function(s) { Object.assign(state, s); }
+      };
+    };
+
+    var SAMPLE_MD = [
+      '# Welcome to Quartz',
+      '',
+      'A **Notion-style** markdown editor that lives inside VS Code.',
+      '',
+      'Start typing to see how it feels. Try using **bold**, *italic*, `inline code`, and ~~strikethrough~~.',
+      '',
+      '## Slash Commands',
+      '',
+      'Type `/` to insert any block type \u2014 headings, code blocks, tables, callouts, and more.',
+      '',
+      '## Code Blocks',
+      '',
+      '```javascript',
+      'function greet(name) {',
+      '  return `Hello, ${name}!`;',
+      '}',
+      '',
+      'console.log(greet("World"));',
+      '```',
+      '',
+      '> [!tip]',
+      '> Everything you edit is standard markdown. No proprietary format, no lock-in.',
+      '',
+      '## Task List',
+      '',
+      '- [x] Install Quartz from VS Code Marketplace',
+      '- [x] Open a `.md` file',
+      '- [ ] Try slash commands',
+      '- [ ] Drag and reorder blocks',
+      '',
+      '---',
+      '',
+      '*Install Quartz to get the full experience with drag-and-drop blocks, keyboard shortcuts, and more.*',
+    ].join('\n');
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/dist/webview/index.js"></script>
+</body>
+</html>

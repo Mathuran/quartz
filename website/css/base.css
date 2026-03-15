@@ -1,0 +1,87 @@
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 400;
+  color: var(--q-text);
+  background-color: var(--q-canvas);
+  letter-spacing: 0.01em;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--q-accent-subtle);
+  color: var(--q-text);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+section {
+  padding: var(--space-4xl) 0;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--q-text);
+}
+
+h1 { font-size: var(--text-h1); letter-spacing: -0.025em; }
+h2 { font-size: var(--text-h2); letter-spacing: -0.02em; }
+h3 { font-size: var(--text-h3); font-weight: 600; letter-spacing: -0.01em; }
+
+p {
+  color: var(--q-text-secondary);
+  line-height: 1.65;
+  max-width: 580px;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--q-accent); }
+
+code {
+  font-family: var(--font-code);
+  font-size: 0.875em;
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--q-stroke);
+  margin: 0;
+}
+
+/* — Reveal: VISIBLE by default, enhanced with JS — */
+.reveal {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-entrance) var(--q-ease-out),
+              transform var(--dur-entrance) var(--q-ease-out);
+}
+
+/* Only hide if JS has loaded and will animate them */
+.js-loaded .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

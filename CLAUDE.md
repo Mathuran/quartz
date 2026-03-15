@@ -82,33 +82,33 @@ Each tier runs tests in dependency order. If a foundational test fails, dependen
 **Unit tests (Vitest)** — `npm test`
 Uses Vitest `projects` with `sequence.groupOrder` for ordered execution:
 
-| Order | Project | What it validates | Files |
-|-------|---------|-------------------|-------|
-| 0 | `parser` | Can we parse markdown into JSON? | `parser.test.ts`, `parser-edge-cases.test.ts`, `callout-parser.test.ts` |
-| 1 | `serializer` | Can we serialize JSON back to markdown? | `serializer.test.ts`, `serializer-edge-cases.test.ts`, `callout-serializer.test.ts` |
-| 2 | `roundtrip` | Does `parse(serialize(parse(md))) === parse(md)`? | `roundtrip.test.ts`, `roundtrip-all-blocks.test.ts`, `callout-roundtrip.test.ts`, `frontmatter-roundtrip.test.ts` |
-| 3 | `features` | Do individual features work? | `features.test.ts`, `fixtures.test.ts`, `debounce.test.ts`, `list-item-movement.test.ts` |
-| 4 | `edge-cases` | Stress tests and performance | `additional-edge-cases.test.ts`, `performance.test.ts` |
+| Order | Project      | What it validates                                 | Files                                                                                                             |
+| ----- | ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 0     | `parser`     | Can we parse markdown into JSON?                  | `parser.test.ts`, `parser-edge-cases.test.ts`, `callout-parser.test.ts`                                           |
+| 1     | `serializer` | Can we serialize JSON back to markdown?           | `serializer.test.ts`, `serializer-edge-cases.test.ts`, `callout-serializer.test.ts`                               |
+| 2     | `roundtrip`  | Does `parse(serialize(parse(md))) === parse(md)`? | `roundtrip.test.ts`, `roundtrip-all-blocks.test.ts`, `callout-roundtrip.test.ts`, `frontmatter-roundtrip.test.ts` |
+| 3     | `features`   | Do individual features work?                      | `features.test.ts`, `fixtures.test.ts`, `debounce.test.ts`, `list-item-movement.test.ts`                          |
+| 4     | `edge-cases` | Stress tests and performance                      | `additional-edge-cases.test.ts`, `performance.test.ts`                                                            |
 
 **Integration tests** — `npm run test:integration`
 Uses `@vscode/test-cli` inside a real VS Code instance:
 
-| Order | What it validates |
-|-------|-------------------|
-| 1 | Extension activates (`smoke.test.ts`, `activation.test.ts`) |
-| 2 | Custom editor registers (`custom-editor.test.ts`) |
-| 3 | Configuration applies (`configuration.test.ts`) |
-| 4 | File roundtrip works (`file-roundtrip.test.ts`) |
+| Order | What it validates                                           |
+| ----- | ----------------------------------------------------------- |
+| 1     | Extension activates (`smoke.test.ts`, `activation.test.ts`) |
+| 2     | Custom editor registers (`custom-editor.test.ts`)           |
+| 3     | Configuration applies (`configuration.test.ts`)             |
+| 4     | File roundtrip works (`file-roundtrip.test.ts`)             |
 
 **E2E tests (Playwright)** — `npm run test:e2e`
 Uses Playwright `projects` with `dependencies` for ordered execution:
 
-| Order | Project | What it validates | Specs |
-|-------|---------|-------------------|-------|
-| 1 | `foundational` | Editor loads, blocks render, inline marks render | `editor-load`, `block-rendering`, `inline-formatting` |
-| 2 | `interactions` | Typing, shortcuts, theme, layout, sidebar | `editing`, `keyboard-shortcuts`, `theme`, `page-layout`, `sidebar-alignment` |
-| 3 | `features` | Block movement, external changes, roundtrip, slash commands | `block-movement`, `external-change`, `roundtrip`, `slash-commands` |
-| 4 | `integration` | Edge cases and full workflow | `edge-cases`, `edge-cases-2`, `comprehensive-editing-workflow` |
+| Order | Project        | What it validates                                           | Specs                                                                        |
+| ----- | -------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 1     | `foundational` | Editor loads, blocks render, inline marks render            | `editor-load`, `block-rendering`, `inline-formatting`                        |
+| 2     | `interactions` | Typing, shortcuts, theme, layout, sidebar                   | `editing`, `keyboard-shortcuts`, `theme`, `page-layout`, `sidebar-alignment` |
+| 3     | `features`     | Block movement, external changes, roundtrip, slash commands | `block-movement`, `external-change`, `roundtrip`, `slash-commands`           |
+| 4     | `integration`  | Edge cases and full workflow                                | `edge-cases`, `edge-cases-2`, `comprehensive-editing-workflow`               |
 
 ### When Adding New Tests
 
@@ -146,23 +146,24 @@ Every new feature should include tests at the appropriate levels:
 
 ## Design Documents
 
-| Document | Description |
-|----------|-------------|
-| [System Architecture](projectManager/design-docs/quartz-system-architecture.md) | Full system architecture, data flow, component details |
-| [Notion Markdown Editor](projectManager/design-docs/notion-markdown-editor.md) | Original product design |
-| [Parser Edge Case Fixes](projectManager/design-docs/parser-edge-case-fixes.md) | Parser/serializer edge cases |
-| [Keyboard Shortcut Fixes](projectManager/design-docs/keyboard-shortcut-fixes.md) | Keyboard shortcut improvements |
-| [Roundtrip Integrity Fixes](projectManager/design-docs/roundtrip-integrity-fixes.md) | Round-trip fidelity fixes |
-| [Undo/Redo System Fixes](projectManager/design-docs/undo-redo-system-fixes.md) | Undo/redo behavior |
-| [Slash Menu Edge Cases](projectManager/design-docs/slash-menu-edge-cases.md) | Slash menu improvements |
-| [E2E Playwright Testing](projectManager/design-docs/e2e-playwright-testing.md) | E2E test infrastructure |
-| [Marketplace Launch](projectManager/design-docs/vscode-marketplace-launch.md) | VS Code marketplace publishing |
+| Document                                                                             | Description                                            |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| [System Architecture](projectManager/design-docs/quartz-system-architecture.md)      | Full system architecture, data flow, component details |
+| [Notion Markdown Editor](projectManager/design-docs/notion-markdown-editor.md)       | Original product design                                |
+| [Parser Edge Case Fixes](projectManager/design-docs/parser-edge-case-fixes.md)       | Parser/serializer edge cases                           |
+| [Keyboard Shortcut Fixes](projectManager/design-docs/keyboard-shortcut-fixes.md)     | Keyboard shortcut improvements                         |
+| [Roundtrip Integrity Fixes](projectManager/design-docs/roundtrip-integrity-fixes.md) | Round-trip fidelity fixes                              |
+| [Undo/Redo System Fixes](projectManager/design-docs/undo-redo-system-fixes.md)       | Undo/redo behavior                                     |
+| [Slash Menu Edge Cases](projectManager/design-docs/slash-menu-edge-cases.md)         | Slash menu improvements                                |
+| [E2E Playwright Testing](projectManager/design-docs/e2e-playwright-testing.md)       | E2E test infrastructure                                |
+| [Marketplace Launch](projectManager/design-docs/vscode-marketplace-launch.md)        | VS Code marketplace publishing                         |
 
 ## Project Management
 
 Uses structured project management via `projectManager/`. See `.claude/skills/project-management/SKILL.md` for the full workflow.
 
 **Commands:**
+
 - `/feature-request <title>` — Create a backlog item
 - `/design-doc <feature-name>` — Create a design document
 - `/review-doc <feature-name>` — Review a design document
