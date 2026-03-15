@@ -202,14 +202,27 @@ describe('findMatches', () => {
       expect(matches).toHaveLength(1);
     });
 
-    it('does not match across node boundaries', () => {
-      // "hello" in plain, "world" in bold — searching "helloworld" should find nothing
+    it('matches across inline mark boundaries', () => {
+      // "hello" in plain, "world" in bold — searching "helloworld" should find across boundary
       const doc = createDocWithMarks([
         { text: 'hello', marks: [] },
         { text: 'world', marks: ['bold'] },
       ]);
       const matches = findMatches(doc, 'helloworld', { caseSensitive: false, wholeWord: false });
-      expect(matches).toHaveLength(0);
+      expect(matches).toHaveLength(1);
+      expect(matches[0].from).toBe(1);
+      expect(matches[0].to).toBe(11);
+    });
+
+    it('finds "hello world" when "hello" is bold and " world" is plain', () => {
+      const doc = createDocWithMarks([
+        { text: 'hello', marks: ['bold'] },
+        { text: ' world', marks: [] },
+      ]);
+      const matches = findMatches(doc, 'hello world', { caseSensitive: false, wholeWord: false });
+      expect(matches).toHaveLength(1);
+      expect(matches[0].from).toBe(1);
+      expect(matches[0].to).toBe(12);
     });
   });
 

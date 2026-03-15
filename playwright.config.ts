@@ -4,6 +4,10 @@ export default defineConfig({
   testDir: './test/e2e',
   timeout: 30_000,
   retries: 0,
+  // Tests within a single project run in parallel for speed. Cross-project
+  // ordering is enforced separately via the `dependencies` field on each
+  // project below (e.g. "interactions" depends on "foundational"), so
+  // fullyParallel only affects intra-project parallelism.
   fullyParallel: true,
   workers: '50%',
   globalSetup: './test/e2e/global-setup.ts',

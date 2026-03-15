@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/react';
-import { isValidUrl } from '../../utils/urlValidator';
+import { isValidUrl } from '../utils/urlValidation';
 
 export interface SlashCommand {
   id: string;

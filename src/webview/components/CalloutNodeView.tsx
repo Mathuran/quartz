@@ -188,6 +188,7 @@ export function CalloutNodeView({ node, updateAttributes }: NodeViewProps) {
             className={`quartz-callout-fold${collapsed ? ' collapsed' : ''}`}
             onClick={() => updateAttributes({ collapsed: !collapsed })}
             title={collapsed ? 'Expand' : 'Collapse'}
+            aria-expanded={!collapsed}
           >
             <ChevronIcon />
           </button>

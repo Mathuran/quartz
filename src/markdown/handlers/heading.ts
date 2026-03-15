@@ -14,8 +14,11 @@ export const headingHandler: TokenHandler = {
   ): { nodes: JSONContent[]; consumed: number } {
     const token = tokens[index];
     const level = parseInt(token.tag.slice(1), 10);
-    const inlineToken = tokens[index + 1];
+    const inlineToken = index + 1 < tokens.length ? tokens[index + 1] : undefined;
     const content = inlineToken ? context.parseInline(inlineToken.children || []) : [];
+
+    // Consume up to 3 tokens (heading_open, inline, heading_close), but don't go past end
+    const consumed = Math.min(3, tokens.length - index);
 
     return {
       nodes: [
@@ -25,7 +28,7 @@ export const headingHandler: TokenHandler = {
           content: content.length > 0 ? content : undefined,
         },
       ],
-      consumed: 3, // heading_open, inline, heading_close
+      consumed,
     };
   },
 };

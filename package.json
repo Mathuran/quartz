@@ -96,6 +96,18 @@
         "title": "Close Diff View",
         "category": "Quartz",
         "icon": "$(close)"
+      },
+      {
+        "command": "quartz.insertLink",
+        "title": "Insert Link",
+        "category": "Quartz"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "quartz.insertLink",
+        "key": "cmd+k",
+        "when": "activeCustomEditorId == quartz.markdownEditor"
       }
     ],
     "menus": {
@@ -208,6 +220,8 @@
     "build": "node esbuild.js",
     "build:watch": "node esbuild.js --watch",
     "build:webview": "node esbuild.js --webview-only",
+    "build:analyze": "ANALYZE=true node esbuild.js",
+    "type-check": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
@@ -223,30 +237,10 @@
     "setup:env": "gh secret list --env prod && echo '\n# Create .env file with VSCE_PAT from GitHub secrets (prod environment)' && echo 'VSCE_PAT=' > .env && echo 'Created .env - add your VSCE_PAT value'",
     "publish:local": "source .env && npm run build && vsce publish -p $VSCE_PAT",
     "publish:ci": "npm run build && vsce publish -p $VSCE_PAT",
-    "doctor": "react-doctor",
-    "preinstall": "node preinstall.js"
+    "doctor": "react-doctor"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
-    "@types/markdown-it": "^14.1.2",
-    "@types/node": "^20.11.0",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
-    "@types/vscode": "^1.85.0",
-    "@typescript-eslint/eslint-plugin": "^8.56.0",
-    "@typescript-eslint/parser": "^8.56.0",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^3.7.1",
-    "esbuild": "^0.24.0",
-    "eslint": "^10.0.1",
-    "eslint-plugin-security": "^4.0.0",
-    "prettier": "^3.8.1",
-    "react-doctor": "^0.0.29",
-    "typescript": "^5.3.3",
-    "vitest": "^2.1.0"
-  },
-  "dependencies": {
     "@tiptap/core": "^2.11.0",
     "@tiptap/extension-blockquote": "^2.11.0",
     "@tiptap/extension-bold": "^2.11.0",
@@ -279,10 +273,27 @@
     "@tiptap/pm": "^2.11.0",
     "@tiptap/react": "^2.11.0",
     "@tiptap/suggestion": "^2.11.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.24.0",
+    "eslint": "^10.0.1",
+    "eslint-plugin-security": "^4.0.0",
     "highlight.js": "^11.9.0",
     "lowlight": "^3.1.0",
     "markdown-it": "^14.1.0",
+    "prettier": "^3.8.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-doctor": "^0.0.29",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.0"
   }
 }

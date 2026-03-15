@@ -4,8 +4,8 @@ import type { NodeSerializer, SerializeContext } from './types';
 export const detailsSerializer: NodeSerializer = {
   nodeTypes: ['details'],
   serialize(node: JSONContent, _indent: number, context: SerializeContext): string {
-    const summary = node.content?.[0];
-    const body = node.content?.[1];
+    const summary = node.content?.find((c) => c.type === 'detailsSummary');
+    const body = node.content?.find((c) => c.type === 'detailsContent');
     const summaryText = summary?.content ? context.serializeInline(summary.content) : '';
     const bodyContent = body?.content
       ? body.content
@@ -13,6 +13,11 @@ export const detailsSerializer: NodeSerializer = {
           .filter(Boolean)
           .join('\n\n')
       : '';
+
+    if (!bodyContent) {
+      return `<details>\n<summary>${summaryText}</summary>\n</details>`;
+    }
+
     return `<details>\n<summary>${summaryText}</summary>\n\n${bodyContent}\n\n</details>`;
   },
 };

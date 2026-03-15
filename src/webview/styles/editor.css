@@ -8,6 +8,17 @@
   --quartz-code-bg: var(--vscode-textCodeBlock-background, #1a1a2e);
   --quartz-page-bg: var(--vscode-editor-background, #1e1e1e);
   --quartz-wrapper-bg: var(--vscode-sideBar-background, #181818);
+
+  /* z-index scale */
+  --quartz-z-dropdown: 50;
+  --quartz-z-menu: 100;
+  --quartz-z-search: 200;
+  --quartz-z-overlay: 1000;
+
+  /* Theme-adaptive hover/subtle backgrounds */
+  --quartz-hover-bg: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.1));
+  --quartz-subtle-bg: color-mix(in srgb, var(--vscode-editor-foreground, #d4d4d4) 5%, transparent);
+  --quartz-icon-bg: color-mix(in srgb, var(--vscode-editor-foreground, #d4d4d4) 8%, transparent);
 }
 
 * {
@@ -50,7 +61,7 @@ body {
 
 .quartz-page {
   background: var(--quartz-page-bg);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 4px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.3));
   border-radius: 2px;
   width: 100%;
   min-height: calc(100vh - 48px);
@@ -166,9 +177,11 @@ body {
   opacity: 0.6;
 }
 
-/* Nested task lists */
+/* Nested task lists — padding-left: 0 because the parent task item's
+   checkbox + flex gap already provides ~1.5em of visual indent,
+   matching the nesting depth of regular bullet/ordered lists. */
 .quartz-editor-content ul[data-type="taskList"] ul[data-type="taskList"] {
-  padding-left: 1.5em;
+  padding-left: 0;
   margin-top: 0.25em;
 }
 
@@ -248,7 +261,7 @@ body {
 
 .quartz-editor-content th {
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--quartz-subtle-bg);
 }
 
 /* Links */
@@ -279,7 +292,7 @@ body {
 /* Slash Menu */
 .quartz-slash-menu {
   position: fixed;
-  z-index: 100;
+  z-index: var(--quartz-z-menu);
   background: var(--vscode-menu-background, #252526);
   border: 1px solid var(--vscode-menu-border, #454545);
   border-radius: 6px;
@@ -317,7 +330,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--quartz-icon-bg);
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
@@ -374,7 +387,7 @@ body {
 }
 
 .quartz-toolbar-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-toolbar-btn.active {
@@ -441,7 +454,7 @@ body {
 }
 
 .quartz-warning-dismiss:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
   opacity: 1;
 }
 
@@ -459,7 +472,7 @@ body {
   background: color-mix(in srgb, var(--quartz-bg) 75%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--quartz-border);
-  z-index: 100;
+  z-index: var(--quartz-z-menu);
   opacity: 0.95;
 }
 
@@ -498,7 +511,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--quartz-z-overlay);
 }
 
 .quartz-link-dialog {
@@ -549,8 +562,9 @@ body {
   color: var(--vscode-input-placeholderForeground, #8b8b8b);
 }
 
-.quartz-link-dialog-input-error {
-  border-color: var(--vscode-inputValidation-errorBorder, #be1100) !important;
+.quartz-link-dialog-field input.quartz-link-dialog-input-error,
+.quartz-link-dialog-field input.quartz-link-dialog-input-error:focus {
+  border-color: var(--vscode-inputValidation-errorBorder, #be1100);
 }
 
 .quartz-link-dialog-error {
@@ -586,7 +600,7 @@ body {
 }
 
 .quartz-link-dialog-btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-link-dialog-btn-ok {

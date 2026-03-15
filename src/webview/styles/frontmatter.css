@@ -69,9 +69,9 @@
   opacity: 0.7;
 }
 
-.quartz-frontmatter-remove-btn:hover {
+.quartz-frontmatter-header:hover .quartz-frontmatter-remove-btn:hover {
   background: rgba(127, 127, 127, 0.15);
-  opacity: 1 !important;
+  opacity: 1;
 }
 
 /* Textarea — raw YAML editing */

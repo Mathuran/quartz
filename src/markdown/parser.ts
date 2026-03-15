@@ -45,18 +45,39 @@ interface ParseResult {
   frontmatter: string | null;
 }
 
+/** Maximum recursion depth for nested parseMarkdown calls (e.g. nested <details>) */
+const MAX_PARSE_DEPTH = 10;
+
 /** Shared context passed to every handler */
 const context: ParseContext = {
   parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
     return parseInline(tokens);
   },
-  parseMarkdown(text: string): JSONContent {
+  parseMarkdown(text: string, depth: number = 0): JSONContent {
+    if (depth >= MAX_PARSE_DEPTH) {
+      console.warn(
+        `parseMarkdown: max recursion depth (${MAX_PARSE_DEPTH}) reached — returning raw text`,
+      );
+      return {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: text.trim() || '(content too deeply nested)' }],
+          },
+        ],
+      };
+    }
     // Internal context always returns just the doc (used by handlers like htmlBlock)
-    return parseMarkdown(text).doc;
+    return parseMarkdownInternal(text, depth).doc;
   },
 };
 
 export function parseMarkdown(text: string): ParseResult {
+  return parseMarkdownInternal(text, 0);
+}
+
+function parseMarkdownInternal(text: string, depth: number): ParseResult {
   if (!text || !text.trim()) {
     return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, frontmatter: null };
   }

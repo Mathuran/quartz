@@ -42,18 +42,29 @@ export const COMMON_LANGUAGES: LanguageEntry[] = [
   { id: 'ini', label: 'INI' },
 ];
 
-/** All registered languages (superset of common). */
-export const ALL_LANGUAGES: LanguageEntry[] = [
-  ...COMMON_LANGUAGES,
-  { id: 'arduino', label: 'Arduino' },
-  { id: 'less', label: 'Less' },
-  { id: 'objectivec', label: 'Objective-C' },
-  { id: 'php-template', label: 'PHP Template' },
-  { id: 'plaintext', label: 'Plain Text' },
-  { id: 'python-repl', label: 'Python REPL' },
-  { id: 'vbnet', label: 'VB.NET' },
-  { id: 'wasm', label: 'WebAssembly' },
-].sort((a, b) => a.label.localeCompare(b.label));
+/** All registered languages (superset of common), deduplicated by ID. */
+export const ALL_LANGUAGES: LanguageEntry[] = (() => {
+  const merged: LanguageEntry[] = [
+    ...COMMON_LANGUAGES,
+    { id: 'arduino', label: 'Arduino' },
+    { id: 'less', label: 'Less' },
+    { id: 'objectivec', label: 'Objective-C' },
+    { id: 'php-template', label: 'PHP Template' },
+    { id: 'plaintext', label: 'Plain Text' },
+    { id: 'python-repl', label: 'Python REPL' },
+    { id: 'vbnet', label: 'VB.NET' },
+    { id: 'wasm', label: 'WebAssembly' },
+  ];
+  const seen = new Set<string>();
+  const deduped: LanguageEntry[] = [];
+  for (const entry of merged) {
+    if (!seen.has(entry.id)) {
+      seen.add(entry.id);
+      deduped.push(entry);
+    }
+  }
+  return deduped.sort((a, b) => a.label.localeCompare(b.label));
+})();
 
 /** Set of common language IDs for quick lookup. */
 export const COMMON_LANGUAGE_IDS = new Set(COMMON_LANGUAGES.map((l) => l.id));

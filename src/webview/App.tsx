@@ -16,6 +16,10 @@ declare function acquireVsCodeApi(): {
 
 const vscode = acquireVsCodeApi();
 
+// Expose the VS Code API on window so components like FrontmatterBanner
+// can persist state via vscode.getState()/setState() without prop drilling.
+(window as unknown as { vscodeApi: typeof vscode }).vscodeApi = vscode;
+
 export function App() {
   const [content, setContent] = useState<string | null>(null);
   const [config, setConfig] = useState<EditorConfig>({
@@ -29,6 +33,7 @@ export function App() {
     showBlockHandles: true,
   });
   const suppressUpdateRef = useRef(false);
+  const suppressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // External change pending state
   const [pendingExternalChange, setPendingExternalChange] = useState<string | null>(null);
@@ -41,9 +46,41 @@ export function App() {
     sourceLabel: string;
   }>({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
 
+  // Helper to set suppressUpdateRef with proper timeout cleanup
+  const setSuppressUpdate = useCallback((value: boolean, delayMs?: number) => {
+    if (value) {
+      suppressUpdateRef.current = true;
+      // Clear any previous timeout to prevent race conditions
+      if (suppressTimeoutRef.current) {
+        clearTimeout(suppressTimeoutRef.current);
+        suppressTimeoutRef.current = null;
+      }
+      if (delayMs !== undefined) {
+        suppressTimeoutRef.current = setTimeout(() => {
+          suppressUpdateRef.current = false;
+          suppressTimeoutRef.current = null;
+        }, delayMs);
+      }
+    } else {
+      suppressUpdateRef.current = false;
+      if (suppressTimeoutRef.current) {
+        clearTimeout(suppressTimeoutRef.current);
+        suppressTimeoutRef.current = null;
+      }
+    }
+  }, []);
+
   useEffect(() => {
+    const scheduleIdleCallback =
+      typeof requestIdleCallback === 'function'
+        ? requestIdleCallback
+        : (cb: () => void) => setTimeout(cb, 0);
+
     const handler = (event: MessageEvent) => {
       const message = event.data;
+      // Validate message has the expected shape before processing
+      if (!message || typeof message.type !== 'string') return;
+
       switch (message.type) {
         case 'loadDocument':
           setContent(message.content);
@@ -62,18 +99,15 @@ export function App() {
           // Suppress outbound updates while the editor processes the external
           // content — prevents the feedback loop where setContent triggers
           // onUpdate which would send the content back to the extension host.
-          suppressUpdateRef.current = true;
+          setSuppressUpdate(true, 500);
           setContent(message.content);
-          // Re-enable after the editor has finished processing the update.
-          // The 500ms timeout is a safety net — even if the update flow errors,
-          // user edits will not be permanently suppressed.
-          setTimeout(() => {
-            suppressUpdateRef.current = false;
-          }, 500);
           break;
         case 'externalChangeAvailable':
           // Diff review enabled: show notification banner instead of silent replace
           setPendingExternalChange(message.content as string);
+          break;
+        case 'insertLink':
+          window.dispatchEvent(new CustomEvent('quartz:insertLink'));
           break;
         case 'triggerGitDiff':
           // Toggle: if diff is already open, close it; otherwise request diff
@@ -92,18 +126,23 @@ export function App() {
             newContent: string;
             sourceLabel: string;
           };
-          const diffResult = computeDiff(oldContent, newContent);
-          const alignedRows = computeAlignment(diffResult.diffs);
-          // Check if there are actual changes
-          if (
-            diffResult.summary.added + diffResult.summary.removed + diffResult.summary.modified ===
-            0
-          ) {
-            vscode.postMessage({ type: 'diffNoChanges' });
-          } else {
-            setDiffViewState({ active: true, diffResult, alignedRows, sourceLabel });
-            vscode.postMessage({ type: 'diffViewOpened' });
-          }
+          // Run diff computation asynchronously to avoid blocking the main thread
+          scheduleIdleCallback(() => {
+            const diffResult = computeDiff(oldContent, newContent);
+            const alignedRows = computeAlignment(diffResult.diffs);
+            // Check if there are actual changes
+            if (
+              diffResult.summary.added +
+                diffResult.summary.removed +
+                diffResult.summary.modified ===
+              0
+            ) {
+              vscode.postMessage({ type: 'diffNoChanges' });
+            } else {
+              setDiffViewState({ active: true, diffResult, alignedRows, sourceLabel });
+              vscode.postMessage({ type: 'diffViewOpened' });
+            }
+          });
           break;
         }
       }
@@ -113,7 +152,7 @@ export function App() {
     vscode.postMessage({ type: 'ready' });
 
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [setSuppressUpdate]);
 
   const handleUpdate = useCallback((markdown: string) => {
     if (suppressUpdateRef.current) return;
@@ -128,14 +167,11 @@ export function App() {
   // External change handlers
   const handleExternalAccept = useCallback(() => {
     if (!pendingExternalChange) return;
-    suppressUpdateRef.current = true;
+    setSuppressUpdate(true, 500);
     setContent(pendingExternalChange);
     setPendingExternalChange(null);
     vscode.postMessage({ type: 'applyExternalChange' });
-    setTimeout(() => {
-      suppressUpdateRef.current = false;
-    }, 500);
-  }, [pendingExternalChange]);
+  }, [pendingExternalChange, setSuppressUpdate]);
 
   const handleExternalDismiss = useCallback(() => {
     setPendingExternalChange(null);
@@ -144,16 +180,25 @@ export function App() {
 
   const handleExternalViewChanges = useCallback(() => {
     if (!pendingExternalChange || !content) return;
-    const diffResult = computeDiff(content, pendingExternalChange);
-    const alignedRows = computeAlignment(diffResult.diffs);
+    const pending = pendingExternalChange;
+    const current = content;
     setPendingExternalChange(null);
-    setDiffViewState({
-      active: true,
-      diffResult,
-      alignedRows,
-      sourceLabel: 'External change',
+    // Run diff computation asynchronously to avoid blocking the main thread
+    const scheduleIdleCallback =
+      typeof requestIdleCallback === 'function'
+        ? requestIdleCallback
+        : (cb: () => void) => setTimeout(cb, 0);
+    scheduleIdleCallback(() => {
+      const diffResult = computeDiff(current, pending);
+      const alignedRows = computeAlignment(diffResult.diffs);
+      setDiffViewState({
+        active: true,
+        diffResult,
+        alignedRows,
+        sourceLabel: 'External change',
+      });
+      vscode.postMessage({ type: 'diffViewOpened' });
     });
-    vscode.postMessage({ type: 'diffViewOpened' });
   }, [pendingExternalChange, content]);
 
   if (content === null) {

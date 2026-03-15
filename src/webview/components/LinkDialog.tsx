@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { isValidLinkUrl } from '../utils/urlValidation';
 
 interface LinkDialogProps {
   isOpen: boolean;
@@ -6,31 +7,6 @@ interface LinkDialogProps {
   onCancel: () => void;
   initialText?: string;
   hasSelection: boolean;
-}
-
-/**
- * Validates a URL string.
- * Accepts http/https URLs, or relative paths starting with / or #
- */
-function isValidUrl(url: string): boolean {
-  if (!url || !url.trim()) return false;
-
-  // Allow relative URLs starting with / or #
-  if (url.startsWith('/') || url.startsWith('#')) return true;
-
-  // Check for valid http/https URLs
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    // If it doesn't have a protocol, try adding https://
-    try {
-      const parsed = new URL('https://' + url);
-      return parsed.hostname.includes('.');
-    } catch {
-      return false;
-    }
-  }
 }
 
 /**
@@ -102,7 +78,7 @@ export function LinkDialog({
       return;
     }
 
-    if (!isValidUrl(trimmedUrl)) {
+    if (!isValidLinkUrl(trimmedUrl)) {
       setError('Please enter a valid URL (e.g., https://example.com)');
       return;
     }

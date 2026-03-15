@@ -1,5 +1,5 @@
 import { Extension, markInputRule } from '@tiptap/core';
-import { isValidUrl } from '../../utils/urlValidator';
+import { isValidUrl } from '../utils/urlValidation';
 
 /**
  * Regex for markdown link syntax: [text](url)

@@ -68,7 +68,7 @@ function serializeNode(node: JSONContent, indent: number): string | null {
   return serializer.serialize(node, indent, context);
 }
 
-function needsBlankLine(prevType: string, _currentType: string): boolean {
+function needsBlankLine(prevType: string): boolean {
   // Most block-level elements need a blank line between them
   if (!prevType) return false;
   return true;
@@ -89,7 +89,7 @@ export function serializeMarkdown(doc: JSONContent, frontmatter?: string | null)
   for (const node of doc.content) {
     const serialized = serializeNode(node, 0);
     if (serialized !== null) {
-      if (!isFirst && needsBlankLine(prevType, node.type || '')) {
+      if (!isFirst && needsBlankLine(prevType)) {
         parts.push('');
       }
       parts.push(serialized);

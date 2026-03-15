@@ -8,7 +8,7 @@ export const bulletListSerializer: NodeSerializer = {
     if (!node.content) return '';
     return node.content
       .map((item) => {
-        const content = serializeListItemContent(item, indent, context);
+        const content = serializeListItemContent(item, indent, context, 'bulletList');
         return `${' '.repeat(indent)}- ${content}`;
       })
       .join('\n');

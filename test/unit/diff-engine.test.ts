@@ -284,6 +284,35 @@ describe('computeDiff', () => {
     });
   });
 
+  // ── LCS correctness ─────────────────────────────────────────────
+
+  describe('LCS correctness', () => {
+    it('LCS correctly identifies matching blocks in order', () => {
+      const old = 'A\n\nB\n\nC\n\nD\n';
+      const neu = 'A\n\nX\n\nC\n\nD\n';
+      const result = computeDiff(old, neu);
+      // A, C, D are common subsequence
+      expect(result.summary.unchanged).toBe(3);
+      // B is removed, X is added (or B→X is modified since both are paragraphs)
+      expect(result.summary.modified + result.summary.removed + result.summary.added).toBe(1);
+    });
+
+    it('LCS handles completely disjoint documents', () => {
+      const old = 'A\n\nB\n';
+      const neu = 'C\n\nD\n';
+      const result = computeDiff(old, neu);
+      expect(result.summary.unchanged).toBe(0);
+    });
+
+    it('LCS handles documents where new is a subsequence of old', () => {
+      const old = 'A\n\nB\n\nC\n\nD\n\nE\n';
+      const neu = 'B\n\nD\n';
+      const result = computeDiff(old, neu);
+      expect(result.summary.unchanged).toBe(2); // B and D
+      expect(result.summary.removed).toBe(3); // A, C, E
+    });
+  });
+
   // ── Edge cases ───────────────────────────────────────────────────
 
   describe('edge cases', () => {

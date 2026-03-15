@@ -12,7 +12,7 @@ export function ExternalChangeBanner({
   onDismiss,
 }: ExternalChangeBannerProps) {
   return (
-    <div className="quartz-external-change-banner">
+    <div className="quartz-external-change-banner" role="alert">
       <span className="quartz-external-change-banner-text">File changed externally</span>
       <div className="quartz-external-change-banner-actions">
         <button className="quartz-external-change-btn" onClick={onViewChanges}>

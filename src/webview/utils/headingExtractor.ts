@@ -19,6 +19,7 @@ export function extractHeadings(editor: Editor): HeadingItem[] {
         text: node.textContent,
         pos,
       });
+      return false; // Don't descend into heading children
     }
   });
 

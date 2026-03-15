@@ -54,6 +54,16 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup copy timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Build filtered language list
   const filteredLanguages = React.useMemo(() => {
@@ -140,10 +150,17 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
 
   const handleCopy = useCallback(() => {
     const text = node.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = setTimeout(() => {
+          setCopied(false);
+          copyTimeoutRef.current = null;
+        }, 1500);
+      })
+      .catch(console.warn);
   }, [node]);
 
   let itemIndex = 0;

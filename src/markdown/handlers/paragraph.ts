@@ -12,8 +12,11 @@ export const paragraphHandler: TokenHandler = {
     index: number,
     context: ParseContext,
   ): { nodes: JSONContent[]; consumed: number } {
-    const inlineToken = tokens[index + 1];
+    const inlineToken = index + 1 < tokens.length ? tokens[index + 1] : undefined;
     const inlineContent = inlineToken ? context.parseInline(inlineToken.children || []) : [];
+
+    // Consume up to 3 tokens (paragraph_open, inline, paragraph_close), but don't go past end
+    const consumed = Math.min(3, tokens.length - index);
 
     return {
       nodes: [
@@ -22,7 +25,7 @@ export const paragraphHandler: TokenHandler = {
           content: inlineContent.length > 0 ? inlineContent : undefined,
         },
       ],
-      consumed: 3, // paragraph_open, inline, paragraph_close
+      consumed,
     };
   },
 };

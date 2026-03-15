@@ -27,7 +27,7 @@
 .quartz-diff-panel-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--quartz-z-dropdown);
   display: flex;
   align-items: center;
   padding: 6px 12px;
@@ -48,7 +48,7 @@
   font-size: 11px;
   padding: 1px 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--quartz-icon-bg);
 }
 
 /* Read-only left panel styling */
@@ -76,8 +76,8 @@
 
 /* Modified block — amber/yellow background + left border */
 .quartz-diff-modified {
-  background: rgba(227, 179, 65, 0.08);
-  border-left: 3px solid rgba(227, 179, 65, 0.5);
+  background: color-mix(in srgb, var(--vscode-editorWarning-foreground, #e3b341) 8%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--vscode-editorWarning-foreground, #e3b341) 50%, transparent);
   padding-left: 8px;
   margin-left: -11px;
 }
@@ -135,7 +135,7 @@
 }
 
 .quartz-diff-review-stat-modified {
-  color: #e3b341;
+  color: var(--vscode-editorWarning-foreground, #e3b341);
 }
 
 .quartz-diff-review-source {
@@ -163,7 +163,7 @@
 }
 
 .quartz-diff-review-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-diff-review-btn:disabled {
@@ -221,7 +221,7 @@
 }
 
 .quartz-external-change-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-external-change-btn-accept {

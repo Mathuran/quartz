@@ -5,7 +5,6 @@ import { liftListItem, sinkListItem } from '@tiptap/pm/schema-list';
 import type { Selection } from '@tiptap/pm/state';
 import { Fragment } from '@tiptap/pm/model';
 import type { Node as ProseMirrorNode, ResolvedPos } from '@tiptap/pm/model';
-
 interface ListItemInfo {
   depth: number;
   node: ProseMirrorNode;
@@ -354,24 +353,12 @@ export const keyboardShortcutsExtension = Extension.create({
       // Strikethrough: Cmd/Ctrl+Shift+S
       'Mod-Shift-s': () => this.editor.chain().focus().toggleStrike().run(),
 
-      // Link: Cmd/Ctrl+K - prompt user for URL
+      // Link: Cmd/Ctrl+K - open link dialog
+      // Note: On VS Code, Cmd+K is intercepted as a chord prefix, so the
+      // extension registers a keybinding that sends an 'insertLink' message
+      // to the webview. This handler is a fallback for non-VS Code contexts.
       'Mod-k': () => {
-        const previousUrl = this.editor.getAttributes('link').href ?? '';
-        const url = window.prompt('Enter URL:', previousUrl);
-
-        if (url === null) {
-          // User cancelled the prompt
-          return true;
-        }
-
-        if (url === '') {
-          // Empty URL removes the link
-          this.editor.chain().focus().extendMarkRange('link').unsetLink().run();
-          return true;
-        }
-
-        this.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-
+        window.dispatchEvent(new CustomEvent('quartz:insertLink'));
         return true;
       },
 

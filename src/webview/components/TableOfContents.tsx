@@ -20,10 +20,17 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
     return headings.filter((h) => h.text.toLowerCase().includes(q));
   }, [headings, query]);
 
+  // Compute a content hash of filtered headings so we reset selection
+  // when the actual content changes, not just the count.
+  const filteredContentHash = useMemo(
+    () => filteredHeadings.map((h) => `${h.pos}:${h.text}`).join('|'),
+    [filteredHeadings],
+  );
+
   // Reset selection when filtered results change
   useEffect(() => {
     setSelectedIndex(0);
-  }, [filteredHeadings.length]);
+  }, [filteredContentHash]);
 
   const scrollToHeading = useCallback(
     (heading: HeadingItem) => {

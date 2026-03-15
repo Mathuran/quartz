@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import type { QuartzOutlineProvider } from './QuartzOutlineProvider';
 
@@ -5,7 +7,8 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = 'quartz.markdownEditor';
 
   private static outlineProvider: QuartzOutlineProvider | undefined;
-  private static activeWebviewPanel: vscode.WebviewPanel | undefined;
+  /** Map of document URI → active webview panel (supports multiple open editors) */
+  private static webviewPanels = new Map<string, vscode.WebviewPanel>();
   private static pendingDiffUris = new Set<string>();
 
   public static setOutlineProvider(provider: QuartzOutlineProvider): void {
@@ -13,7 +16,11 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   public static getActiveWebviewPanel(): vscode.WebviewPanel | undefined {
-    return QuartzEditorProvider.activeWebviewPanel;
+    // Return the last active panel (for backwards compat with single-panel callers)
+    for (const panel of QuartzEditorProvider.webviewPanels.values()) {
+      if (panel.active) return panel;
+    }
+    return undefined;
   }
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -31,6 +38,9 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
+    // Abort setup if cancellation was already requested
+    if (_token.isCancellationRequested) return;
+
     webviewPanel.webview.options = {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview')],
@@ -40,21 +50,20 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Track active panel and notify outline provider
     const docKey = document.uri.toString();
-    QuartzEditorProvider.activeWebviewPanel = webviewPanel;
+    QuartzEditorProvider.webviewPanels.set(docKey, webviewPanel);
     if (QuartzEditorProvider.outlineProvider) {
       QuartzEditorProvider.outlineProvider.updateDocument(document, webviewPanel);
     }
 
-    // Update active panel when this panel gains focus
-    webviewPanel.onDidChangeViewState((e) => {
-      if (e.webviewPanel.active) {
-        QuartzEditorProvider.activeWebviewPanel = webviewPanel;
-      }
+    // Update active panel tracking when this panel gains focus — capture disposable
+    const viewStateDisposable = webviewPanel.onDidChangeViewState(() => {
+      // Panel map is keyed by URI, so no explicit "active" tracking needed —
+      // getActiveWebviewPanel() checks .active on each panel.
     });
 
-    // Change origin guard: tracks whether a document change originated from the
-    // webview (our own edit) so that we don't echo it back as an external change.
-    let isApplyingWebviewEdit = false;
+    // Version-based edit tracking: instead of a boolean flag (which can miss edits
+    // if VS Code coalesces changes), we track the expected version after our edit.
+    let expectedVersionAfterEdit: number | null = null;
 
     // Debounce timer for external change notifications
     let externalChangeTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -62,20 +71,27 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     function sendExternalChange() {
       if (externalChangeTimeout) clearTimeout(externalChangeTimeout);
       externalChangeTimeout = setTimeout(() => {
+        // Guard: document may have been closed while debounce was pending
+        if (document.isClosed) return;
+
         const diffReviewEnabled = vscode.workspace
           .getConfiguration('quartz.diffReview')
           .get<boolean>('enabled', true);
 
-        if (diffReviewEnabled) {
-          webviewPanel.webview.postMessage({
-            type: 'externalChangeAvailable',
-            content: document.getText(),
-          });
-        } else {
-          webviewPanel.webview.postMessage({
-            type: 'externalChange',
-            content: document.getText(),
-          });
+        try {
+          if (diffReviewEnabled) {
+            webviewPanel.webview.postMessage({
+              type: 'externalChangeAvailable',
+              content: document.getText(),
+            });
+          } else {
+            webviewPanel.webview.postMessage({
+              type: 'externalChange',
+              content: document.getText(),
+            });
+          }
+        } catch {
+          // Panel may have been disposed while debounce was pending — ignore
         }
       }, 300);
     }
@@ -93,9 +109,8 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
           }
           return;
         case 'update':
-          isApplyingWebviewEdit = true;
+          expectedVersionAfterEdit = document.version + 1;
           await this.applyEdits(document, message.content);
-          isApplyingWebviewEdit = false;
           return;
         case 'requestGitDiff':
           await this.openGitDiff(webviewPanel.webview, document);
@@ -114,9 +129,14 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle external document changes
     const onDocumentChange = vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.toString() !== document.uri.toString()) return;
+      if (e.document.uri.toString() !== docKey) return;
       if (e.contentChanges.length === 0) return;
-      if (isApplyingWebviewEdit) return; // Skip our own edits
+      // Skip our own edits by comparing document version
+      if (expectedVersionAfterEdit !== null && e.document.version === expectedVersionAfterEdit) {
+        expectedVersionAfterEdit = null;
+        return;
+      }
+      expectedVersionAfterEdit = null;
 
       // Debounce and send external change to the webview
       sendExternalChange();
@@ -139,11 +159,13 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
       onWebviewMessage.dispose();
       onDocumentChange.dispose();
       onConfigChange.dispose();
+      viewStateDisposable.dispose();
 
-      if (QuartzEditorProvider.activeWebviewPanel === webviewPanel) {
-        QuartzEditorProvider.activeWebviewPanel = undefined;
-        vscode.commands.executeCommand('setContext', 'quartz.diffViewActive', false);
-      }
+      // Clean up panel tracking
+      QuartzEditorProvider.webviewPanels.delete(docKey);
+      QuartzEditorProvider.pendingDiffUris.delete(docKey);
+      vscode.commands.executeCommand('setContext', 'quartz.diffViewActive', false);
+
       if (QuartzEditorProvider.outlineProvider) {
         QuartzEditorProvider.outlineProvider.clearDocument();
       }
@@ -180,7 +202,10 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
    * Called from the SCM context menu before opening the file with `vscode.openWith`.
    */
   public static queueDiffForUri(uri: vscode.Uri): void {
-    QuartzEditorProvider.pendingDiffUris.add(uri.toString());
+    const key = uri.toString();
+    QuartzEditorProvider.pendingDiffUris.add(key);
+    // Auto-cleanup after 10s in case webview never sends 'ready'
+    setTimeout(() => QuartzEditorProvider.pendingDiffUris.delete(key), 10_000);
   }
 
   /**
@@ -188,7 +213,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
    * Called from the `quartz.viewGitChanges` command.
    */
   public static async requestGitDiffForActivePanel(): Promise<void> {
-    const panel = QuartzEditorProvider.activeWebviewPanel;
+    const panel = QuartzEditorProvider.getActiveWebviewPanel();
     if (!panel) {
       vscode.window.showWarningMessage('No active Quartz editor.');
       return;
@@ -214,11 +239,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
       }
 
       // Get the file path relative to the repo root
-      const repoRoot = repo.rootUri.fsPath;
-      const filePath = document.uri.fsPath;
-      const relativePath = filePath.startsWith(repoRoot)
-        ? filePath.slice(repoRoot.length + 1)
-        : filePath;
+      const relativePath = path.relative(repo.rootUri.fsPath, document.uri.fsPath);
 
       let oldContent: string;
       try {
@@ -244,7 +265,11 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
   private async applyEdits(document: vscode.TextDocument, content: string): Promise<void> {
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
+    const fullRange = new vscode.Range(
+      document.positionAt(0),
+      document.positionAt(document.getText().length),
+    );
+    edit.replace(document.uri, fullRange, content);
     await vscode.workspace.applyEdit(edit);
   }
 
@@ -259,12 +284,14 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 
     // CSP: script-src needs both the nonce (for the inline module script) and the
     // webview source (for dynamically imported ESM chunks produced by esbuild splitting).
+    // img-src includes https: so that external images referenced in markdown (e.g. ![alt](https://...))
+    // can load in the editor preview. This is an intentional trade-off for usability.
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}' ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} data: https:; font-src ${webview.cspSource};">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}' ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https: data:; font-src ${webview.cspSource};">
   <link href="${styleUri}" rel="stylesheet">
   <title>Quartz Editor</title>
 </head>
@@ -277,10 +304,5 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
 }
 
 function getNonce(): string {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
+  return crypto.randomBytes(16).toString('hex');
 }

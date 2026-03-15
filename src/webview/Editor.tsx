@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -48,6 +48,7 @@ import { CustomCodeBlockLowlight } from './extensions/codeBlockExtension';
 import { CalloutExtension } from './extensions/calloutExtension';
 import { SearchHighlightExtension } from './extensions/searchHighlightExtension';
 import { SearchBar } from './components/SearchBar';
+import { LinkDialog } from './components/LinkDialog';
 import type { EditorConfig } from './types';
 
 import './styles/callout.css';
@@ -99,7 +100,9 @@ function safeParse(markdown: string): {
 
   try {
     const { doc, frontmatter } = parseMarkdown(markdown);
-    console.log('[Quartz] Parsed markdown into', doc.content?.length ?? 0, 'top-level nodes');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Quartz] Parsed markdown into', doc.content?.length ?? 0, 'top-level nodes');
+    }
     return { doc, frontmatter, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -118,15 +121,15 @@ function safeParse(markdown: string): {
 export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
-  const [contentWarning, setContentWarning] = useState<string | null>(() => {
-    const { error } = safeParse(initialContentRef.current);
-    return error;
-  });
+
+  // Parse initial content only once via useState initializer — not on every render
+  const [initialParsed] = useState(() => safeParse(initialContent));
+  const [contentWarning, setContentWarning] = useState<string | null>(initialParsed.error);
   const [showTableHint, setShowTableHint] = useState(false);
 
-  const { doc: initialDoc, frontmatter: initialFrontmatter } = safeParse(initialContentRef.current);
-  const [frontmatter, setFrontmatter] = useState<string | null>(initialFrontmatter);
+  const [frontmatter, setFrontmatter] = useState<string | null>(initialParsed.frontmatter);
   const frontmatterRef = useRef<string | null>(frontmatter);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
   // Keep the ref in sync so TipTap's onUpdate closure always reads the latest value
   useEffect(() => {
@@ -172,7 +175,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       linkInputRuleExtension,
       SearchHighlightExtension,
     ],
-    content: initialDoc,
+    content: initialParsed.doc,
     onCreate: ({ editor }) => {
       // Detect if Tiptap silently dropped content during schema validation
       const inputLength = initialContentRef.current.trim().length;
@@ -188,7 +191,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
             '| Editor text length:',
             editorText.length,
           );
-          console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialDoc, null, 2).slice(0, 2000));
+          console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialParsed.doc, null, 2).slice(0, 2000));
           setContentWarning(msg);
         }
       }
@@ -224,16 +227,13 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       } else {
         setContentWarning(null);
       }
-      // Replace content without adding to undo history.
-      // We use setContent (which safely rebuilds the DOM, avoiding insertBefore errors)
-      // but intercept its internal dispatch to suppress the history entry.
-      const origDispatch = editor.view.dispatch.bind(editor.view);
-      editor.view.dispatch = (tr: Parameters<typeof origDispatch>[0]) => {
-        tr.setMeta('addToHistory', false);
-        origDispatch(tr);
-      };
-      editor.commands.setContent(doc, false, { preserveWhitespace: true });
-      editor.view.dispatch = origDispatch;
+      // Replace content without adding to undo history using a direct
+      // ProseMirror transaction with the addToHistory meta flag set to false.
+      // This avoids fragile monkey-patching of editor.view.dispatch.
+      const newDoc = editor.schema.nodeFromJSON(doc);
+      const tr = editor.state.tr.replaceWith(0, editor.state.doc.content.size, newDoc.content);
+      tr.setMeta('addToHistory', false);
+      editor.view.dispatch(tr);
 
       // Verify content was preserved after setContent
       setTimeout(() => {
@@ -250,10 +250,30 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     }
   }, [editor, initialContent]);
 
-  // Flush pending changes on unmount
+  // Keep refs for flush-on-unmount so the cleanup closure reads the latest values
+  const editorRef = useRef(editor);
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
+
+  const onUpdateRef = useRef(onUpdate);
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+
+  // Flush pending changes on unmount — serialize immediately so no edits are lost
   useEffect(() => {
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+        // Flush: serialize current editor content and send the update
+        const ed = editorRef.current;
+        if (ed) {
+          const markdown = serializeMarkdown(ed.getJSON(), frontmatterRef.current);
+          onUpdateRef.current(markdown);
+        }
+      }
     };
   }, []);
 
@@ -282,6 +302,55 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     }
   }, [editor, onUpdate]);
 
+  // Link dialog handlers
+  const handleLinkClick = useCallback(() => {
+    setLinkDialogOpen(true);
+  }, []);
+
+  // Listen for insertLink event from VS Code extension (Cmd+K keybinding)
+  useEffect(() => {
+    const handler = () => setLinkDialogOpen(true);
+    window.addEventListener('quartz:insertLink', handler);
+    return () => window.removeEventListener('quartz:insertLink', handler);
+  }, []);
+
+  const handleLinkSubmit = useCallback(
+    (url: string, text?: string) => {
+      if (!editor) return;
+      if (text) {
+        // No selection — insert link with display text
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: 'text',
+            marks: [{ type: 'link', attrs: { href: url } }],
+            text,
+          })
+          .run();
+      } else {
+        // Selection exists — wrap it in a link
+        editor.chain().focus().setLink({ href: url }).run();
+      }
+      setLinkDialogOpen(false);
+    },
+    [editor],
+  );
+
+  const handleLinkCancel = useCallback(() => {
+    setLinkDialogOpen(false);
+    editor?.commands.focus();
+  }, [editor]);
+
+  // Memoize inline style to avoid creating a new object on every render
+  const editorContentStyle = useMemo(
+    () => ({
+      fontFamily: config.fontFamily === 'inherit' ? undefined : config.fontFamily,
+      fontSize: `${config.fontSize}px`,
+    }),
+    [config.fontFamily, config.fontSize],
+  );
+
   if (!editor) return null;
 
   return (
@@ -294,7 +363,18 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
           </button>
         </div>
       )}
-      <FormattingToolbar editor={editor} />
+      <FormattingToolbar editor={editor} onLinkClick={handleLinkClick} />
+      <LinkDialog
+        isOpen={linkDialogOpen}
+        onSubmit={handleLinkSubmit}
+        onCancel={handleLinkCancel}
+        initialText={editor.state.doc.textBetween(
+          editor.state.selection.from,
+          editor.state.selection.to,
+          '',
+        )}
+        hasSelection={editor.state.selection.from !== editor.state.selection.to}
+      />
       <SearchBar editor={editor} />
       <SlashMenu editor={editor} />
       <TableOfContents editor={editor} />
@@ -306,10 +386,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       />
       <EditorContent
         editor={editor}
-        style={{
-          fontFamily: config.fontFamily === 'inherit' ? undefined : config.fontFamily,
-          fontSize: `${config.fontSize}px`,
-        }}
+        style={editorContentStyle}
       />
     </PageContainer>
   );

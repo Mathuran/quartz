@@ -8,7 +8,7 @@ export const blockquoteSerializer: NodeSerializer = {
     const inner = node.content
       .map((child) => context.serializeNode(child, 0))
       .filter((s): s is string => s !== null)
-      .join('\n>\n');
+      .join('\n\n');
     return inner
       .split('\n')
       .map((line) => (line ? `> ${line}` : '>'))

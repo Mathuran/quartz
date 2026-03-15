@@ -97,9 +97,7 @@ function buildPanelDoc(diffs: BlockDiff[], side: 'left' | 'right'): JSONContent 
       content.push(diff.oldBlock!);
     } else {
       if (diff.type === 'removed') continue;
-      content.push(
-        diff.type === 'unchanged' || diff.type === 'modified' ? diff.newBlock! : diff.newBlock!,
-      );
+      content.push(diff.newBlock!);
     }
   }
   return { type: 'doc', content: content.length > 0 ? content : [{ type: 'paragraph' }] };
@@ -178,12 +176,26 @@ export function DiffSplitView({
 
   const [currentChangeIdx, setCurrentChangeIdx] = useState(0);
 
+  // Memoize extension arrays to avoid recreating on every render
+  const leftExtensions = useMemo(
+    () => [...getSharedExtensions(), DiffDecorationExtension.configure({ blockDiffMap: leftDiffMap })],
+    [leftDiffMap],
+  );
+
+  const rightExtensions = useMemo(
+    () => [
+      ...getSharedExtensions(),
+      History,
+      Gapcursor,
+      Dropcursor.configure({ color: '#3b82f6', width: 2 }),
+      DiffDecorationExtension.configure({ blockDiffMap: rightDiffMap }),
+    ],
+    [rightDiffMap],
+  );
+
   // Left editor: read-only
   const leftEditor = useEditor({
-    extensions: [
-      ...getSharedExtensions(),
-      DiffDecorationExtension.configure({ blockDiffMap: leftDiffMap }),
-    ],
+    extensions: leftExtensions,
     content: leftDoc,
     editable: false,
     editorProps: {
@@ -195,13 +207,7 @@ export function DiffSplitView({
 
   // Right editor: editable
   const rightEditor = useEditor({
-    extensions: [
-      ...getSharedExtensions(),
-      History,
-      Gapcursor,
-      Dropcursor.configure({ color: '#3b82f6', width: 2 }),
-      DiffDecorationExtension.configure({ blockDiffMap: rightDiffMap }),
-    ],
+    extensions: rightExtensions,
     content: rightDoc,
     editable: true,
     onUpdate: ({ editor }) => {

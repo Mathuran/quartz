@@ -1,8 +1,10 @@
 const esbuild = require('esbuild');
+const fs = require('fs');
 const path = require('path');
 
 const isWatch = process.argv.includes('--watch');
 const webviewOnly = process.argv.includes('--webview-only');
+const isAnalyze = !!process.env.ANALYZE;
 
 /** @type {import('esbuild').BuildOptions} */
 const extensionConfig = {
@@ -15,6 +17,7 @@ const extensionConfig = {
   target: 'node18',
   sourcemap: true,
   minify: !isWatch,
+  metafile: isAnalyze,
 };
 
 /** @type {import('esbuild').BuildOptions} */
@@ -36,6 +39,7 @@ const webviewConfig = {
   },
   // Chunk naming: place shared chunks alongside the entry point
   chunkNames: 'chunks/[name]-[hash]',
+  metafile: isAnalyze,
 };
 
 async function build() {
@@ -48,10 +52,18 @@ async function build() {
     await esbuild.build(webviewConfig);
     console.log('Webview build complete.');
   } else {
-    await Promise.all([
+    const [extResult, webResult] = await Promise.all([
       esbuild.build(extensionConfig),
       esbuild.build(webviewConfig),
     ]);
+    if (isAnalyze) {
+      const meta = {
+        extension: extResult.metafile,
+        webview: webResult.metafile,
+      };
+      fs.writeFileSync('dist/meta.json', JSON.stringify(meta, null, 2));
+      console.log('Metafile written to dist/meta.json');
+    }
     console.log('Build complete.');
   }
 }

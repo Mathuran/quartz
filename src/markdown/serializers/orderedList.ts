@@ -6,11 +6,12 @@ export const orderedListSerializer: NodeSerializer = {
   nodeTypes: ['orderedList'],
   serialize(node: JSONContent, indent: number, context: SerializeContext): string {
     if (!node.content) return '';
-    const start = (node.attrs?.start as number) || 1;
+    const start = (node.attrs?.start as number) ?? 1;
     return node.content
       .map((item, i) => {
-        const content = serializeListItemContent(item, indent, context);
-        return `${' '.repeat(indent)}${start + i}. ${content}`;
+        const num = start + i;
+        const content = serializeListItemContent(item, indent, context, 'orderedList', num);
+        return `${' '.repeat(indent)}${num}. ${content}`;
       })
       .join('\n');
   },

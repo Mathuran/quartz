@@ -18,6 +18,8 @@ export default defineConfig({
             'test/parser.test.ts',
             'test/unit/parser-edge-cases.test.ts',
             'test/unit/callout-parser.test.ts',
+            'test/unit/inline-mark-handling.test.ts',
+            'test/unit/block-level-content-loss.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 0 },
@@ -30,7 +32,9 @@ export default defineConfig({
           include: [
             'test/serializer.test.ts',
             'test/unit/serializer-edge-cases.test.ts',
+            'test/unit/serializer-escaping.test.ts',
             'test/unit/callout-serializer.test.ts',
+            'test/unit/serializer-minor-fixes.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 1 },
@@ -59,11 +63,13 @@ export default defineConfig({
             'test/fixtures.test.ts',
             'test/debounce.test.ts',
             'test/unit/list-item-movement.test.ts',
-          'test/unit/heading-extractor.test.ts',
-          'test/unit/heading-extractor-extension.test.ts',
-          'test/unit/diff-engine.test.ts',
-          'test/unit/diff-alignment.test.ts',
-          'test/unit/search-engine.test.ts',
+            'test/unit/heading-extractor.test.ts',
+            'test/unit/heading-extractor-extension.test.ts',
+            'test/unit/diff-engine.test.ts',
+            'test/unit/diff-alignment.test.ts',
+            'test/unit/search-engine.test.ts',
+            'test/unit/url-validation.test.ts',
+            'test/unit/languages.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 3 },
@@ -85,6 +91,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts', 'src/**/*.tsx'],
+      // Webview code (React + TipTap) runs inside a browser context that
+      // Vitest's Node environment cannot replicate. Webview behaviour is
+      // covered by the Playwright E2E tests in test/e2e/ instead.
       exclude: ['src/webview/**'],
     },
   },

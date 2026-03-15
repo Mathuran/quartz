@@ -50,6 +50,19 @@ function parseTable(
     }
   }
 
+  // Handle empty table: produce a valid single-row structure
+  if (rows.length === 0) {
+    rows.push({
+      type: 'tableRow',
+      content: [
+        {
+          type: 'tableHeader',
+          content: [{ type: 'paragraph' }],
+        },
+      ],
+    });
+  }
+
   return {
     node: {
       type: 'table',
@@ -77,22 +90,29 @@ function parseTableRow(
         continue;
       }
       const cellType = isHeader ? 'tableHeader' : 'tableCell';
-      const inlineToken = tokens[i + 1];
-      const content =
-        inlineToken && inlineToken.type === 'inline'
-          ? context.parseInline(inlineToken.children || [])
-          : [];
+      const nextToken = tokens[i + 1];
 
-      cells.push({
-        type: cellType,
-        content: [
-          {
-            type: 'paragraph',
-            content: content.length > 0 ? content : undefined,
-          },
-        ],
-      });
-      i += 3; // td/th_open, inline, td/th_close
+      // Handle missing inline token (e.g. td_open followed directly by td_close)
+      if (nextToken && nextToken.type === 'inline') {
+        const content = context.parseInline(nextToken.children || []);
+        cells.push({
+          type: cellType,
+          content: [
+            {
+              type: 'paragraph',
+              content: content.length > 0 ? content : undefined,
+            },
+          ],
+        });
+        i += 3; // td/th_open, inline, td/th_close
+      } else {
+        // No inline token — empty cell (td_open immediately followed by td_close)
+        cells.push({
+          type: cellType,
+          content: [{ type: 'paragraph' }],
+        });
+        i += 2; // td/th_open, td/th_close
+      }
     } else {
       i++;
     }

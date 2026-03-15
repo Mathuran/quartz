@@ -3,6 +3,11 @@ import type { JSONContent } from '@tiptap/core';
 import type { TokenHandler, ParseContext } from './types';
 import { parseListItems, isTaskItem, convertToTaskItem } from './list';
 import { detectCallout } from './callout';
+import { codeBlockHandler } from './codeBlock';
+import { horizontalRuleHandler } from './horizontalRule';
+import { headingHandler } from './heading';
+import { htmlBlockHandler } from './htmlBlock';
+import { tableHandler } from './table';
 
 export const blockquoteHandler: TokenHandler = {
   canHandle(token: MarkdownIt.Token): boolean {
@@ -146,12 +151,43 @@ function parseBlockquote(
           content: listItems.items,
         });
         i = listItems.endIndex + 1;
+      } else if (token.type === 'fence' || token.type === 'code_block') {
+        // Delegate to the code block handler
+        const result = codeBlockHandler.handle(tokens, i, context);
+        nodes.push(...result.nodes);
+        i += result.consumed;
+      } else if (token.type === 'hr') {
+        // Delegate to the horizontal rule handler
+        const result = horizontalRuleHandler.handle(tokens, i, context);
+        nodes.push(...result.nodes);
+        i += result.consumed;
+      } else if (token.type === 'heading_open') {
+        // Delegate to the heading handler
+        const result = headingHandler.handle(tokens, i, context);
+        nodes.push(...result.nodes);
+        i += result.consumed;
+      } else if (token.type === 'html_block') {
+        // Delegate to the HTML block handler
+        const result = htmlBlockHandler.handle(tokens, i, context);
+        nodes.push(...result.nodes);
+        i += result.consumed;
+      } else if (token.type === 'table_open') {
+        // Delegate to the table handler
+        const result = tableHandler.handle(tokens, i, context);
+        nodes.push(...result.nodes);
+        i += result.consumed;
       } else {
         i++;
       }
     } else {
       i++;
     }
+  }
+
+  if (safetyLimit <= 0) {
+    console.warn(
+      'parseBlockquote: safety limit exhausted — blockquote may be incomplete',
+    );
   }
 
   return { nodes, endIndex: i };

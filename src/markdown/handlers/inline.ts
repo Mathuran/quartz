@@ -1,6 +1,5 @@
 import type MarkdownIt from 'markdown-it';
 import type { JSONContent } from '@tiptap/core';
-import { isValidUrl } from '../../utils/urlValidator';
 
 /**
  * Parse inline tokens (bold, italic, strikethrough, code, links, images, etc.)
@@ -24,6 +23,7 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
       }
 
       case 'code_inline': {
+        if (!token.content) break; // Skip empty inline code (ProseMirror rejects empty text nodes)
         const marks = [...markStack, { type: 'code' }];
         result.push({
           type: 'text',
@@ -34,7 +34,8 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
       }
 
       case 'softbreak': {
-        result.push({ type: 'text', text: '\n' });
+        const marks = markStack.length > 0 ? [...markStack] : undefined;
+        result.push({ type: 'text', text: '\n', marks });
         break;
       }
 
@@ -47,21 +48,36 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
         markStack.push({ type: 'bold' });
         break;
       case 'strong_close':
-        markStack.pop();
+        for (let j = markStack.length - 1; j >= 0; j--) {
+          if (markStack[j].type === 'bold') {
+            markStack.splice(j, 1);
+            break;
+          }
+        }
         break;
 
       case 'em_open':
         markStack.push({ type: 'italic' });
         break;
       case 'em_close':
-        markStack.pop();
+        for (let j = markStack.length - 1; j >= 0; j--) {
+          if (markStack[j].type === 'italic') {
+            markStack.splice(j, 1);
+            break;
+          }
+        }
         break;
 
       case 's_open':
         markStack.push({ type: 'strike' });
         break;
       case 's_close':
-        markStack.pop();
+        for (let j = markStack.length - 1; j >= 0; j--) {
+          if (markStack[j].type === 'strike') {
+            markStack.splice(j, 1);
+            break;
+          }
+        }
         break;
 
       case 'link_open': {
@@ -81,7 +97,6 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
 
       case 'image': {
         const src = token.attrGet('src') || '';
-        if (!isValidUrl(src)) break;
         const alt = token.attrGet('alt') || token.content || '';
         result.push({
           type: 'image',
@@ -94,10 +109,29 @@ export function parseInline(tokens: MarkdownIt.Token[]): JSONContent[] {
         markStack.push({ type: 'highlight' });
         break;
       case 'mark_close':
-        markStack.pop();
+        for (let j = markStack.length - 1; j >= 0; j--) {
+          if (markStack[j].type === 'highlight') {
+            markStack.splice(j, 1);
+            break;
+          }
+        }
         break;
 
+      case 'html_inline': {
+        // Inline HTML (e.g., <u>, <br>, <sup>) — render as text
+        if (token.content) {
+          const marks = markStack.length > 0 ? [...markStack] : undefined;
+          result.push({
+            type: 'text',
+            text: token.content,
+            marks,
+          });
+        }
+        break;
+      }
+
       default:
+        console.debug(`[parseInline] Unknown token type: "${token.type}"`);
         // Fallback: if token has content, add as text
         if (token.content) {
           const marks = markStack.length > 0 ? [...markStack] : undefined;

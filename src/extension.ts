@@ -3,6 +3,22 @@ import { QuartzEditorProvider } from './QuartzEditorProvider';
 import { QuartzOutlineProvider, type OutlineItem } from './QuartzOutlineProvider';
 import { QuartzDocumentSymbolProvider } from './QuartzDocumentSymbolProvider';
 
+/**
+ * Safely extract a vscode.Uri from a tab input object.
+ * Tab inputs are untyped at runtime; we check for a `uri` property that
+ * looks like a real vscode.Uri (has a `scheme` string) rather than using
+ * an unsafe type assertion.
+ */
+function getUriFromTabInput(input: unknown): vscode.Uri | undefined {
+  if (input && typeof input === 'object' && 'uri' in input) {
+    const candidate = (input as Record<string, unknown>).uri;
+    if (candidate && typeof candidate === 'object' && 'scheme' in candidate) {
+      return candidate as vscode.Uri;
+    }
+  }
+  return undefined;
+}
+
 export function activate(context: vscode.ExtensionContext) {
   // Set up outline provider
   const outlineProvider = new QuartzOutlineProvider();
@@ -42,11 +58,17 @@ export function activate(context: vscode.ExtensionContext) {
         // The outline will refresh when the document change event fires
         // For manual refresh, we can trigger it via the active tab's document
         const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-        if (activeTab?.input && typeof activeTab.input === 'object' && 'uri' in activeTab.input) {
-          const uri = (activeTab.input as { uri: vscode.Uri }).uri;
-          vscode.workspace.openTextDocument(uri).then((doc) => {
-            outlineProvider.updateDocument(doc, panel);
-          });
+        const tabUri = getUriFromTabInput(activeTab?.input);
+        if (tabUri) {
+          vscode.workspace.openTextDocument(tabUri).then(
+            (doc) => {
+              outlineProvider.updateDocument(doc, panel);
+            },
+            (err) => {
+              const msg = err instanceof Error ? err.message : String(err);
+              vscode.window.showWarningMessage(`Failed to refresh outline: ${msg}`);
+            },
+          );
         }
       }
     }),
@@ -81,10 +103,24 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  // Close Diff View command (toggle back to editor)
+  // Close Diff View command — intentionally calls the same function as viewGitChanges.
+  // The webview handles the toggle logic: if the diff view is open it closes it,
+  // if it's closed it opens it. This command exists as a separate entry point
+  // so that keybindings/menus can target "close" semantics specifically.
   context.subscriptions.push(
     vscode.commands.registerCommand('quartz.closeDiffView', async () => {
       await QuartzEditorProvider.requestGitDiffForActivePanel();
+    }),
+  );
+
+  // Insert Link command (Cmd+K) — VS Code intercepts Cmd+K as a chord prefix,
+  // so we register it as a VS Code keybinding and forward to the webview.
+  context.subscriptions.push(
+    vscode.commands.registerCommand('quartz.insertLink', () => {
+      const panel = QuartzEditorProvider.getActiveWebviewPanel();
+      if (panel) {
+        panel.webview.postMessage({ type: 'insertLink' });
+      }
     }),
   );
 
@@ -92,18 +128,15 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('quartz.openWithQuartz', async () => {
       const activeEditor = vscode.window.activeTextEditor;
-      const uri =
-        activeEditor?.document.uri ?? vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+      const tabInput = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+      const fileUri = activeEditor?.document.uri ?? getUriFromTabInput(tabInput);
 
-      if (uri && typeof uri === 'object' && 'uri' in uri) {
-        const fileUri = (uri as { uri: vscode.Uri }).uri;
-        if (fileUri.path.endsWith('.md')) {
-          await vscode.commands.executeCommand(
-            'vscode.openWith',
-            fileUri,
-            QuartzEditorProvider.viewType,
-          );
-        }
+      if (fileUri && fileUri.path.endsWith('.md')) {
+        await vscode.commands.executeCommand(
+          'vscode.openWith',
+          fileUri,
+          QuartzEditorProvider.viewType,
+        );
       } else if (activeEditor?.document.fileName.endsWith('.md')) {
         await vscode.commands.executeCommand(
           'vscode.openWith',
@@ -122,9 +155,8 @@ export function activate(context: vscode.ExtensionContext) {
       let uri: vscode.Uri | undefined;
 
       // Check if we're in a custom editor (Quartz)
-      if (activeTab?.input && typeof activeTab.input === 'object' && 'uri' in activeTab.input) {
-        uri = (activeTab.input as { uri: vscode.Uri }).uri;
-      } else if (activeEditor?.document.fileName.endsWith('.md')) {
+      uri = getUriFromTabInput(activeTab?.input);
+      if (!uri && activeEditor?.document.fileName.endsWith('.md')) {
         uri = activeEditor.document.uri;
       }
 
@@ -144,10 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (!activeTab?.input) return;
 
       const input = activeTab.input;
-
-      if (!input || typeof input !== 'object' || !('uri' in input)) return;
-
-      const uri = (input as { uri: vscode.Uri }).uri;
+      const uri = getUriFromTabInput(input);
 
       if (!uri || !uri.path.endsWith('.md')) return;
 
@@ -156,12 +185,20 @@ export function activate(context: vscode.ExtensionContext) {
         'viewType' in input &&
         (input as { viewType: string }).viewType === QuartzEditorProvider.viewType;
 
+      // Close the current tab first so the new editor opens in the same position,
+      // rather than opening a second tab for the same file.
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+
       if (isQuartzEditor) {
         // Switch to default text editor
         await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
       } else {
         // Switch to Quartz editor
-        await vscode.commands.executeCommand('vscode.openWith', uri, QuartzEditorProvider.viewType);
+        await vscode.commands.executeCommand(
+          'vscode.openWith',
+          uri,
+          QuartzEditorProvider.viewType,
+        );
       }
     }),
   );
@@ -170,10 +207,14 @@ export function activate(context: vscode.ExtensionContext) {
 /**
  * Set Quartz as the default editor for *.md files so that VS Code's
  * built-in search results open in Quartz instead of the text editor.
- * Only sets the association if the user hasn't configured one already.
+ * Only modifies global settings when `quartz.editor.defaultForMarkdown` is enabled
+ * and the user hasn't already configured a *.md association.
  */
 async function ensureDefaultEditorAssociation(): Promise<void> {
   try {
+    const quartzConfig = vscode.workspace.getConfiguration('quartz.editor');
+    if (!quartzConfig.get('defaultForMarkdown', false)) return;
+
     const config = vscode.workspace.getConfiguration('workbench');
     const associations = config.get<Record<string, string>>('editorAssociations') || {};
 

@@ -7,18 +7,23 @@ function normalize(block: JSONContent): string {
   return JSON.stringify(block, (_, value) => (value === undefined ? undefined : value));
 }
 
-function blocksEqual(a: JSONContent, b: JSONContent): boolean {
-  return normalize(a) === normalize(b);
-}
-
-function computeLCS(oldBlocks: JSONContent[], newBlocks: JSONContent[]): boolean[][] {
+/**
+ * Compute LCS and return matched index pairs [oldIndex, newIndex][].
+ * Pre-computes block fingerprints to avoid redundant JSON.stringify calls.
+ */
+function computeLCS(oldBlocks: JSONContent[], newBlocks: JSONContent[]): [number, number][] {
   const m = oldBlocks.length;
   const n = newBlocks.length;
+
+  // Pre-compute fingerprints once per block
+  const oldFingerprints = oldBlocks.map(normalize);
+  const newFingerprints = newBlocks.map(normalize);
+
   const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (blocksEqual(oldBlocks[i - 1], newBlocks[j - 1])) {
+      if (oldFingerprints[i - 1] === newFingerprints[j - 1]) {
         dp[i][j] = dp[i - 1][j - 1] + 1;
       } else {
         dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
@@ -26,12 +31,13 @@ function computeLCS(oldBlocks: JSONContent[], newBlocks: JSONContent[]): boolean
     }
   }
 
-  const inLCS: boolean[][] = Array.from({ length: m }, () => new Array(n).fill(false));
+  // Backtrack to collect matched pairs
+  const pairs: [number, number][] = [];
   let i = m;
   let j = n;
   while (i > 0 && j > 0) {
-    if (blocksEqual(oldBlocks[i - 1], newBlocks[j - 1])) {
-      inLCS[i - 1][j - 1] = true;
+    if (oldFingerprints[i - 1] === newFingerprints[j - 1]) {
+      pairs.push([i - 1, j - 1]);
       i--;
       j--;
     } else if (dp[i - 1][j] >= dp[i][j - 1]) {
@@ -41,27 +47,22 @@ function computeLCS(oldBlocks: JSONContent[], newBlocks: JSONContent[]): boolean
     }
   }
 
-  return inLCS;
+  // Reverse so pairs are in ascending order
+  pairs.reverse();
+  return pairs;
 }
 
 function buildLCSMap(
-  oldBlocks: JSONContent[],
-  newBlocks: JSONContent[],
-  inLCS: boolean[][],
+  lcsPairs: [number, number][],
 ): { oldInLCS: Set<number>; newInLCS: Set<number>; lcsOldToNew: Map<number, number> } {
   const oldInLCS = new Set<number>();
   const newInLCS = new Set<number>();
   const lcsOldToNew = new Map<number, number>();
 
-  for (let i = 0; i < oldBlocks.length; i++) {
-    for (let j = 0; j < newBlocks.length; j++) {
-      if (inLCS[i][j]) {
-        oldInLCS.add(i);
-        newInLCS.add(j);
-        lcsOldToNew.set(i, j);
-        break;
-      }
-    }
+  for (const [i, j] of lcsPairs) {
+    oldInLCS.add(i);
+    newInLCS.add(j);
+    lcsOldToNew.set(i, j);
   }
 
   return { oldInLCS, newInLCS, lcsOldToNew };
@@ -113,8 +114,8 @@ export function computeDiff(oldMarkdown: string, newMarkdown: string): DiffResul
   const oldBlocks = oldDoc.content ?? [];
   const newBlocks = newDoc.content ?? [];
 
-  const inLCS = computeLCS(oldBlocks, newBlocks);
-  const { oldInLCS, newInLCS, lcsOldToNew } = buildLCSMap(oldBlocks, newBlocks, inLCS);
+  const lcsPairs = computeLCS(oldBlocks, newBlocks);
+  const { oldInLCS, newInLCS, lcsOldToNew } = buildLCSMap(lcsPairs);
 
   const diffs: BlockDiff[] = [];
   let oi = 0;

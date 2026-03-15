@@ -11,37 +11,43 @@ export const htmlBlockHandler: TokenHandler = {
     tokens: MarkdownIt.Token[],
     index: number,
     context: ParseContext,
+    _depth?: number,
   ): { nodes: JSONContent[]; consumed: number } {
     const token = tokens[index];
+    const currentDepth = _depth ?? 0;
 
     // Check for <details>/<summary> toggle pattern
-    const detailsMatch = token.content.match(
-      /^<details>\s*\n?<summary>(.*?)<\/summary>\s*\n?([\s\S]*?)\s*<\/details>\s*$/,
-    );
+    try {
+      const detailsMatch = token.content.match(
+        /^<details>\s*\n?<summary>(.*?)<\/summary>\s*\n?([\s\S]*?)\s*<\/details>\s*$/,
+      );
 
-    if (detailsMatch) {
-      const summary = detailsMatch[1].trim();
-      const detailsBody = detailsMatch[2].trim();
-      // Parse the body as markdown
-      const bodyNodes = context.parseMarkdown(detailsBody);
-      return {
-        nodes: [
-          {
-            type: 'details',
-            content: [
-              {
-                type: 'detailsSummary',
-                content: [{ type: 'text', text: summary }],
-              },
-              {
-                type: 'detailsContent',
-                content: bodyNodes.content || [{ type: 'paragraph' }],
-              },
-            ],
-          },
-        ],
-        consumed: 1,
-      };
+      if (detailsMatch) {
+        const summary = detailsMatch[1].trim();
+        const detailsBody = detailsMatch[2].trim();
+        // Parse the body as markdown, passing depth to prevent infinite recursion
+        const bodyNodes = context.parseMarkdown(detailsBody, currentDepth + 1);
+        return {
+          nodes: [
+            {
+              type: 'details',
+              content: [
+                {
+                  type: 'detailsSummary',
+                  content: [{ type: 'text', text: summary }],
+                },
+                {
+                  type: 'detailsContent',
+                  content: bodyNodes.content || [{ type: 'paragraph' }],
+                },
+              ],
+            },
+          ],
+          consumed: 1,
+        };
+      }
+    } catch {
+      // If regex or parsing fails for multi-token structures, fall through to raw HTML
     }
 
     // Preserve as raw HTML paragraph

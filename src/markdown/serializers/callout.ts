@@ -23,9 +23,7 @@ export const calloutSerializer: NodeSerializer = {
     const hasRealContent =
       node.content &&
       node.content.length > 0 &&
-      (node.content.length > 1 ||
-        node.content[0].type !== 'paragraph' ||
-        (node.content[0].type === 'paragraph' && node.content[0].content));
+      (node.content.length > 1 || node.content[0].content);
 
     if (!hasRealContent) {
       return `> ${marker}`;

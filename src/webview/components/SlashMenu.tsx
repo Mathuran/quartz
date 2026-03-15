@@ -12,14 +12,8 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
-  const prevQueryRef = useRef(query);
 
   const filteredCommands = useMemo(() => {
-    // Reset selection when query changes (derived state instead of useEffect)
-    if (query !== prevQueryRef.current) {
-      prevQueryRef.current = query;
-      setSelectedIndex(0);
-    }
     return slashCommands.filter((cmd) => {
       if (!query) return true;
       const q = query.toLowerCase();
@@ -27,6 +21,11 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         cmd.label.toLowerCase().includes(q) || cmd.aliases.some((a) => a.toLowerCase().includes(q))
       );
     });
+  }, [query]);
+
+  // Reset selection when query changes
+  useEffect(() => {
+    setSelectedIndex(0);
   }, [query]);
 
   const executeCommand = useCallback(
@@ -137,6 +136,24 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     window.addEventListener('slashMenu', handler as EventListener);
     return () => window.removeEventListener('slashMenu', handler as EventListener);
   }, []);
+
+  // Close on click outside the menu
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setQuery('');
+        window.dispatchEvent(new CustomEvent('slashMenu', { detail: { type: 'close' } }));
+      }
+    };
+    // Use setTimeout so the click that opened the menu doesn't immediately close it
+    const id = setTimeout(() => document.addEventListener('mousedown', handleClickOutside), 0);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;

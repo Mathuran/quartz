@@ -9,7 +9,7 @@ export const taskListSerializer: NodeSerializer = {
     return node.content
       .map((item) => {
         const checked = item.attrs?.checked ? 'x' : ' ';
-        const content = serializeListItemContent(item, indent, context);
+        const content = serializeListItemContent(item, indent, context, 'taskList');
         return `${' '.repeat(indent)}- [${checked}] ${content}`;
       })
       .join('\n');

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { BubbleMenu, type Editor } from '@tiptap/react';
 
 interface FormattingToolbarProps {
@@ -7,20 +7,25 @@ interface FormattingToolbarProps {
 }
 
 export function FormattingToolbar({ editor, onLinkClick }: FormattingToolbarProps) {
+  const shouldShow = useCallback(
+    ({ editor, state }: { editor: Editor; state: { selection: { empty: boolean } } }) => {
+      const { selection } = state;
+      const { empty } = selection;
+      // Don't show for node selections or empty selections
+      if (empty) return false;
+      // Don't show inside code blocks
+      if (editor.isActive('codeBlock')) return false;
+      return true;
+    },
+    [],
+  );
+
   return (
     <BubbleMenu
       editor={editor}
       tippyOptions={{ duration: 150 }}
       className="quartz-formatting-toolbar"
-      shouldShow={({ editor, state }) => {
-        const { selection } = state;
-        const { empty } = selection;
-        // Don't show for node selections or empty selections
-        if (empty) return false;
-        // Don't show inside code blocks
-        if (editor.isActive('codeBlock')) return false;
-        return true;
-      }}
+      shouldShow={shouldShow}
     >
       <button
         className={`quartz-toolbar-btn ${editor.isActive('bold') ? 'active' : ''}`}

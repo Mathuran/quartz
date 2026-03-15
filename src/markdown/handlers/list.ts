@@ -15,6 +15,9 @@ export const bulletListHandler: TokenHandler = {
     const listItems = parseListItems(tokens, index + 1, 'bullet_list_close', context);
     const isTaskList = listItems.items.some((item) => isTaskItem(item));
 
+    // TODO: Mixed task/regular lists currently force all items to taskItem if any item is a task.
+    // This is a design decision that needs human review — options include splitting into
+    // separate lists or preserving mixed structure. See issue 006 for details.
     const node: JSONContent = isTaskList
       ? {
           type: 'taskList',
@@ -150,7 +153,7 @@ export function isTaskItem(listItem: JSONContent): boolean {
   if (firstParagraph?.type !== 'paragraph') return false;
   const firstText = firstParagraph.content?.[0];
   if (firstText?.type !== 'text') return false;
-  return /^\[[ xX]\]\s/.test(firstText.text || '');
+  return /^\[[ xX]\](\s|$)/.test(firstText.text || '');
 }
 
 export function convertToTaskItem(listItem: JSONContent): JSONContent {
@@ -159,10 +162,10 @@ export function convertToTaskItem(listItem: JSONContent): JSONContent {
   if (firstParagraph?.type === 'paragraph' && firstParagraph.content) {
     const firstText = firstParagraph.content[0];
     if (firstText?.type === 'text' && firstText.text) {
-      const match = firstText.text.match(/^\[([xX ])\]\s(.*)/);
+      const match = firstText.text.match(/^\[([xX ])\](?:\s(.*))?$/s);
       if (match) {
         const checked = match[1].toLowerCase() === 'x';
-        const remainingText = match[2];
+        const remainingText = match[2] || '';
         const newContent = [...firstParagraph.content];
         if (remainingText) {
           newContent[0] = { ...firstText, text: remainingText };

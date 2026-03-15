@@ -22,6 +22,8 @@ function isWholeWord(text: string, index: number, length: number): boolean {
 
 /**
  * Find all text matches in a ProseMirror document.
+ * Searches across inline mark boundaries within each text block by
+ * concatenating all text nodes in a block and mapping positions back.
  * Returns an array of { from, to } positions sorted by document position.
  */
 export function findMatches(
@@ -35,18 +37,60 @@ export function findMatches(
   const searchText = options.caseSensitive ? query : query.toLowerCase();
 
   doc.descendants((node, pos) => {
-    if (!node.isText || !node.text) return;
-    const text = options.caseSensitive ? node.text : node.text.toLowerCase();
+    // Only process block-level nodes that contain inline content
+    if (!node.isTextblock) return;
+
+    // Concatenate all text nodes within this block and record position mappings
+    let concatenated = '';
+    const segments: Array<{ docPos: number; length: number }> = [];
+
+    node.forEach((child, offset) => {
+      if (child.isText && child.text) {
+        segments.push({ docPos: pos + 1 + offset, length: child.text.length });
+        concatenated += child.text;
+      }
+    });
+
+    if (!concatenated) return false;
+
+    const haystack = options.caseSensitive ? concatenated : concatenated.toLowerCase();
     let index = 0;
-    while ((index = text.indexOf(searchText, index)) !== -1) {
-      if (options.wholeWord && !isWholeWord(node.text!, index, searchText.length)) {
+    while ((index = haystack.indexOf(searchText, index)) !== -1) {
+      if (options.wholeWord && !isWholeWord(haystack, index, searchText.length)) {
         index++;
         continue;
       }
-      matches.push({ from: pos + index, to: pos + index + query.length });
+
+      // Map concatenated offsets back to document positions
+      const from = mapConcatOffsetToDocPos(segments, index);
+      const to = mapConcatOffsetToDocPos(segments, index + searchText.length);
+
+      matches.push({ from, to });
       index++;
     }
+
+    // Don't descend into text nodes — we've already handled them
+    return false;
   });
 
   return matches;
+}
+
+/**
+ * Map an offset in the concatenated text back to a document position.
+ */
+function mapConcatOffsetToDocPos(
+  segments: Array<{ docPos: number; length: number }>,
+  offset: number,
+): number {
+  let consumed = 0;
+  for (const seg of segments) {
+    if (offset <= consumed + seg.length) {
+      return seg.docPos + (offset - consumed);
+    }
+    consumed += seg.length;
+  }
+  // Past the end — return the end of the last segment
+  const last = segments[segments.length - 1];
+  return last.docPos + last.length;
 }

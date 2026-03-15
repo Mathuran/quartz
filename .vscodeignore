@@ -22,3 +22,5 @@ images/icon.png.placeholder
 *.vsix
 .env
 .env.*
+eslint.config.mjs
+.prettierrc

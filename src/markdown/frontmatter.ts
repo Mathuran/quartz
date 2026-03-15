@@ -23,5 +23,5 @@ export function extractFrontmatter(text: string): {
 }
 
 export function hasFrontmatter(text: string): boolean {
-  return FRONTMATTER_RE.test(text);
+  return extractFrontmatter(text).frontmatter !== null;
 }

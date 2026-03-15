@@ -22,6 +22,7 @@ export function SearchBar({ editor }: SearchBarProps) {
   // Update decorations in the editor
   const updateDecorations = useCallback(
     (newMatches: SearchMatch[], newIndex: number) => {
+      if (editor.isDestroyed) return;
       const { tr } = editor.state;
       tr.setMeta(searchHighlightKey, {
         matches: newMatches,
@@ -105,7 +106,7 @@ export function SearchBar({ editor }: SearchBarProps) {
 
   // Replace current match
   const replaceCurrent = useCallback(() => {
-    if (matches.length === 0 || currentIndex < 0) return;
+    if (matches.length === 0 || currentIndex < 0 || editor.isDestroyed) return;
     const match = matches[currentIndex];
 
     editor
@@ -115,44 +116,39 @@ export function SearchBar({ editor }: SearchBarProps) {
       .insertContentAt(match.from, replacement)
       .run();
 
-    // Re-run search after replacement
+    // Immediately invalidate stale matches so UI reflects the change,
+    // then re-search on next tick to get accurate positions.
+    setMatches([]);
+    setCurrentIndex(-1);
+    updateDecorations([], -1);
     setTimeout(() => runSearch(query), 0);
-  }, [editor, matches, currentIndex, replacement, query, runSearch]);
+  }, [editor, matches, currentIndex, replacement, query, runSearch, updateDecorations]);
 
   // Replace all matches
   const replaceAll = useCallback(() => {
-    if (matches.length === 0) return;
+    if (matches.length === 0 || editor.isDestroyed) return;
 
     // Build a single transaction replacing all matches in reverse order
+    // to preserve earlier positions as later ones are modified.
     const { tr } = editor.state;
     const sortedMatches = [...matches].sort((a, b) => b.from - a.from);
 
     for (const match of sortedMatches) {
-      tr.replaceWith(
-        match.from,
-        match.to,
-        replacement
-          ? editor.state.schema.text(replacement)
-          : editor.state.schema.text('').slice(0, 0),
-      );
-    }
-
-    // If replacing with empty string, delete the ranges instead
-    if (!replacement) {
-      // Re-build transaction for deletion
-      const tr2 = editor.state.tr;
-      const sorted = [...matches].sort((a, b) => b.from - a.from);
-      for (const match of sorted) {
-        tr2.delete(match.from, match.to);
+      if (replacement) {
+        tr.replaceWith(match.from, match.to, editor.state.schema.text(replacement));
+      } else {
+        tr.delete(match.from, match.to);
       }
-      editor.view.dispatch(tr2);
-    } else {
-      editor.view.dispatch(tr);
     }
 
-    // Re-run search after replacement
+    editor.view.dispatch(tr);
+
+    // Immediately invalidate stale matches, then re-search
+    setMatches([]);
+    setCurrentIndex(-1);
+    updateDecorations([], -1);
     setTimeout(() => runSearch(query), 0);
-  }, [editor, matches, replacement, query, runSearch]);
+  }, [editor, matches, replacement, query, runSearch, updateDecorations]);
 
   // Close search and clear highlights
   const close = useCallback(() => {

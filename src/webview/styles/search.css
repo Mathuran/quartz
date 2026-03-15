@@ -3,12 +3,12 @@
   position: fixed;
   top: 0;
   right: 16px;
-  z-index: 200;
+  z-index: var(--quartz-z-search);
   background: var(--vscode-editorWidget-background, #252526);
   border: 1px solid var(--vscode-widget-border, #454545);
   border-top: none;
   border-radius: 0 0 6px 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.3));
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
@@ -64,7 +64,7 @@
 
 .quartz-search-toggle:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-search-toggle.active {
@@ -101,7 +101,7 @@
 
 .quartz-search-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-search-btn:disabled {
@@ -132,7 +132,7 @@
 
 .quartz-search-replace-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--quartz-hover-bg);
 }
 
 .quartz-search-replace-btn:disabled {

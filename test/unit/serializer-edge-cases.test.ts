@@ -70,7 +70,7 @@ describe('Serializer Edge Cases', () => {
     expect(result).toContain('B');
   });
 
-  it('should serialize ordered list starting at 0 (falls back to 1 due to falsy check)', () => {
+  it('should serialize ordered list starting at 0 (preserves start: 0)', () => {
     const orderedList: JSONContent = {
       type: 'orderedList',
       attrs: { start: 0 },
@@ -80,9 +80,9 @@ describe('Serializer Edge Cases', () => {
       ],
     };
     const result = serializeMarkdown(doc(orderedList));
-    // Note: the serializer uses `|| 1` which treats 0 as falsy, so start: 0 becomes start: 1
-    expect(result).toContain('1. First');
-    expect(result).toContain('2. Second');
+    // Uses `?? 1` so start: 0 is preserved as 0
+    expect(result).toContain('0. First');
+    expect(result).toContain('1. Second');
   });
 
   it('should serialize ordered list starting at 999', () => {
