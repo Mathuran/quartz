@@ -59,6 +59,14 @@ async function buildSite() {
     cpSync(imagesDir, join(DIST, 'images'), { recursive: true });
   }
 
+  // Copy Quartz webview bundle for the demo editor
+  const webviewDir = join(PROJECT_ROOT, 'dist', 'webview');
+  if (existsSync(webviewDir)) {
+    cpSync(webviewDir, join(DIST, 'demo', 'webview'), { recursive: true });
+  } else {
+    console.warn('Warning: dist/webview/ not found — run "npm run build" in the project root first');
+  }
+
   // Copy HTML files
   cpSync(join(__dirname, 'index.html'), join(DIST, 'index.html'));
   cpSync(join(__dirname, 'demo/index.html'), join(DIST, 'demo/index.html'));
@@ -67,11 +75,14 @@ async function buildSite() {
   // Create _headers for Cloudflare Pages
   const headers = `/*
   X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
 
 /index.html
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src https://api.github.com https://open-vsx.org; img-src 'self' data:; frame-src 'self'
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src 'self'
+
+/demo/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:
 `;
 
   const { writeFileSync } = await import('fs');

@@ -29,10 +29,16 @@ createServer(async (req, res) => {
   if (path === '/') path = '/index.html';
   if (!extname(path)) path += '/index.html';
 
-  // Resolve file: /dist/*, /images/* from project root, everything else from website/
+  // Resolve file paths:
+  //   /dist/*           → project root (extension build output)
+  //   /images/*         → project root (product screenshots)
+  //   /demo/webview/*   → project root dist/webview/ (editor bundle for demo)
+  //   everything else   → website/ directory
   let filePath;
   if (path.startsWith('/dist/') || path.startsWith('/images/')) {
     filePath = join(PROJECT_ROOT, path);
+  } else if (path.startsWith('/demo/webview/')) {
+    filePath = join(PROJECT_ROOT, 'dist', path.replace('/demo/webview/', 'webview/'));
   } else {
     filePath = join(__dirname, path);
   }

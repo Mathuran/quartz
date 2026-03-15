@@ -1,6 +1,6 @@
 # Quartz Website
 
-Marketing website for the Quartz VS Code extension.
+Marketing website for the Quartz VS Code extension: [quartz-editor.pages.dev](https://quartz-editor.pages.dev/)
 
 ## Development
 
