@@ -11,7 +11,10 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
   const [openUpward, setOpenUpward] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -128,11 +131,16 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         setQuery('');
         const pos = event.detail.position || { anchorTop: 0, anchorBottom: 0, left: 0 };
         const MENU_MAX_HEIGHT = 320;
+        const GAP = 4;
         const { top, openUpward: up } = computeMenuTop(
           { top: pos.anchorTop, bottom: pos.anchorBottom },
           MENU_MAX_HEIGHT,
         );
-        setPosition({ top, left: pos.left });
+        if (up) {
+          setPosition({ bottom: window.innerHeight - pos.anchorTop + GAP, left: pos.left });
+        } else {
+          setPosition({ top, left: pos.left });
+        }
         setOpenUpward(up);
       } else if (event.detail.type === 'close') {
         setIsOpen(false);
@@ -194,7 +202,10 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     <div
       ref={menuRef}
       className={`quartz-slash-menu${openUpward ? ' quartz-slash-menu--up' : ''}`}
-      style={{ top: position.top, left: position.left }}
+      style={{
+        ...(openUpward ? { bottom: position.bottom } : { top: position.top }),
+        left: position.left,
+      }}
     >
       {filteredCommands.length === 0 ? (
         <div className="quartz-slash-menu-empty">No results</div>

@@ -33,7 +33,7 @@ export const slashCommandExtension = Extension.create({
             if (meta !== undefined) return meta;
             // If document changed and menu is active, map the slash position
             if (prev.active && tr.docChanged) {
-              const mappedPos = tr.mapping.map(prev.slashPos);
+              const mappedPos = tr.mapping.map(prev.slashPos, -1);
               return { ...prev, slashPos: mappedPos };
             }
             return prev;
@@ -105,7 +105,11 @@ export const slashCommandExtension = Extension.create({
                 const relativeSlashPos = currentState.slashPos - blockStart;
 
                 // Check if the slash is still present
-                if (relativeSlashPos < 0 || relativeSlashPos >= textContent.length || textContent[relativeSlashPos] !== '/') {
+                if (
+                  relativeSlashPos < 0 ||
+                  relativeSlashPos >= textContent.length ||
+                  textContent[relativeSlashPos] !== '/'
+                ) {
                   // Slash was deleted, close menu
                   const tr = view.state.tr.setMeta(slashMenuKey, {
                     active: false,
