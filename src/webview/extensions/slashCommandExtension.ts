@@ -74,7 +74,8 @@ export const slashCommandExtension = Extension.create({
                   dispatchSlashMenuEvent({
                     type: 'open',
                     position: {
-                      top: coords.bottom + 4,
+                      anchorTop: coords.top,
+                      anchorBottom: coords.bottom,
                       left: coords.left,
                     },
                   });

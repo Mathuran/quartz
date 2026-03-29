@@ -23,7 +23,7 @@ export function FormattingToolbar({ editor, onLinkClick }: FormattingToolbarProp
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{ duration: 150 }}
+      tippyOptions={{ duration: 150, placement: 'top' }}
       className="quartz-formatting-toolbar"
       shouldShow={shouldShow}
     >

@@ -7,6 +7,7 @@ import {
   COMMON_LANGUAGE_IDS,
   type LanguageEntry,
 } from '../constants/languages';
+import { shouldOpenUpward } from '../utils/menuPosition';
 
 const CopyIcon = () => (
   <svg
@@ -48,10 +49,12 @@ function getDisplayName(langId: string): string {
 export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: NodeViewProps) {
   const language = (node.attrs.language as string) || '';
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down');
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const langBtnRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,15 +173,25 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
       <div className="quartz-codeblock-header" contentEditable={false}>
         <div className="quartz-codeblock-header-left" ref={dropdownRef}>
           <button
+            ref={langBtnRef}
             className="quartz-codeblock-lang-btn"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+            onClick={() => {
+              if (!dropdownOpen && langBtnRef.current) {
+                const rect = langBtnRef.current.getBoundingClientRect();
+                const DROPDOWN_MAX_HEIGHT = 300;
+                setDropdownDirection(
+                  shouldOpenUpward(rect.bottom, rect.top, DROPDOWN_MAX_HEIGHT) ? 'up' : 'down',
+                );
+              }
+              setDropdownOpen(!dropdownOpen);
+            }}
             title="Change language"
           >
             {getDisplayName(language)}
           </button>
 
           {dropdownOpen && (
-            <div className="quartz-codeblock-dropdown" onKeyDown={handleKeyDown}>
+            <div className="quartz-codeblock-dropdown" data-direction={dropdownDirection} onKeyDown={handleKeyDown}>
               <div className="quartz-codeblock-dropdown-search">
                 <input
                   ref={searchInputRef}

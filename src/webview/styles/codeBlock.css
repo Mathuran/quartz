@@ -81,6 +81,13 @@
   margin-top: 2px;
 }
 
+.quartz-codeblock-dropdown[data-direction="up"] {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+
 .quartz-codeblock-dropdown-search {
   padding: 6px 8px;
   border-bottom: 1px solid var(--vscode-dropdown-border, #454545);

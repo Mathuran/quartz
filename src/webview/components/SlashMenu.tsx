@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 import { slashCommands, type SlashCommand } from '../commands/slashCommands';
+import { computeMenuTop } from '../utils/menuPosition';
 
 interface SlashMenuProps {
   editor: Editor;
@@ -11,6 +12,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [openUpward, setOpenUpward] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const filteredCommands = useMemo(() => {
@@ -124,7 +126,14 @@ export function SlashMenu({ editor }: SlashMenuProps) {
       if (event.detail.type === 'open') {
         setIsOpen(true);
         setQuery('');
-        setPosition(event.detail.position || { top: 0, left: 0 });
+        const pos = event.detail.position || { anchorTop: 0, anchorBottom: 0, left: 0 };
+        const MENU_MAX_HEIGHT = 320;
+        const { top, openUpward: up } = computeMenuTop(
+          { top: pos.anchorTop, bottom: pos.anchorBottom },
+          MENU_MAX_HEIGHT,
+        );
+        setPosition({ top, left: pos.left });
+        setOpenUpward(up);
       } else if (event.detail.type === 'close') {
         setIsOpen(false);
         setQuery('');
@@ -184,7 +193,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   return (
     <div
       ref={menuRef}
-      className="quartz-slash-menu"
+      className={`quartz-slash-menu${openUpward ? ' quartz-slash-menu--up' : ''}`}
       style={{ top: position.top, left: position.left }}
     >
       {filteredCommands.length === 0 ? (

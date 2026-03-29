@@ -70,6 +70,7 @@ export default defineConfig({
             'test/unit/search-engine.test.ts',
             'test/unit/url-validation.test.ts',
             'test/unit/languages.test.ts',
+            'test/unit/menu-position.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 3 },
