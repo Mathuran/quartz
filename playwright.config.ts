@@ -36,6 +36,7 @@ export default defineConfig({
         'specs/keyboard-shortcuts.spec.ts',
         'specs/theme.spec.ts',
         'specs/page-layout.spec.ts',
+        'specs/visual-sanity.spec.ts',
         'specs/sidebar-alignment.spec.ts',
       ],
       dependencies: ['foundational'],

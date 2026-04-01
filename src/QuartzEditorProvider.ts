@@ -185,11 +185,7 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     webview.postMessage({
       type: 'configUpdate',
       config: {
-        theme: config.get<string>('theme', 'auto'),
-        fontFamily: config.get<string>('fontFamily', 'inherit'),
-        fontSize: config.get<number>('fontSize', 16),
-        pageLayout: config.get<boolean>('pageLayout', true),
-        pageMargin: config.get<number>('pageMargin', 72),
+        editorTheme: config.get<string>('editorTheme', 'clean'),
         imageDir: config.get<string>('imageDir', './assets'),
         preserveFormatting: config.get<boolean>('preserveFormatting', true),
         showBlockHandles: config.get<boolean>('showBlockHandles', true),

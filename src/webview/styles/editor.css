@@ -61,11 +61,23 @@ body {
 
 .quartz-page {
   background: var(--quartz-page-bg);
-  box-shadow: 0 1px 4px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.3));
-  border-radius: 2px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--quartz-border);
+  border-radius: 4px;
   width: 100%;
+  max-width: 900px;
   min-height: calc(100vh - 48px);
   position: relative;
+}
+
+body[data-vscode-theme-kind="vscode-light"] .quartz-page,
+body[data-vscode-theme-kind="vscode-high-contrast-light"] .quartz-page {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 6px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .quartz-fluid {
@@ -250,6 +262,7 @@ body {
   border-collapse: collapse;
   width: 100%;
   margin: 0.75em 0;
+  table-layout: fixed;
 }
 
 .quartz-editor-content th,
@@ -257,6 +270,8 @@ body {
   border: 1px solid var(--quartz-border);
   padding: 6px 12px;
   text-align: left;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .quartz-editor-content th {

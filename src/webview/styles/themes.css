@@ -1,0 +1,315 @@
+/* Quartz Editor Theme Presets
+ * Applied via .quartz-theme-{name} class on .quartz-app
+ * Each preset is a complete typographic voice: heading scale, margins,
+ * indentation, link colors, callout palette, blockquote styling, etc.
+ */
+
+/* ============================================================
+ * DEFAULT — "VS Code Native"
+ * Escape hatch. Uses base styles from editor.css unchanged.
+ * ============================================================ */
+.quartz-theme-default .quartz-page {
+  padding: 72px;
+}
+
+/* ============================================================
+ * CLEAN — "Modern Editorial" (Notion, Medium, iA Writer)
+ * Contemporary, spacious, optimized for screen reading.
+ * ============================================================ */
+.quartz-theme-clean .quartz-page {
+  padding: 56px;
+}
+
+.quartz-theme-clean .quartz-editor-content {
+  line-height: 1.8;
+}
+
+.quartz-theme-clean .quartz-editor-content h1 {
+  font-size: 1.875em;
+  font-weight: 700;
+  margin: 0.9em 0 0.4em;
+  line-height: 1.25;
+}
+
+.quartz-theme-clean .quartz-editor-content h2 {
+  font-size: 1.375em;
+  font-weight: 600;
+  margin: 0.75em 0 0.35em;
+  line-height: 1.3;
+}
+
+.quartz-theme-clean .quartz-editor-content h3 {
+  font-size: 1.125em;
+  font-weight: 600;
+  margin: 0.6em 0 0.25em;
+  line-height: 1.4;
+}
+
+.quartz-theme-clean .quartz-editor-content a {
+  color: #2563eb;
+}
+
+.quartz-theme-clean .quartz-editor-content blockquote {
+  border-left: 2px solid var(--quartz-accent);
+  padding: 0.3em 0 0.3em 1.25em;
+  opacity: 0.9;
+}
+
+.quartz-theme-clean .quartz-editor-content ul,
+.quartz-theme-clean .quartz-editor-content ol {
+  padding-left: 1.75em;
+}
+
+.quartz-theme-clean .quartz-editor-content li {
+  margin: 0.2em 0;
+}
+
+.quartz-theme-clean .quartz-editor-content pre {
+  padding: 14px 18px;
+  font-size: 0.875em;
+}
+
+.quartz-theme-clean .quartz-editor-content hr {
+  margin: 2em 0;
+}
+
+/* ============================================================
+ * WARM — "Literary" (Kindle, typeset books)
+ * Book-like reading experience with classic proportions.
+ * ============================================================ */
+.quartz-theme-warm .quartz-page {
+  padding: 56px;
+}
+
+.quartz-theme-warm .quartz-editor-content {
+  font-family: Georgia, 'Times New Roman', 'Noto Serif', serif;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.quartz-theme-warm .quartz-editor-content h1 {
+  font-size: 2.25em;
+  font-weight: 700;
+  margin: 1.5em 0 0.6em;
+  line-height: 1.15;
+}
+
+.quartz-theme-warm .quartz-editor-content h2 {
+  font-size: 1.5em;
+  font-weight: 500;
+  margin: 1.2em 0 0.45em;
+  line-height: 1.25;
+}
+
+.quartz-theme-warm .quartz-editor-content h3 {
+  font-size: 1.2em;
+  font-weight: 500;
+  margin: 1em 0 0.35em;
+  line-height: 1.35;
+}
+
+.quartz-theme-warm .quartz-editor-content a {
+  color: #b45309;
+}
+
+.quartz-theme-warm .quartz-editor-content blockquote {
+  border-left: 3px solid #a8856c;
+  padding: 0.4em 0 0.4em 1.5em;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.quartz-theme-warm .quartz-editor-content ul,
+.quartz-theme-warm .quartz-editor-content ol {
+  padding-left: 2em;
+}
+
+.quartz-theme-warm .quartz-editor-content li {
+  margin: 0.25em 0;
+}
+
+.quartz-theme-warm .quartz-editor-content pre {
+  padding: 14px 18px;
+  font-size: 0.875em;
+}
+
+.quartz-theme-warm .quartz-editor-content hr {
+  margin: 2em 0;
+  border-top-color: #a8856c;
+}
+
+.quartz-theme-warm .quartz-editor-content th,
+.quartz-theme-warm .quartz-editor-content td {
+  padding: 8px 14px;
+}
+
+/* Warm callout palette */
+.quartz-theme-warm .quartz-callout[data-callout-type="note"]     { --callout-color: #b45309; }
+.quartz-theme-warm .quartz-callout[data-callout-type="info"]     { --callout-color: #b45309; }
+.quartz-theme-warm .quartz-callout[data-callout-type="tip"]      { --callout-color: #0f766e; }
+.quartz-theme-warm .quartz-callout[data-callout-type="warning"]  { --callout-color: #c2410c; }
+.quartz-theme-warm .quartz-callout[data-callout-type="danger"]   { --callout-color: #b91c1c; }
+.quartz-theme-warm .quartz-callout[data-callout-type="example"]  { --callout-color: #92400e; }
+.quartz-theme-warm .quartz-callout[data-callout-type="quote"]    { --callout-color: #78716c; }
+.quartz-theme-warm .quartz-callout[data-callout-type="abstract"] { --callout-color: #0e7490; }
+
+/* ============================================================
+ * ACADEMIC — "Document" (LaTeX, academic papers)
+ * Dense, structured, professional. Maximizes content per page.
+ * ============================================================ */
+.quartz-theme-academic .quartz-page {
+  padding: 56px;
+}
+
+.quartz-theme-academic .quartz-editor-content {
+  font-family: 'Times New Roman', 'Noto Serif', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.quartz-theme-academic .quartz-editor-content h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+  line-height: 1.2;
+}
+
+.quartz-theme-academic .quartz-editor-content h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  margin: 0.6em 0 0.3em;
+  line-height: 1.25;
+}
+
+.quartz-theme-academic .quartz-editor-content h3 {
+  font-size: 1.15em;
+  font-weight: 700;
+  margin: 0.5em 0 0.2em;
+  line-height: 1.3;
+}
+
+.quartz-theme-academic .quartz-editor-content a {
+  color: #1d4ed8;
+}
+
+.quartz-theme-academic .quartz-editor-content blockquote {
+  border-left: 2px solid var(--quartz-border);
+  padding: 0.2em 0 0.2em 1em;
+  opacity: 1;
+}
+
+.quartz-theme-academic .quartz-editor-content ul,
+.quartz-theme-academic .quartz-editor-content ol {
+  padding-left: 1.25em;
+}
+
+.quartz-theme-academic .quartz-editor-content li {
+  margin: 0.1em 0;
+}
+
+.quartz-theme-academic .quartz-editor-content pre {
+  padding: 10px 14px;
+  font-size: 0.8125em;
+}
+
+.quartz-theme-academic .quartz-editor-content hr {
+  margin: 1em 0;
+}
+
+.quartz-theme-academic .quartz-editor-content th,
+.quartz-theme-academic .quartz-editor-content td {
+  padding: 4px 10px;
+}
+
+/* Academic callout palette */
+.quartz-theme-academic .quartz-callout[data-callout-type="note"]     { --callout-color: #4b6cb7; }
+.quartz-theme-academic .quartz-callout[data-callout-type="info"]     { --callout-color: #4b6cb7; }
+.quartz-theme-academic .quartz-callout[data-callout-type="tip"]      { --callout-color: #4a8c6f; }
+.quartz-theme-academic .quartz-callout[data-callout-type="warning"]  { --callout-color: #b88a2d; }
+.quartz-theme-academic .quartz-callout[data-callout-type="danger"]   { --callout-color: #a63d40; }
+.quartz-theme-academic .quartz-callout[data-callout-type="example"]  { --callout-color: #6b5b95; }
+.quartz-theme-academic .quartz-callout[data-callout-type="quote"]    { --callout-color: #6b7280; }
+.quartz-theme-academic .quartz-callout[data-callout-type="abstract"] { --callout-color: #3a7ca5; }
+
+/* ============================================================
+ * MINIMAL — "Distraction-Free" (Bear, iA Writer Focus)
+ * Maximum breathing room, whisper-quiet visual tone.
+ * ============================================================ */
+.quartz-theme-minimal .quartz-page {
+  padding: 64px;
+}
+
+.quartz-theme-minimal .quartz-editor-content {
+  line-height: 1.9;
+}
+
+.quartz-theme-minimal .quartz-editor-content h1 {
+  font-size: 1.75em;
+  font-weight: 600;
+  margin: 1.5em 0 0.75em;
+  line-height: 1.25;
+}
+
+.quartz-theme-minimal .quartz-editor-content h2 {
+  font-size: 1.3em;
+  font-weight: 500;
+  margin: 1.25em 0 0.6em;
+  line-height: 1.3;
+}
+
+.quartz-theme-minimal .quartz-editor-content h3 {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin: 1em 0 0.5em;
+  line-height: 1.4;
+}
+
+.quartz-theme-minimal .quartz-editor-content a {
+  color: #6b7280;
+}
+
+.quartz-theme-minimal .quartz-editor-content blockquote {
+  border-left: 2px solid color-mix(in srgb, var(--quartz-fg) 20%, transparent);
+  padding: 0.4em 0 0.4em 1.5em;
+  opacity: 0.8;
+}
+
+.quartz-theme-minimal .quartz-editor-content ul,
+.quartz-theme-minimal .quartz-editor-content ol {
+  padding-left: 1.5em;
+}
+
+.quartz-theme-minimal .quartz-editor-content li {
+  margin: 0.3em 0;
+}
+
+.quartz-theme-minimal .quartz-editor-content pre {
+  padding: 16px 20px;
+  font-size: 0.85em;
+}
+
+.quartz-theme-minimal .quartz-editor-content hr {
+  margin: 2.5em 0;
+}
+
+/* Minimal callout palette */
+.quartz-theme-minimal .quartz-callout[data-callout-type="note"]     { --callout-color: #6b7fa8; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="info"]     { --callout-color: #6b7fa8; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="tip"]      { --callout-color: #6b9f8e; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="warning"]  { --callout-color: #a89060; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="danger"]   { --callout-color: #a87070; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="example"]  { --callout-color: #8b7fa8; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="quote"]    { --callout-color: #8b8b8b; }
+.quartz-theme-minimal .quartz-callout[data-callout-type="abstract"] { --callout-color: #6b8fa8; }
+
+/* ============================================================
+ * NARROW VIEWPORT OVERRIDE
+ * Applied when container width < 900px
+ * ============================================================ */
+.quartz-narrow .quartz-page {
+  max-width: 100%;
+  padding: 16px 24px;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+}

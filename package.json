@@ -1,9 +1,9 @@
 {
-  "name": "quartz-markdown-editor",
-  "displayName": "Quartz — Pretty Markdown Editor",
+  "name": "quartz-md",
+  "displayName": "Quartz — Beautiful Markdown Editor",
   "description": "A Notion-style block-based WYSIWYG markdown editor for VS Code",
   "version": "0.3.0",
-  "publisher": "quartz",
+  "publisher": "mathuran-quartz",
   "license": "MIT",
   "icon": "images/croppedQuartz.png",
   "galleryBanner": {
@@ -163,35 +163,18 @@
           "default": false,
           "description": "Set Quartz as the default editor for .md files"
         },
-        "quartz.editor.theme": {
+        "quartz.editor.editorTheme": {
           "type": "string",
-          "default": "auto",
-          "enum": [
-            "auto",
-            "light",
-            "dark"
+          "default": "clean",
+          "enum": ["default", "clean", "warm", "academic", "minimal"],
+          "enumDescriptions": [
+            "Standard look — adapts to your VS Code theme",
+            "Clean and modern — generous spacing, warm paper tint",
+            "Warm and literary — serif font, sepia tones",
+            "Academic — traditional serif, tight spacing, wide margins",
+            "Minimal — maximum whitespace, reduced visual chrome"
           ],
-          "description": "Editor theme"
-        },
-        "quartz.editor.fontFamily": {
-          "type": "string",
-          "default": "inherit",
-          "description": "Font family for the editor (inherit uses VS Code's font)"
-        },
-        "quartz.editor.fontSize": {
-          "type": "number",
-          "default": 16,
-          "description": "Editor font size in pixels"
-        },
-        "quartz.editor.pageLayout": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable letter-sized page view"
-        },
-        "quartz.editor.pageMargin": {
-          "type": "number",
-          "default": 72,
-          "description": "Inner page margin in pixels"
+          "description": "Visual theme preset for the editor. Changes typography, spacing, and background."
         },
         "quartz.editor.imageDir": {
           "type": "string",

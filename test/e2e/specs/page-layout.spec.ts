@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { EditorPage } from '../pages/editor.page';
-import { loadMarkdown, updateConfig } from '../fixtures';
+import { loadMarkdown, updateConfig, DEFAULT_TEST_CONFIG } from '../fixtures';
 
 test.describe('Page Layout', () => {
   let editorPage: EditorPage;
@@ -10,72 +10,48 @@ test.describe('Page Layout', () => {
     await editorPage.goto();
   });
 
-  test('page layout mode applies fixed width', async ({ page }) => {
+  test('page layout applies fixed width with clean preset', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nParagraph content.');
     await page.waitForTimeout(300);
 
-    await updateConfig(page, {
-      theme: 'auto',
-      fontFamily: 'inherit',
-      fontSize: 16,
-      pageLayout: true,
-      pageMargin: 72,
-      imageDir: './assets',
-      preserveFormatting: true,
-      showBlockHandles: true,
-    });
-
+    await updateConfig(page, DEFAULT_TEST_CONFIG);
     await page.waitForTimeout(200);
 
-    // Check that page container exists and has width styling
+    // Check that page container exists
     const pageContainer = page.locator('.quartz-page');
-    const isVisible = await pageContainer.isVisible().catch(() => false);
-
-    // Editor should still work regardless of page layout wrapper
-    await expect(editorPage.prosemirror).toBeVisible();
-    await expect(editorPage.heading(1)).toContainText('Hello');
-  });
-
-  test('fluid mode uses full width', async ({ page }) => {
-    await loadMarkdown(page, '# Hello\n\nParagraph content.');
-    await page.waitForTimeout(300);
-
-    await updateConfig(page, {
-      theme: 'auto',
-      fontFamily: 'inherit',
-      fontSize: 16,
-      pageLayout: false,
-      pageMargin: 72,
-      imageDir: './assets',
-      preserveFormatting: true,
-      showBlockHandles: true,
-    });
-
-    await page.waitForTimeout(200);
+    await expect(pageContainer).toBeVisible();
 
     // Editor should still work
     await expect(editorPage.prosemirror).toBeVisible();
     await expect(editorPage.heading(1)).toContainText('Hello');
   });
 
-  test('custom font size is applied', async ({ page }) => {
+  test('default preset applies 900px width', async ({ page }) => {
     await loadMarkdown(page, '# Hello\n\nParagraph content.');
     await page.waitForTimeout(300);
 
-    await updateConfig(page, {
-      theme: 'auto',
-      fontFamily: 'inherit',
-      fontSize: 20,
-      pageLayout: true,
-      pageMargin: 72,
-      imageDir: './assets',
-      preserveFormatting: true,
-      showBlockHandles: true,
-    });
-
+    await updateConfig(page, { ...DEFAULT_TEST_CONFIG, editorTheme: 'default' });
     await page.waitForTimeout(200);
 
-    // Editor should still work with custom font size
+    // Editor should still work
+    await expect(editorPage.prosemirror).toBeVisible();
+    await expect(editorPage.heading(1)).toContainText('Hello');
+
+    // Default preset uses 900px max-width
+    const maxWidth = await page.locator('.quartz-page').evaluate(
+      (el) => window.getComputedStyle(el).maxWidth,
+    );
+    expect(maxWidth).toBe('900px');
+  });
+
+  test('preset switching changes theme class', async ({ page }) => {
+    await loadMarkdown(page, '# Hello\n\nParagraph content.');
+    await page.waitForTimeout(300);
+
+    await updateConfig(page, { ...DEFAULT_TEST_CONFIG, editorTheme: 'warm' });
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('.quartz-app')).toHaveClass(/quartz-theme-warm/);
     await expect(editorPage.prosemirror).toBeVisible();
   });
 });

@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { computeDiff } from './diff/diffEngine';
 import { computeAlignment } from './diff/alignment';
 import type { DiffResult, AlignedRow } from './diff/types';
+import { EDITOR_THEMES } from './types';
 import type { EditorConfig } from './types';
 
 declare function acquireVsCodeApi(): {
@@ -20,14 +21,15 @@ const vscode = acquireVsCodeApi();
 // can persist state via vscode.getState()/setState() without prop drilling.
 (window as unknown as { vscodeApi: typeof vscode }).vscodeApi = vscode;
 
+const scheduleIdleCallback =
+  typeof requestIdleCallback === 'function'
+    ? requestIdleCallback
+    : (cb: () => void) => setTimeout(cb, 0);
+
 export function App() {
   const [content, setContent] = useState<string | null>(null);
   const [config, setConfig] = useState<EditorConfig>({
-    theme: 'auto',
-    fontFamily: 'inherit',
-    fontSize: 16,
-    pageLayout: true,
-    pageMargin: 72,
+    editorTheme: 'clean',
     imageDir: './assets',
     preserveFormatting: true,
     showBlockHandles: true,
@@ -71,11 +73,6 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const scheduleIdleCallback =
-      typeof requestIdleCallback === 'function'
-        ? requestIdleCallback
-        : (cb: () => void) => setTimeout(cb, 0);
-
     const handler = (event: MessageEvent) => {
       const message = event.data;
       // Validate message has the expected shape before processing
@@ -183,11 +180,6 @@ export function App() {
     const pending = pendingExternalChange;
     const current = content;
     setPendingExternalChange(null);
-    // Run diff computation asynchronously to avoid blocking the main thread
-    const scheduleIdleCallback =
-      typeof requestIdleCallback === 'function'
-        ? requestIdleCallback
-        : (cb: () => void) => setTimeout(cb, 0);
     scheduleIdleCallback(() => {
       const diffResult = computeDiff(current, pending);
       const alignedRows = computeAlignment(diffResult.diffs);
@@ -201,13 +193,17 @@ export function App() {
     });
   }, [pendingExternalChange, content]);
 
+  const themeClass = (EDITOR_THEMES as readonly string[]).includes(config.editorTheme)
+    ? config.editorTheme
+    : 'clean';
+
   if (content === null) {
     return <div className="quartz-loading">Loading...</div>;
   }
 
   if (diffViewState.active && diffViewState.diffResult) {
     return (
-      <div className="quartz-app">
+      <div className={`quartz-app quartz-theme-${themeClass}`}>
         <ErrorBoundary>
           <DiffSplitView
             diffResult={diffViewState.diffResult}
@@ -221,7 +217,7 @@ export function App() {
   }
 
   return (
-    <div className="quartz-app">
+    <div className={`quartz-app quartz-theme-${themeClass}`}>
       <ErrorBoundary>
         {pendingExternalChange && (
           <ExternalChangeBanner

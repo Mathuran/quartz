@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -342,19 +342,10 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     editor?.commands.focus();
   }, [editor]);
 
-  // Memoize inline style to avoid creating a new object on every render
-  const editorContentStyle = useMemo(
-    () => ({
-      fontFamily: config.fontFamily === 'inherit' ? undefined : config.fontFamily,
-      fontSize: `${config.fontSize}px`,
-    }),
-    [config.fontFamily, config.fontSize],
-  );
-
   if (!editor) return null;
 
   return (
-    <PageContainer config={config}>
+    <PageContainer>
       {contentWarning && (
         <div className="quartz-content-warning">
           <span>{contentWarning}</span>
@@ -384,10 +375,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
         onChange={handleFrontmatterChange}
         onRemove={handleFrontmatterRemove}
       />
-      <EditorContent
-        editor={editor}
-        style={editorContentStyle}
-      />
+      <EditorContent editor={editor} />
     </PageContainer>
   );
 }

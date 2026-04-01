@@ -90,3 +90,10 @@ export async function updateConfig(page: Page, config: Record<string, unknown>):
     config
   );
 }
+
+export const DEFAULT_TEST_CONFIG = {
+  editorTheme: 'clean',
+  imageDir: './assets',
+  preserveFormatting: true,
+  showBlockHandles: true,
+};

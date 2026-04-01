@@ -1,6 +1,6 @@
 .quartz-callout {
   border-left: 4px solid var(--callout-color);
-  background: var(--callout-bg);
+  background: var(--callout-bg, color-mix(in srgb, var(--callout-color) 7%, transparent));
   border-radius: 4px;
   padding: 12px 16px;
   margin: 8px 0;

@@ -1,15 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import type { EditorConfig } from '../types';
-
-const PAGE_WIDTH = 900;
-const NARROW_BREAKPOINT = 900;
 
 interface PageContainerProps {
-  config: EditorConfig;
   children: React.ReactNode;
 }
 
-export function PageContainer({ config, children }: PageContainerProps) {
+export function PageContainer({ children }: PageContainerProps) {
   const [isNarrow, setIsNarrow] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -17,30 +12,18 @@ export function PageContainer({ config, children }: PageContainerProps) {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setIsNarrow(entry.contentRect.width < NARROW_BREAKPOINT);
+        setIsNarrow(entry.contentRect.width < 900);
       }
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
-  const usePageLayout = config.pageLayout && !isNarrow;
-
   return (
-    <div ref={containerRef} className="quartz-page-wrapper align-center">
-      {usePageLayout ? (
-        <div
-          className="quartz-page"
-          style={{
-            maxWidth: `${PAGE_WIDTH}px`,
-            padding: `${config.pageMargin}px`,
-          }}
-        >
-          {children}
-        </div>
-      ) : (
-        <div className="quartz-fluid">{children}</div>
-      )}
+    <div ref={containerRef} className={`quartz-page-wrapper align-center ${isNarrow ? 'quartz-narrow' : ''}`}>
+      <div className="quartz-page">
+        {children}
+      </div>
     </div>
   );
 }
