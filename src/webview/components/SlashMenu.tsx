@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useReducer, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 import { slashCommands, type SlashCommand } from '../commands/slashCommands';
 import { computeMenuTop } from '../utils/menuPosition';
@@ -7,15 +7,46 @@ interface SlashMenuProps {
   editor: Editor;
 }
 
+interface SlashMenuState {
+  isOpen: boolean;
+  query: string;
+  selectedIndex: number;
+  position: { top?: number; bottom?: number; left: number };
+  openUpward: boolean;
+}
+
+type SlashMenuAction =
+  | { type: 'OPEN'; position: { top?: number; bottom?: number; left: number }; openUpward: boolean }
+  | { type: 'CLOSE' }
+  | { type: 'SET_QUERY'; query: string }
+  | { type: 'SET_SELECTED_INDEX'; index: number };
+
+function slashMenuReducer(state: SlashMenuState, action: SlashMenuAction): SlashMenuState {
+  switch (action.type) {
+    case 'OPEN':
+      return { ...state, isOpen: true, query: '', selectedIndex: 0, position: action.position, openUpward: action.openUpward };
+    case 'CLOSE':
+      return { ...state, isOpen: false, query: '', selectedIndex: 0 };
+    case 'SET_QUERY':
+      return { ...state, query: action.query, selectedIndex: 0 };
+    case 'SET_SELECTED_INDEX':
+      return { ...state, selectedIndex: action.index };
+    default:
+      return state;
+  }
+}
+
+const initialSlashMenuState: SlashMenuState = {
+  isOpen: false,
+  query: '',
+  selectedIndex: 0,
+  position: { top: 0, left: 0 },
+  openUpward: false,
+};
+
 export function SlashMenu({ editor }: SlashMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [position, setPosition] = useState<{ top?: number; bottom?: number; left: number }>({
-    top: 0,
-    left: 0,
-  });
-  const [openUpward, setOpenUpward] = useState(false);
+  const [state, dispatch] = useReducer(slashMenuReducer, initialSlashMenuState);
+  const { isOpen, query, selectedIndex, position, openUpward } = state;
   const menuRef = useRef<HTMLDivElement>(null);
 
   const filteredCommands = useMemo(() => {
@@ -26,11 +57,6 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         cmd.label.toLowerCase().includes(q) || cmd.aliases.some((a) => a.toLowerCase().includes(q))
       );
     });
-  }, [query]);
-
-  // Reset selection when query changes
-  useEffect(() => {
-    setSelectedIndex(0);
   }, [query]);
 
   const executeCommand = useCallback(
@@ -116,8 +142,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         cmd.command(editor);
       }
 
-      setIsOpen(false);
-      setQuery('');
+      dispatch({ type: 'CLOSE' });
     },
     [editor],
   );
@@ -127,8 +152,6 @@ export function SlashMenu({ editor }: SlashMenuProps) {
   useEffect(() => {
     const handler = (event: CustomEvent) => {
       if (event.detail.type === 'open') {
-        setIsOpen(true);
-        setQuery('');
         const pos = event.detail.position || { anchorTop: 0, anchorBottom: 0, left: 0 };
         const MENU_MAX_HEIGHT = 320;
         const GAP = 4;
@@ -136,17 +159,14 @@ export function SlashMenu({ editor }: SlashMenuProps) {
           { top: pos.anchorTop, bottom: pos.anchorBottom },
           MENU_MAX_HEIGHT,
         );
-        if (up) {
-          setPosition({ bottom: window.innerHeight - pos.anchorTop + GAP, left: pos.left });
-        } else {
-          setPosition({ top, left: pos.left });
-        }
-        setOpenUpward(up);
+        const newPosition = up
+          ? { bottom: window.innerHeight - pos.anchorTop + GAP, left: pos.left }
+          : { top, left: pos.left };
+        dispatch({ type: 'OPEN', position: newPosition, openUpward: up });
       } else if (event.detail.type === 'close') {
-        setIsOpen(false);
-        setQuery('');
+        dispatch({ type: 'CLOSE' });
       } else if (event.detail.type === 'query') {
-        setQuery(event.detail.query || '');
+        dispatch({ type: 'SET_QUERY', query: event.detail.query || '' });
       }
     };
 
@@ -159,8 +179,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     if (!isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-        setQuery('');
+        dispatch({ type: 'CLOSE' });
         window.dispatchEvent(new CustomEvent('slashMenu', { detail: { type: 'close' } }));
       }
     };
@@ -177,10 +196,10 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedIndex((i) => Math.min(i + 1, filteredCommands.length - 1));
+        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.min(selectedIndex + 1, filteredCommands.length - 1) });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedIndex((i) => Math.max(i - 1, 0));
+        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.max(selectedIndex - 1, 0) });
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (filteredCommands[selectedIndex]) {
@@ -188,8 +207,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        setIsOpen(false);
-        setQuery('');
+        dispatch({ type: 'CLOSE' });
       }
     };
     window.addEventListener('keydown', handleKeyDown, true);
@@ -215,7 +233,7 @@ export function SlashMenu({ editor }: SlashMenuProps) {
             key={cmd.id}
             className={`quartz-slash-menu-item ${i === selectedIndex ? 'selected' : ''}`}
             onClick={() => executeCommand(cmd)}
-            onMouseEnter={() => setSelectedIndex(i)}
+            onMouseEnter={() => dispatch({ type: 'SET_SELECTED_INDEX', index: i })}
           >
             <span className="quartz-slash-menu-icon">{cmd.icon}</span>
             <div className="quartz-slash-menu-text">

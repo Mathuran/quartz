@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useReducer, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -82,6 +82,37 @@ interface EditorProps {
   onUpdate: (markdown: string) => void;
 }
 
+interface EditorState {
+  contentWarning: string | null;
+  frontmatter: string | null;
+  showTableHint: boolean;
+  linkDialogOpen: boolean;
+}
+
+type EditorAction =
+  | { type: 'SET_WARNING'; warning: string | null }
+  | { type: 'SET_FRONTMATTER'; frontmatter: string | null }
+  | { type: 'SET_TABLE_HINT'; visible: boolean }
+  | { type: 'SET_LINK_DIALOG'; open: boolean }
+  | { type: 'UPDATE_PARSE'; frontmatter: string | null; warning: string | null };
+
+function editorReducer(state: EditorState, action: EditorAction): EditorState {
+  switch (action.type) {
+    case 'SET_WARNING':
+      return { ...state, contentWarning: action.warning };
+    case 'SET_FRONTMATTER':
+      return { ...state, frontmatter: action.frontmatter };
+    case 'SET_TABLE_HINT':
+      return { ...state, showTableHint: action.visible };
+    case 'SET_LINK_DIALOG':
+      return { ...state, linkDialogOpen: action.open };
+    case 'UPDATE_PARSE':
+      return { ...state, frontmatter: action.frontmatter, contentWarning: action.warning };
+    default:
+      return state;
+  }
+}
+
 /**
  * Safely parse markdown, returning the parsed doc, frontmatter, and any error encountered.
  */
@@ -124,12 +155,14 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
 
   // Parse initial content only once via useState initializer — not on every render
   const [initialParsed] = useState(() => safeParse(initialContent));
-  const [contentWarning, setContentWarning] = useState<string | null>(initialParsed.error);
-  const [showTableHint, setShowTableHint] = useState(false);
-
-  const [frontmatter, setFrontmatter] = useState<string | null>(initialParsed.frontmatter);
+  const [state, dispatch] = useReducer(editorReducer, {
+    contentWarning: initialParsed.error,
+    frontmatter: initialParsed.frontmatter,
+    showTableHint: false,
+    linkDialogOpen: false,
+  });
+  const { contentWarning, frontmatter, showTableHint, linkDialogOpen } = state;
   const frontmatterRef = useRef<string | null>(frontmatter);
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
   // Keep the ref in sync so TipTap's onUpdate closure always reads the latest value
   useEffect(() => {
@@ -192,7 +225,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
             editorText.length,
           );
           console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialParsed.doc, null, 2).slice(0, 2000));
-          setContentWarning(msg);
+          dispatch({ type: 'SET_WARNING', warning: msg });
         }
       }
     },
@@ -206,7 +239,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     onSelectionUpdate: ({ editor }) => {
       const inTable =
         editor.isActive('table') || editor.isActive('tableCell') || editor.isActive('tableHeader');
-      setShowTableHint(inTable);
+      dispatch({ type: 'SET_TABLE_HINT', visible: inTable });
     },
     editorProps: {
       attributes: {
@@ -221,12 +254,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
     if (editor && initialContent !== initialContentRef.current) {
       initialContentRef.current = initialContent;
       const { doc, frontmatter: newFrontmatter, error } = safeParse(initialContent);
-      setFrontmatter(newFrontmatter);
-      if (error) {
-        setContentWarning(error);
-      } else {
-        setContentWarning(null);
-      }
+      dispatch({ type: 'UPDATE_PARSE', frontmatter: newFrontmatter, warning: error });
       // Replace content without adding to undo history using a direct
       // ProseMirror transaction with the addToHistory meta flag set to false.
       // This avoids fragile monkey-patching of editor.view.dispatch.
@@ -241,9 +269,9 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
           const editorText = editor.getText().trim();
           if (editorText.length < 10) {
             console.warn('[Quartz] Content may have been dropped after external update.');
-            setContentWarning(
+            dispatch({ type: 'SET_WARNING', warning:
               'The document could not be fully rendered. Some content may use unsupported formatting.',
-            );
+            });
           }
         }
       }, 100);
@@ -280,7 +308,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
   // Handle frontmatter changes from the banner textarea
   const handleFrontmatterChange = useCallback(
     (yaml: string) => {
-      setFrontmatter(yaml);
+      dispatch({ type: 'SET_FRONTMATTER', frontmatter: yaml });
       frontmatterRef.current = yaml;
       // Trigger a full document save with the updated frontmatter
       if (editor) {
@@ -293,7 +321,7 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
 
   // Remove frontmatter entirely
   const handleFrontmatterRemove = useCallback(() => {
-    setFrontmatter(null);
+    dispatch({ type: 'SET_FRONTMATTER', frontmatter: null });
     frontmatterRef.current = null;
     // Trigger a save without frontmatter
     if (editor) {
@@ -304,12 +332,12 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
 
   // Link dialog handlers
   const handleLinkClick = useCallback(() => {
-    setLinkDialogOpen(true);
+    dispatch({ type: 'SET_LINK_DIALOG', open: true });
   }, []);
 
   // Listen for insertLink event from VS Code extension (Cmd+K keybinding)
   useEffect(() => {
-    const handler = () => setLinkDialogOpen(true);
+    const handler = () => dispatch({ type: 'SET_LINK_DIALOG', open: true });
     window.addEventListener('quartz:insertLink', handler);
     return () => window.removeEventListener('quartz:insertLink', handler);
   }, []);
@@ -332,13 +360,13 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
         // Selection exists — wrap it in a link
         editor.chain().focus().setLink({ href: url }).run();
       }
-      setLinkDialogOpen(false);
+      dispatch({ type: 'SET_LINK_DIALOG', open: false });
     },
     [editor],
   );
 
   const handleLinkCancel = useCallback(() => {
-    setLinkDialogOpen(false);
+    dispatch({ type: 'SET_LINK_DIALOG', open: false });
     editor?.commands.focus();
   }, [editor]);
 
@@ -349,23 +377,24 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       {contentWarning && (
         <div className="quartz-content-warning">
           <span>{contentWarning}</span>
-          <button onClick={() => setContentWarning(null)} className="quartz-warning-dismiss">
+          <button onClick={() => dispatch({ type: 'SET_WARNING', warning: null })} className="quartz-warning-dismiss">
             Dismiss
           </button>
         </div>
       )}
       <FormattingToolbar editor={editor} onLinkClick={handleLinkClick} />
-      <LinkDialog
-        isOpen={linkDialogOpen}
-        onSubmit={handleLinkSubmit}
-        onCancel={handleLinkCancel}
-        initialText={editor.state.doc.textBetween(
-          editor.state.selection.from,
-          editor.state.selection.to,
-          '',
-        )}
-        hasSelection={editor.state.selection.from !== editor.state.selection.to}
-      />
+      {linkDialogOpen && (
+        <LinkDialog
+          onSubmit={handleLinkSubmit}
+          onCancel={handleLinkCancel}
+          initialText={editor.state.doc.textBetween(
+            editor.state.selection.from,
+            editor.state.selection.to,
+            '',
+          )}
+          hasSelection={editor.state.selection.from !== editor.state.selection.to}
+        />
+      )}
       <SearchBar editor={editor} />
       <SlashMenu editor={editor} />
       <TableOfContents editor={editor} />

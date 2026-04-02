@@ -5,7 +5,7 @@ import * as path from 'path';
 suite('Custom Editor', () => {
   // Ensure extension is active before tests
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     if (ext && !ext.isActive) {
       await ext.activate();
     }
@@ -56,7 +56,7 @@ suite('Custom Editor', () => {
   });
 
   test('Custom editor view type is registered', async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext);
 
     // Check package.json has the custom editor contribution

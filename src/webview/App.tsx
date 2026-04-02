@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useReducer, useCallback, useRef } from 'react';
 import { Editor } from './Editor';
 import { DiffSplitView } from './components/DiffSplitView';
 import { ExternalChangeBanner } from './components/ExternalChangeBanner';
@@ -26,27 +26,88 @@ const scheduleIdleCallback =
     ? requestIdleCallback
     : (cb: () => void) => setTimeout(cb, 0);
 
-export function App() {
-  const [content, setContent] = useState<string | null>(null);
-  const [config, setConfig] = useState<EditorConfig>({
-    editorTheme: 'clean',
-    imageDir: './assets',
-    preserveFormatting: true,
-    showBlockHandles: true,
-  });
-  const suppressUpdateRef = useRef(false);
-  const suppressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // External change pending state
-  const [pendingExternalChange, setPendingExternalChange] = useState<string | null>(null);
-
-  // Diff view state
-  const [diffViewState, setDiffViewState] = useState<{
+interface AppState {
+  content: string | null;
+  config: EditorConfig;
+  pendingExternalChange: string | null;
+  diffViewState: {
     active: boolean;
     diffResult: DiffResult | null;
     alignedRows: AlignedRow[];
     sourceLabel: string;
-  }>({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
+  };
+}
+
+type AppAction =
+  | { type: 'LOAD_DOCUMENT'; content: string }
+  | { type: 'CONFIG_UPDATE'; config: EditorConfig }
+  | { type: 'EXTERNAL_CHANGE'; content: string }
+  | { type: 'EXTERNAL_CHANGE_AVAILABLE'; content: string }
+  | { type: 'ACCEPT_EXTERNAL_CHANGE'; content: string }
+  | { type: 'DISMISS_EXTERNAL_CHANGE' }
+  | { type: 'OPEN_DIFF'; diffResult: DiffResult; alignedRows: AlignedRow[]; sourceLabel: string }
+  | { type: 'CLOSE_DIFF' }
+  | { type: 'TOGGLE_DIFF_REQUEST' };
+
+function appReducer(state: AppState, action: AppAction): AppState {
+  switch (action.type) {
+    case 'LOAD_DOCUMENT':
+      return { ...state, content: action.content };
+    case 'CONFIG_UPDATE':
+      return { ...state, config: action.config };
+    case 'EXTERNAL_CHANGE':
+      return { ...state, content: action.content };
+    case 'EXTERNAL_CHANGE_AVAILABLE':
+      return { ...state, pendingExternalChange: action.content };
+    case 'ACCEPT_EXTERNAL_CHANGE':
+      return { ...state, content: action.content, pendingExternalChange: null };
+    case 'DISMISS_EXTERNAL_CHANGE':
+      return { ...state, pendingExternalChange: null };
+    case 'OPEN_DIFF':
+      return {
+        ...state,
+        diffViewState: {
+          active: true,
+          diffResult: action.diffResult,
+          alignedRows: action.alignedRows,
+          sourceLabel: action.sourceLabel,
+        },
+      };
+    case 'CLOSE_DIFF':
+      return {
+        ...state,
+        diffViewState: { active: false, diffResult: null, alignedRows: [], sourceLabel: '' },
+      };
+    case 'TOGGLE_DIFF_REQUEST':
+      if (state.diffViewState.active) {
+        return {
+          ...state,
+          diffViewState: { active: false, diffResult: null, alignedRows: [], sourceLabel: '' },
+        };
+      }
+      return state;
+    default:
+      return state;
+  }
+}
+
+const initialAppState: AppState = {
+  content: null,
+  config: {
+    editorTheme: 'clean',
+    imageDir: './assets',
+    preserveFormatting: true,
+    showBlockHandles: true,
+  },
+  pendingExternalChange: null,
+  diffViewState: { active: false, diffResult: null, alignedRows: [], sourceLabel: '' },
+};
+
+export function App() {
+  const [state, dispatch] = useReducer(appReducer, initialAppState);
+  const { content, config, pendingExternalChange, diffViewState } = state;
+  const suppressUpdateRef = useRef(false);
+  const suppressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Helper to set suppressUpdateRef with proper timeout cleanup
   const setSuppressUpdate = useCallback((value: boolean, delayMs?: number) => {
@@ -80,10 +141,10 @@ export function App() {
 
       switch (message.type) {
         case 'loadDocument':
-          setContent(message.content);
+          dispatch({ type: 'LOAD_DOCUMENT', content: message.content });
           break;
         case 'configUpdate':
-          setConfig(message.config);
+          dispatch({ type: 'CONFIG_UPDATE', config: message.config });
           break;
         case 'scrollToHeading':
           window.dispatchEvent(
@@ -97,25 +158,23 @@ export function App() {
           // content — prevents the feedback loop where setContent triggers
           // onUpdate which would send the content back to the extension host.
           setSuppressUpdate(true, 500);
-          setContent(message.content);
+          dispatch({ type: 'EXTERNAL_CHANGE', content: message.content });
           break;
         case 'externalChangeAvailable':
           // Diff review enabled: show notification banner instead of silent replace
-          setPendingExternalChange(message.content as string);
+          dispatch({ type: 'EXTERNAL_CHANGE_AVAILABLE', content: message.content as string });
           break;
         case 'insertLink':
           window.dispatchEvent(new CustomEvent('quartz:insertLink'));
           break;
         case 'triggerGitDiff':
           // Toggle: if diff is already open, close it; otherwise request diff
-          setDiffViewState((prev) => {
-            if (prev.active) {
-              vscode.postMessage({ type: 'diffViewClosed' });
-              return { active: false, diffResult: null, alignedRows: [], sourceLabel: '' };
-            }
+          if (diffViewState.active) {
+            dispatch({ type: 'CLOSE_DIFF' });
+            vscode.postMessage({ type: 'diffViewClosed' });
+          } else {
             vscode.postMessage({ type: 'requestGitDiff' });
-            return prev;
-          });
+          }
           break;
         case 'openDiffView': {
           const { oldContent, newContent, sourceLabel } = message as {
@@ -136,7 +195,7 @@ export function App() {
             ) {
               vscode.postMessage({ type: 'diffNoChanges' });
             } else {
-              setDiffViewState({ active: true, diffResult, alignedRows, sourceLabel });
+              dispatch({ type: 'OPEN_DIFF', diffResult, alignedRows, sourceLabel });
               vscode.postMessage({ type: 'diffViewOpened' });
             }
           });
@@ -149,7 +208,7 @@ export function App() {
     vscode.postMessage({ type: 'ready' });
 
     return () => window.removeEventListener('message', handler);
-  }, [setSuppressUpdate]);
+  }, [setSuppressUpdate, diffViewState.active]);
 
   const handleUpdate = useCallback((markdown: string) => {
     if (suppressUpdateRef.current) return;
@@ -157,7 +216,7 @@ export function App() {
   }, []);
 
   const handleCloseDiff = useCallback(() => {
-    setDiffViewState({ active: false, diffResult: null, alignedRows: [], sourceLabel: '' });
+    dispatch({ type: 'CLOSE_DIFF' });
     vscode.postMessage({ type: 'diffViewClosed' });
   }, []);
 
@@ -165,13 +224,12 @@ export function App() {
   const handleExternalAccept = useCallback(() => {
     if (!pendingExternalChange) return;
     setSuppressUpdate(true, 500);
-    setContent(pendingExternalChange);
-    setPendingExternalChange(null);
+    dispatch({ type: 'ACCEPT_EXTERNAL_CHANGE', content: pendingExternalChange });
     vscode.postMessage({ type: 'applyExternalChange' });
   }, [pendingExternalChange, setSuppressUpdate]);
 
   const handleExternalDismiss = useCallback(() => {
-    setPendingExternalChange(null);
+    dispatch({ type: 'DISMISS_EXTERNAL_CHANGE' });
     vscode.postMessage({ type: 'dismissExternalChange' });
   }, []);
 
@@ -179,12 +237,12 @@ export function App() {
     if (!pendingExternalChange || !content) return;
     const pending = pendingExternalChange;
     const current = content;
-    setPendingExternalChange(null);
+    dispatch({ type: 'DISMISS_EXTERNAL_CHANGE' });
     scheduleIdleCallback(() => {
       const diffResult = computeDiff(current, pending);
       const alignedRows = computeAlignment(diffResult.diffs);
-      setDiffViewState({
-        active: true,
+      dispatch({
+        type: 'OPEN_DIFF',
         diffResult,
         alignedRows,
         sourceLabel: 'External change',

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useReducer } from 'react';
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
 import {
@@ -46,13 +46,55 @@ function getDisplayName(langId: string): string {
   return entry ? entry.label : langId;
 }
 
+interface CodeBlockState {
+  dropdownOpen: boolean;
+  dropdownDirection: 'down' | 'up';
+  search: string;
+  activeIndex: number;
+  copied: boolean;
+}
+
+type CodeBlockAction =
+  | { type: 'OPEN_DROPDOWN'; direction: 'down' | 'up' }
+  | { type: 'CLOSE_DROPDOWN' }
+  | { type: 'TOGGLE_DROPDOWN'; direction: 'down' | 'up' }
+  | { type: 'SET_SEARCH'; search: string }
+  | { type: 'SET_ACTIVE_INDEX'; index: number }
+  | { type: 'SET_COPIED'; copied: boolean };
+
+function codeBlockReducer(state: CodeBlockState, action: CodeBlockAction): CodeBlockState {
+  switch (action.type) {
+    case 'OPEN_DROPDOWN':
+      return { ...state, dropdownOpen: true, dropdownDirection: action.direction, search: '', activeIndex: 0 };
+    case 'CLOSE_DROPDOWN':
+      return { ...state, dropdownOpen: false, search: '', activeIndex: 0 };
+    case 'TOGGLE_DROPDOWN':
+      return state.dropdownOpen
+        ? { ...state, dropdownOpen: false, search: '', activeIndex: 0 }
+        : { ...state, dropdownOpen: true, dropdownDirection: action.direction, search: '', activeIndex: 0 };
+    case 'SET_SEARCH':
+      return { ...state, search: action.search, activeIndex: 0 };
+    case 'SET_ACTIVE_INDEX':
+      return { ...state, activeIndex: action.index };
+    case 'SET_COPIED':
+      return { ...state, copied: action.copied };
+    default:
+      return state;
+  }
+}
+
+const initialCodeBlockState: CodeBlockState = {
+  dropdownOpen: false,
+  dropdownDirection: 'down',
+  search: '',
+  activeIndex: 0,
+  copied: false,
+};
+
 export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: NodeViewProps) {
   const language = (node.attrs.language as string) || '';
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down');
-  const [search, setSearch] = useState('');
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
+  const [state, dispatch] = useReducer(codeBlockReducer, initialCodeBlockState);
+  const { dropdownOpen, dropdownDirection, search, activeIndex, copied } = state;
   const dropdownRef = useRef<HTMLDivElement>(null);
   const langBtnRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -87,26 +129,12 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
     [filteredLanguages],
   );
 
-  // Reset active index when list changes
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [flatList.length]);
-
-  // Focus search input when dropdown opens
-  useEffect(() => {
-    if (dropdownOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 0);
-    } else {
-      setSearch('');
-    }
-  }, [dropdownOpen]);
-
   // Close dropdown when clicking outside
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        dispatch({ type: 'CLOSE_DROPDOWN' });
       }
     };
     document.addEventListener('mousedown', handler);
@@ -116,7 +144,7 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
   const selectLanguage = useCallback(
     (langId: string) => {
       updateAttributes({ language: langId });
-      setDropdownOpen(false);
+      dispatch({ type: 'CLOSE_DROPDOWN' });
     },
     [updateAttributes],
   );
@@ -125,10 +153,10 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setActiveIndex((i) => Math.min(i + 1, flatList.length - 1));
+        dispatch({ type: 'SET_ACTIVE_INDEX', index: Math.min(activeIndex + 1, flatList.length - 1) });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setActiveIndex((i) => Math.max(i - 1, 0));
+        dispatch({ type: 'SET_ACTIVE_INDEX', index: Math.max(activeIndex - 1, 0) });
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (flatList[activeIndex]) {
@@ -136,10 +164,20 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        setDropdownOpen(false);
+        dispatch({ type: 'CLOSE_DROPDOWN' });
       }
     },
     [flatList, activeIndex, selectLanguage],
+  );
+
+  const handleItemKeyDown = useCallback(
+    (e: React.KeyboardEvent, langId: string) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectLanguage(langId);
+      }
+    },
+    [selectLanguage],
   );
 
   // Scroll active item into view
@@ -156,10 +194,10 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        setCopied(true);
+        dispatch({ type: 'SET_COPIED', copied: true });
         if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
         copyTimeoutRef.current = setTimeout(() => {
-          setCopied(false);
+          dispatch({ type: 'SET_COPIED', copied: false });
           copyTimeoutRef.current = null;
         }, 1500);
       })
@@ -176,14 +214,16 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
             ref={langBtnRef}
             className="quartz-codeblock-lang-btn"
             onClick={() => {
+              let direction: 'down' | 'up' = 'down';
               if (!dropdownOpen && langBtnRef.current) {
                 const rect = langBtnRef.current.getBoundingClientRect();
                 const DROPDOWN_MAX_HEIGHT = 300;
-                setDropdownDirection(
-                  shouldOpenUpward(rect.bottom, rect.top, DROPDOWN_MAX_HEIGHT) ? 'up' : 'down',
-                );
+                direction = shouldOpenUpward(rect.bottom, rect.top, DROPDOWN_MAX_HEIGHT) ? 'up' : 'down';
               }
-              setDropdownOpen(!dropdownOpen);
+              dispatch({ type: 'TOGGLE_DROPDOWN', direction });
+              if (!dropdownOpen) {
+                setTimeout(() => searchInputRef.current?.focus(), 0);
+              }
             }}
             title="Change language"
           >
@@ -191,14 +231,14 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
           </button>
 
           {dropdownOpen && (
-            <div className="quartz-codeblock-dropdown" data-direction={dropdownDirection} onKeyDown={handleKeyDown}>
+            <div className="quartz-codeblock-dropdown" role="listbox" data-direction={dropdownDirection} onKeyDown={handleKeyDown}>
               <div className="quartz-codeblock-dropdown-search">
                 <input
                   ref={searchInputRef}
                   type="text"
                   placeholder="Search languages..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => dispatch({ type: 'SET_SEARCH', search: e.target.value })}
                 />
               </div>
               <div className="quartz-codeblock-dropdown-list" ref={listRef}>
@@ -210,11 +250,15 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
                       return (
                         <div
                           key={lang.id}
+                          role="option"
+                          aria-selected={lang.id === language}
+                          tabIndex={0}
                           className="quartz-codeblock-dropdown-item"
                           data-active={idx === activeIndex ? 'true' : undefined}
                           data-selected={lang.id === language ? 'true' : undefined}
                           onClick={() => selectLanguage(lang.id)}
-                          onMouseEnter={() => setActiveIndex(idx)}
+                          onKeyDown={(e) => handleItemKeyDown(e, lang.id)}
+                          onMouseEnter={() => dispatch({ type: 'SET_ACTIVE_INDEX', index: idx })}
                         >
                           {lang.label}
                         </div>
@@ -232,11 +276,15 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
                       return (
                         <div
                           key={lang.id}
+                          role="option"
+                          aria-selected={lang.id === language}
+                          tabIndex={0}
                           className="quartz-codeblock-dropdown-item"
                           data-active={idx === activeIndex ? 'true' : undefined}
                           data-selected={lang.id === language ? 'true' : undefined}
                           onClick={() => selectLanguage(lang.id)}
-                          onMouseEnter={() => setActiveIndex(idx)}
+                          onKeyDown={(e) => handleItemKeyDown(e, lang.id)}
+                          onMouseEnter={() => dispatch({ type: 'SET_ACTIVE_INDEX', index: idx })}
                         >
                           {lang.label}
                         </div>

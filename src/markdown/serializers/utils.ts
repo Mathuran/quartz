@@ -94,7 +94,7 @@ export function escapeUrl(url: string): string {
  * Escape `]` in link text or image alt text to prevent premature closing of
  * the `[...]` portion of a markdown link or image.
  */
-export function escapeLinkText(text: string): string {
+function escapeLinkText(text: string): string {
   return text.replace(/\]/g, '\\]');
 }
 

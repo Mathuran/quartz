@@ -57,19 +57,17 @@ test.describe('List Item Movement', () => {
     // Click first list item, move up — should move entire list above the paragraph
     await items.nth(0).click();
     await page.waitForTimeout(100);
-    await editorPage.moveBlockUp();
-    await page.waitForTimeout(200);
 
-    // The list should now be above the paragraph
+    // Capture update count BEFORE the move so we can wait for the post-move update
     const countBefore = await getUpdateCount(page);
-    // Trigger a serialization by a no-op if needed
-    if (countBefore > 0) {
-      const output = await waitForUpdate(page, -1, 2000);
-      // List marker should appear before "Above paragraph" in serialized output
-      const listIndex = output.indexOf('- First');
-      const paraIndex = output.indexOf('Above paragraph');
-      expect(listIndex).toBeLessThan(paraIndex);
-    }
+    await editorPage.moveBlockUp();
+
+    // Wait for the debounced update triggered by the block move
+    const output = await waitForUpdate(page, countBefore - 1, 3000);
+    // List marker should appear before "Above paragraph" in serialized output
+    const listIndex = output.indexOf('- First');
+    const paraIndex = output.indexOf('Above paragraph');
+    expect(listIndex).toBeLessThan(paraIndex);
   });
 
   test('boundary: last item down escalates to block move', async ({ page }) => {
@@ -81,17 +79,17 @@ test.describe('List Item Movement', () => {
     // Click last list item, move down — should move entire list below the paragraph
     await items.nth(1).click();
     await page.waitForTimeout(100);
-    await editorPage.moveBlockDown();
-    await page.waitForTimeout(200);
 
+    // Capture update count BEFORE the move so we can wait for the post-move update
     const countBefore = await getUpdateCount(page);
-    if (countBefore > 0) {
-      const output = await waitForUpdate(page, -1, 2000);
-      // Paragraph should appear before list in serialized output
-      const paraIndex = output.indexOf('Below paragraph');
-      const listIndex = output.indexOf('- First');
-      expect(paraIndex).toBeLessThan(listIndex);
-    }
+    await editorPage.moveBlockDown();
+
+    // Wait for the debounced update triggered by the block move
+    const output = await waitForUpdate(page, countBefore - 1, 3000);
+    // Paragraph should appear before list in serialized output
+    const paraIndex = output.indexOf('Below paragraph');
+    const listIndex = output.indexOf('- First');
+    expect(paraIndex).toBeLessThan(listIndex);
   });
 
   test('undo reverses list item move', async ({ page }) => {

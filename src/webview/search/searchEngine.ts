@@ -5,7 +5,7 @@ export interface SearchMatch {
   to: number;
 }
 
-export interface SearchOptions {
+interface SearchOptions {
   caseSensitive: boolean;
   wholeWord: boolean;
 }

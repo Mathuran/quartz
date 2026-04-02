@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useReducer, useEffect, useCallback, useRef } from 'react';
 import type { Editor } from '@tiptap/react';
 import { findMatches, type SearchMatch } from '../search/searchEngine';
 import { searchHighlightKey } from '../extensions/searchHighlightExtension';
@@ -7,15 +7,115 @@ interface SearchBarProps {
   editor: Editor;
 }
 
+interface SearchState {
+  isOpen: boolean;
+  showReplace: boolean;
+  query: string;
+  replacement: string;
+  caseSensitive: boolean;
+  wholeWord: boolean;
+  matches: SearchMatch[];
+  currentIndex: number;
+}
+
+type SearchAction =
+  | { type: 'OPEN'; query: string; showReplace: boolean }
+  | { type: 'CLOSE' }
+  | { type: 'SET_QUERY'; query: string }
+  | { type: 'SET_REPLACEMENT'; replacement: string }
+  | { type: 'TOGGLE_CASE_SENSITIVE' }
+  | { type: 'TOGGLE_WHOLE_WORD' }
+  | { type: 'SET_SHOW_REPLACE'; showReplace: boolean }
+  | { type: 'SET_RESULTS'; matches: SearchMatch[]; currentIndex: number }
+  | { type: 'SET_CURRENT_INDEX'; currentIndex: number }
+  | { type: 'CLEAR_RESULTS' };
+
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case 'OPEN':
+      return { ...state, isOpen: true, query: action.query, showReplace: action.showReplace };
+    case 'CLOSE':
+      return { ...state, isOpen: false, showReplace: false, query: '', replacement: '', matches: [], currentIndex: -1 };
+    case 'SET_QUERY':
+      return { ...state, query: action.query };
+    case 'SET_REPLACEMENT':
+      return { ...state, replacement: action.replacement };
+    case 'TOGGLE_CASE_SENSITIVE':
+      return { ...state, caseSensitive: !state.caseSensitive };
+    case 'TOGGLE_WHOLE_WORD':
+      return { ...state, wholeWord: !state.wholeWord };
+    case 'SET_SHOW_REPLACE':
+      return { ...state, showReplace: action.showReplace };
+    case 'SET_RESULTS':
+      return { ...state, matches: action.matches, currentIndex: action.currentIndex };
+    case 'SET_CURRENT_INDEX':
+      return { ...state, currentIndex: action.currentIndex };
+    case 'CLEAR_RESULTS':
+      return { ...state, matches: [], currentIndex: -1 };
+    default:
+      return state;
+  }
+}
+
+const initialSearchState: SearchState = {
+  isOpen: false,
+  showReplace: false,
+  query: '',
+  replacement: '',
+  caseSensitive: false,
+  wholeWord: false,
+  matches: [],
+  currentIndex: -1,
+};
+
+function ReplaceRow({
+  replacement,
+  onReplacementChange,
+  onReplaceCurrent,
+  onReplaceAll,
+  onKeyDown,
+  disabled,
+}: {
+  replacement: string;
+  onReplacementChange: (value: string) => void;
+  onReplaceCurrent: () => void;
+  onReplaceAll: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="quartz-search-row">
+      <input
+        type="text"
+        className="quartz-search-input"
+        placeholder="Replace..."
+        value={replacement}
+        onChange={(e) => onReplacementChange(e.target.value)}
+        onKeyDown={onKeyDown}
+      />
+      <button
+        className="quartz-search-replace-btn"
+        onClick={onReplaceCurrent}
+        disabled={disabled}
+        title="Replace"
+      >
+        Replace
+      </button>
+      <button
+        className="quartz-search-replace-btn"
+        onClick={onReplaceAll}
+        disabled={disabled}
+        title="Replace All"
+      >
+        All
+      </button>
+    </div>
+  );
+}
+
 export function SearchBar({ editor }: SearchBarProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showReplace, setShowReplace] = useState(false);
-  const [query, setQuery] = useState('');
-  const [replacement, setReplacement] = useState('');
-  const [caseSensitive, setCaseSensitive] = useState(false);
-  const [wholeWord, setWholeWord] = useState(false);
-  const [matches, setMatches] = useState<SearchMatch[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [state, dispatch] = useReducer(searchReducer, initialSearchState);
+  const { isOpen, showReplace, query, replacement, caseSensitive, wholeWord, matches, currentIndex } = state;
   const findInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,18 +134,30 @@ export function SearchBar({ editor }: SearchBarProps) {
     [editor],
   );
 
+  // Scroll to a match position
+  const scrollToMatch = useCallback(
+    (match: SearchMatch) => {
+      // Use the editor's DOM to find and scroll to the decoration
+      const dom = editor.view.domAtPos(match.from);
+      if (dom.node) {
+        const element =
+          dom.node instanceof HTMLElement ? dom.node : (dom.node.parentElement as HTMLElement);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    },
+    [editor],
+  );
+
   // Run search and update state
   const runSearch = useCallback(
     (searchQuery: string) => {
       if (!searchQuery) {
-        setMatches([]);
-        setCurrentIndex(-1);
+        dispatch({ type: 'CLEAR_RESULTS' });
         updateDecorations([], -1);
         return;
       }
 
       const results = findMatches(editor.state.doc, searchQuery, { caseSensitive, wholeWord });
-      setMatches(results);
 
       if (results.length > 0) {
         // Find the match nearest to the current cursor position
@@ -61,36 +173,22 @@ export function SearchBar({ editor }: SearchBarProps) {
             nearestIndex = 0;
           }
         }
-        setCurrentIndex(nearestIndex);
+        dispatch({ type: 'SET_RESULTS', matches: results, currentIndex: nearestIndex });
         updateDecorations(results, nearestIndex);
         scrollToMatch(results[nearestIndex]);
       } else {
-        setCurrentIndex(-1);
+        dispatch({ type: 'SET_RESULTS', matches: results, currentIndex: -1 });
         updateDecorations(results, -1);
       }
     },
-    [editor, caseSensitive, wholeWord, updateDecorations],
-  );
-
-  // Scroll to a match position
-  const scrollToMatch = useCallback(
-    (match: SearchMatch) => {
-      // Use the editor's DOM to find and scroll to the decoration
-      const dom = editor.view.domAtPos(match.from);
-      if (dom.node) {
-        const element =
-          dom.node instanceof HTMLElement ? dom.node : (dom.node.parentElement as HTMLElement);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    },
-    [editor],
+    [editor, caseSensitive, wholeWord, updateDecorations, scrollToMatch],
   );
 
   // Navigate to next match
   const goToNext = useCallback(() => {
     if (matches.length === 0) return;
     const next = (currentIndex + 1) % matches.length;
-    setCurrentIndex(next);
+    dispatch({ type: 'SET_CURRENT_INDEX', currentIndex: next });
     updateDecorations(matches, next);
     scrollToMatch(matches[next]);
   }, [matches, currentIndex, updateDecorations, scrollToMatch]);
@@ -99,7 +197,7 @@ export function SearchBar({ editor }: SearchBarProps) {
   const goToPrevious = useCallback(() => {
     if (matches.length === 0) return;
     const prev = (currentIndex - 1 + matches.length) % matches.length;
-    setCurrentIndex(prev);
+    dispatch({ type: 'SET_CURRENT_INDEX', currentIndex: prev });
     updateDecorations(matches, prev);
     scrollToMatch(matches[prev]);
   }, [matches, currentIndex, updateDecorations, scrollToMatch]);
@@ -118,8 +216,7 @@ export function SearchBar({ editor }: SearchBarProps) {
 
     // Immediately invalidate stale matches so UI reflects the change,
     // then re-search on next tick to get accurate positions.
-    setMatches([]);
-    setCurrentIndex(-1);
+    dispatch({ type: 'CLEAR_RESULTS' });
     updateDecorations([], -1);
     setTimeout(() => runSearch(query), 0);
   }, [editor, matches, currentIndex, replacement, query, runSearch, updateDecorations]);
@@ -144,20 +241,14 @@ export function SearchBar({ editor }: SearchBarProps) {
     editor.view.dispatch(tr);
 
     // Immediately invalidate stale matches, then re-search
-    setMatches([]);
-    setCurrentIndex(-1);
+    dispatch({ type: 'CLEAR_RESULTS' });
     updateDecorations([], -1);
     setTimeout(() => runSearch(query), 0);
   }, [editor, matches, replacement, query, runSearch, updateDecorations]);
 
   // Close search and clear highlights
   const close = useCallback(() => {
-    setIsOpen(false);
-    setShowReplace(false);
-    setQuery('');
-    setReplacement('');
-    setMatches([]);
-    setCurrentIndex(-1);
+    dispatch({ type: 'CLOSE' });
     updateDecorations([], -1);
     editor.commands.focus();
   }, [editor, updateDecorations]);
@@ -176,18 +267,18 @@ export function SearchBar({ editor }: SearchBarProps) {
   useEffect(() => {
     const handler = (event: CustomEvent) => {
       const withReplace = event.detail?.replace === true;
-      setIsOpen(true);
-      setShowReplace(withReplace);
 
       // Pre-fill with selected text
       const { from, to } = editor.state.selection;
+      let prefill = '';
       if (from !== to) {
         const selectedText = editor.state.doc.textBetween(from, to, '');
         if (selectedText && selectedText.length < 200) {
-          setQuery(selectedText);
+          prefill = selectedText;
         }
       }
 
+      dispatch({ type: 'OPEN', query: prefill, showReplace: withReplace });
       setTimeout(() => findInputRef.current?.focus(), 0);
     };
     window.addEventListener('quartz:openSearch', handler as EventListener);
@@ -252,19 +343,19 @@ export function SearchBar({ editor }: SearchBarProps) {
           className="quartz-search-input"
           placeholder="Find..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_QUERY', query: e.target.value })}
           onKeyDown={handleFindKeyDown}
         />
         <button
           className={`quartz-search-toggle ${caseSensitive ? 'active' : ''}`}
-          onClick={() => setCaseSensitive(!caseSensitive)}
+          onClick={() => dispatch({ type: 'TOGGLE_CASE_SENSITIVE' })}
           title="Match Case"
         >
           Aa
         </button>
         <button
           className={`quartz-search-toggle ${wholeWord ? 'active' : ''}`}
-          onClick={() => setWholeWord(!wholeWord)}
+          onClick={() => dispatch({ type: 'TOGGLE_WHOLE_WORD' })}
           title="Match Whole Word"
         >
           Ab
@@ -289,7 +380,7 @@ export function SearchBar({ editor }: SearchBarProps) {
         {!showReplace && (
           <button
             className="quartz-search-btn"
-            onClick={() => setShowReplace(true)}
+            onClick={() => dispatch({ type: 'SET_SHOW_REPLACE', showReplace: true })}
             title="Toggle Replace"
           >
             &#x25B7;
@@ -302,32 +393,14 @@ export function SearchBar({ editor }: SearchBarProps) {
 
       {/* Replace row */}
       {showReplace && (
-        <div className="quartz-search-row">
-          <input
-            type="text"
-            className="quartz-search-input"
-            placeholder="Replace..."
-            value={replacement}
-            onChange={(e) => setReplacement(e.target.value)}
-            onKeyDown={handleReplaceKeyDown}
-          />
-          <button
-            className="quartz-search-replace-btn"
-            onClick={replaceCurrent}
-            disabled={matches.length === 0}
-            title="Replace"
-          >
-            Replace
-          </button>
-          <button
-            className="quartz-search-replace-btn"
-            onClick={replaceAll}
-            disabled={matches.length === 0}
-            title="Replace All"
-          >
-            All
-          </button>
-        </div>
+        <ReplaceRow
+          replacement={replacement}
+          onReplacementChange={(value) => dispatch({ type: 'SET_REPLACEMENT', replacement: value })}
+          onReplaceCurrent={replaceCurrent}
+          onReplaceAll={replaceAll}
+          onKeyDown={handleReplaceKeyDown}
+          disabled={matches.length === 0}
+        />
       )}
     </div>
   );

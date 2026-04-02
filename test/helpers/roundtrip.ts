@@ -19,7 +19,7 @@ export function assertRoundtrip(markdown: string): void {
  * Perform a single round-trip: parse then serialize.
  * Returns the serialized markdown string.
  */
-export function roundTrip(markdown: string): string {
+function roundTrip(markdown: string): string {
   const { doc, frontmatter } = parseMarkdown(markdown);
   return serializeMarkdown(doc, frontmatter);
 }

@@ -363,8 +363,8 @@ function PlaceholderOverlay({
     <div className="quartz-diff-panel-content">
       {children}
       {/* Placeholders rendered as overlay hints — in v1 they appear after the editor */}
-      {placeholders.map((p, i) => (
-        <div key={i} className="quartz-diff-placeholder">
+      {placeholders.map((p) => (
+        <div key={`${p.afterBlockIndex}-${p.label}`} className="quartz-diff-placeholder">
           {p.label}
         </div>
       ))}

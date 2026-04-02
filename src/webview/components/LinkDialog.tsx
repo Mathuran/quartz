@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { isValidLinkUrl } from '../utils/urlValidation';
 
 interface LinkDialogProps {
-  isOpen: boolean;
   onSubmit: (url: string, text?: string) => void;
   onCancel: () => void;
   initialText?: string;
@@ -22,9 +21,9 @@ function normalizeUrl(url: string): string {
 /**
  * LinkDialog provides a modal for entering link URL (and optionally text).
  * Opens when user clicks the link button in the formatting toolbar.
+ * Mount/unmount this component to open/close — state resets automatically on mount.
  */
 export function LinkDialog({
-  isOpen,
   onSubmit,
   onCancel,
   initialText,
@@ -36,23 +35,14 @@ export function LinkDialog({
   const urlInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Reset state when dialog opens
+  // Focus the URL input on mount
   useEffect(() => {
-    if (isOpen) {
-      setUrl('');
-      setText(initialText || '');
-      setError(null);
-      // Focus the URL input after a short delay to ensure the dialog is rendered
-      setTimeout(() => {
-        urlInputRef.current?.focus();
-      }, 50);
-    }
-  }, [isOpen, initialText]);
+    const id = setTimeout(() => urlInputRef.current?.focus(), 50);
+    return () => clearTimeout(id);
+  }, []);
 
   // Handle click outside to close
   useEffect(() => {
-    if (!isOpen) return;
-
     const handleClickOutside = (e: MouseEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
         onCancel();
@@ -68,7 +58,7 @@ export function LinkDialog({
       clearTimeout(timeoutId);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, onCancel]);
+  }, [onCancel]);
 
   const handleSubmit = () => {
     const trimmedUrl = url.trim();
@@ -98,8 +88,6 @@ export function LinkDialog({
       onCancel();
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="quartz-link-dialog-overlay">

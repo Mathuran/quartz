@@ -7,7 +7,7 @@ suite('Extension Smoke Test', () => {
   });
 
   test('Extension is present', () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext, 'Extension should be found');
   });
 });

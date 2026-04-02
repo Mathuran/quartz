@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useReducer, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 import { extractHeadings, type HeadingItem } from '../utils/headingExtractor';
 
@@ -6,11 +6,54 @@ interface TableOfContentsProps {
   editor: Editor;
 }
 
+interface TocState {
+  isOpen: boolean;
+  query: string;
+  selectedIndex: number;
+  headings: HeadingItem[];
+  prevFilteredHash: string;
+}
+
+type TocAction =
+  | { type: 'OPEN'; headings: HeadingItem[] }
+  | { type: 'CLOSE' }
+  | { type: 'SET_QUERY'; query: string }
+  | { type: 'SET_SELECTED_INDEX'; index: number }
+  | { type: 'SCROLL_TO_HEADING' }
+  | { type: 'SYNC_HASH'; hash: string };
+
+function tocReducer(state: TocState, action: TocAction): TocState {
+  switch (action.type) {
+    case 'OPEN':
+      return { ...state, isOpen: true, query: '', selectedIndex: 0, headings: action.headings };
+    case 'CLOSE':
+      return { ...state, isOpen: false, query: '' };
+    case 'SET_QUERY':
+      return { ...state, query: action.query };
+    case 'SET_SELECTED_INDEX':
+      return { ...state, selectedIndex: action.index };
+    case 'SCROLL_TO_HEADING':
+      return { ...state, isOpen: false, query: '' };
+    case 'SYNC_HASH':
+      return state.prevFilteredHash === action.hash
+        ? state
+        : { ...state, prevFilteredHash: action.hash, selectedIndex: 0 };
+    default:
+      return state;
+  }
+}
+
+const initialTocState: TocState = {
+  isOpen: false,
+  query: '',
+  selectedIndex: 0,
+  headings: [],
+  prevFilteredHash: '',
+};
+
 export function TableOfContents({ editor }: TableOfContentsProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [headings, setHeadings] = useState<HeadingItem[]>([]);
+  const [state, dispatch] = useReducer(tocReducer, initialTocState);
+  const { isOpen, query, selectedIndex, headings } = state;
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -27,10 +70,10 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
     [filteredHeadings],
   );
 
-  // Reset selection when filtered results change
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [filteredContentHash]);
+  // Reset selection when filtered results change (via render-time dispatch)
+  if (filteredContentHash !== state.prevFilteredHash) {
+    dispatch({ type: 'SYNC_HASH', hash: filteredContentHash });
+  }
 
   const scrollToHeading = useCallback(
     (heading: HeadingItem) => {
@@ -41,25 +84,20 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
         editor.commands.setTextSelection(heading.pos + 1);
         editor.commands.focus();
       }
-      setIsOpen(false);
-      setQuery('');
+      dispatch({ type: 'SCROLL_TO_HEADING' });
     },
     [editor],
   );
 
   const open = useCallback(() => {
     const items = extractHeadings(editor);
-    setHeadings(items);
-    setQuery('');
-    setSelectedIndex(0);
-    setIsOpen(true);
+    dispatch({ type: 'OPEN', headings: items });
     // Focus input after render
     setTimeout(() => inputRef.current?.focus(), 0);
   }, [editor]);
 
   const close = useCallback(() => {
-    setIsOpen(false);
-    setQuery('');
+    dispatch({ type: 'CLOSE' });
     editor.commands.focus();
   }, [editor]);
 
@@ -84,7 +122,7 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
       const items = extractHeadings(editor);
       // Lines from extension are 0-based, pos is document position
       // We need to find the heading that corresponds to the line
-      // Since we can't directly map line→pos, find heading by text match
+      // Since we can't directly map line->pos, find heading by text match
       // The extension sends line number, so we find the heading at that index
       const heading = items[line];
       if (heading) {
@@ -102,11 +140,11 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         e.stopPropagation();
-        setSelectedIndex((i) => Math.min(i + 1, filteredHeadings.length - 1));
+        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.min(selectedIndex + 1, filteredHeadings.length - 1) });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         e.stopPropagation();
-        setSelectedIndex((i) => Math.max(i - 1, 0));
+        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.max(selectedIndex - 1, 0) });
       } else if (e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
@@ -137,6 +175,7 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
   return (
     <div
       className="quartz-toc-backdrop"
+      role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) close();
       }}
@@ -148,7 +187,7 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
             type="text"
             placeholder="Search headings..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => dispatch({ type: 'SET_QUERY', query: e.target.value })}
           />
         </div>
         <div className="quartz-toc-list" ref={listRef}>
@@ -163,7 +202,7 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
                 className={`quartz-toc-item ${i === selectedIndex ? 'selected' : ''}`}
                 style={{ paddingLeft: 16 + (heading.level - 1) * indentPerLevel }}
                 onClick={() => scrollToHeading(heading)}
-                onMouseEnter={() => setSelectedIndex(i)}
+                onMouseEnter={() => dispatch({ type: 'SET_SELECTED_INDEX', index: i })}
               >
                 <span className="quartz-toc-level">H{heading.level}</span>
                 <span className="quartz-toc-text">{heading.text}</span>

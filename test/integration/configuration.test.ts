@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 suite('Configuration', () => {
   suiteSetup(async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     if (ext && !ext.isActive) {
       await ext.activate();
     }
@@ -12,53 +12,58 @@ suite('Configuration', () => {
   teardown(async () => {
     // Reset any config changes to defaults
     const config = vscode.workspace.getConfiguration('quartz.editor');
-    await config.update('fontSize', undefined, vscode.ConfigurationTarget.Global);
-    await config.update('pageLayout', undefined, vscode.ConfigurationTarget.Global);
-    await config.update('theme', undefined, vscode.ConfigurationTarget.Global);
+    await config.update('editorTheme', undefined, vscode.ConfigurationTarget.Global);
+    await config.update('imageDir', undefined, vscode.ConfigurationTarget.Global);
+    await config.update('preserveFormatting', undefined, vscode.ConfigurationTarget.Global);
+    await config.update('showBlockHandles', undefined, vscode.ConfigurationTarget.Global);
   });
 
   test('Default configuration values match package.json', () => {
-    const config = vscode.workspace.getConfiguration('quartz.editor');
-    assert.strictEqual(config.get('theme'), 'auto');
-    assert.strictEqual(config.get('fontSize'), 16);
-    assert.strictEqual(config.get('pageLayout'), true);
-    assert.strictEqual(config.get('fontFamily'), 'inherit');
+    const editorConfig = vscode.workspace.getConfiguration('quartz.editor');
+    assert.strictEqual(editorConfig.get('editorTheme'), 'clean');
+    assert.strictEqual(editorConfig.get('imageDir'), './assets');
+    assert.strictEqual(editorConfig.get('preserveFormatting'), true);
+    assert.strictEqual(editorConfig.get('showBlockHandles'), true);
+    assert.strictEqual(editorConfig.get('defaultForMarkdown'), false);
+
+    const diffConfig = vscode.workspace.getConfiguration('quartz.diffReview');
+    assert.strictEqual(diffConfig.get('enabled'), true);
   });
 
-  test('Changing fontSize is accepted without error', async () => {
+  test('Changing editorTheme is accepted without error', async () => {
     const config = vscode.workspace.getConfiguration('quartz.editor');
     await assert.doesNotReject(async () => {
-      await config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
+      await config.update('editorTheme', 'warm', vscode.ConfigurationTarget.Global);
     });
     const updated = vscode.workspace.getConfiguration('quartz.editor');
-    assert.strictEqual(updated.get('fontSize'), 20);
+    assert.strictEqual(updated.get('editorTheme'), 'warm');
   });
 
-  test('Changing pageLayout is accepted without error', async () => {
+  test('Changing preserveFormatting is accepted without error', async () => {
     const config = vscode.workspace.getConfiguration('quartz.editor');
     await assert.doesNotReject(async () => {
-      await config.update('pageLayout', false, vscode.ConfigurationTarget.Global);
+      await config.update('preserveFormatting', false, vscode.ConfigurationTarget.Global);
     });
     const updated = vscode.workspace.getConfiguration('quartz.editor');
-    assert.strictEqual(updated.get('pageLayout'), false);
+    assert.strictEqual(updated.get('preserveFormatting'), false);
   });
 
-  test('Setting theme to dark is accepted', async () => {
+  test('Changing imageDir is accepted without error', async () => {
     const config = vscode.workspace.getConfiguration('quartz.editor');
     await assert.doesNotReject(async () => {
-      await config.update('theme', 'dark', vscode.ConfigurationTarget.Global);
+      await config.update('imageDir', './images', vscode.ConfigurationTarget.Global);
     });
     const updated = vscode.workspace.getConfiguration('quartz.editor');
-    assert.strictEqual(updated.get('theme'), 'dark');
+    assert.strictEqual(updated.get('imageDir'), './images');
   });
 
   test('Configuration changes do not require extension reload', async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext);
     assert.ok(ext.isActive, 'Extension should be active before config change');
 
     const config = vscode.workspace.getConfiguration('quartz.editor');
-    await config.update('fontSize', 24, vscode.ConfigurationTarget.Global);
+    await config.update('editorTheme', 'academic', vscode.ConfigurationTarget.Global);
 
     // Extension should still be active after config change
     assert.ok(ext.isActive, 'Extension should still be active after config change');

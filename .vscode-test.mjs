@@ -6,4 +6,5 @@ export default defineConfig({
     timeout: 30000,
   },
   workspaceFolder: './test/integration/fixtures',
+  launchArgs: ['--profile-temp', '--theme', 'Default Light Modern'],
 });

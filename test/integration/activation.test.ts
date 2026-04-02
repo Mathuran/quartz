@@ -3,12 +3,12 @@ import * as vscode from 'vscode';
 
 suite('Extension Activation', () => {
   test('Extension is present in extension list', () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext, 'Extension should be found');
   });
 
   test('Extension activates when a .md file is opened', async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext, 'Extension should be found');
 
     // Open a markdown file from fixtures to trigger activation
@@ -25,7 +25,7 @@ suite('Extension Activation', () => {
   });
 
   test('Extension exports activate and deactivate functions', async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext);
     if (!ext.isActive) {
       await ext.activate();
@@ -35,7 +35,7 @@ suite('Extension Activation', () => {
   });
 
   test('Extension activates without error', async () => {
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext);
     // Activation should not throw
     await assert.doesNotReject(async () => {
@@ -48,7 +48,7 @@ suite('Extension Activation', () => {
   test('Deactivate is callable without error', async () => {
     // We can't directly call deactivate in integration tests,
     // but we can verify the extension is properly structured
-    const ext = vscode.extensions.getExtension('quartz.quartz-markdown-editor');
+    const ext = vscode.extensions.getExtension('mathuran-quartz.quartz-md');
     assert.ok(ext);
     assert.ok(ext.packageJSON);
     assert.strictEqual(ext.packageJSON.main, './dist/extension.js');
