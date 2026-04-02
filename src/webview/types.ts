@@ -7,8 +7,3 @@ export interface EditorConfig {
   preserveFormatting: boolean;
   showBlockHandles: boolean;
 }
-
-export interface EditorMessage {
-  type: string;
-  [key: string]: unknown;
-}

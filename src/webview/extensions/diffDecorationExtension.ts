@@ -4,7 +4,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import type { EditorState } from '@tiptap/pm/state';
 import type { DiffType } from '../diff/types';
 
-export interface DiffDecorationConfig {
+interface DiffDecorationConfig {
   /** Map from top-level block index to its diff type. Only non-'unchanged' entries needed. */
   blockDiffMap: Map<number, DiffType>;
 }

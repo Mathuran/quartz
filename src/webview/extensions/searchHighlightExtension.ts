@@ -4,7 +4,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import type { EditorState } from '@tiptap/pm/state';
 import type { SearchMatch } from '../search/searchEngine';
 
-export interface SearchHighlightState {
+interface SearchHighlightState {
   matches: SearchMatch[];
   currentIndex: number;
 }
