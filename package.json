@@ -220,7 +220,15 @@
     "setup:env": "gh secret list --env prod && echo '\n# Create .env file with VSCE_PAT from GitHub secrets (prod environment)' && echo 'VSCE_PAT=' > .env && echo 'Created .env - add your VSCE_PAT value'",
     "publish:local": "source .env && npm run build && vsce publish -p $VSCE_PAT",
     "publish:ci": "npm run build && vsce publish -p $VSCE_PAT",
-    "doctor": "react-doctor"
+    "doctor": "react-doctor",
+    "website:build": "cd website && npm run build",
+    "website:dev": "cd website && npm run dev",
+    "website:lint": "cd website && npm run lint",
+    "website:lint:fix": "cd website && npm run lint:fix",
+    "website:format": "cd website && npm run format",
+    "website:format:check": "cd website && npm run format:check",
+    "website:test": "cd website && npm run test",
+    "website:clean": "cd website && npm run clean"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",

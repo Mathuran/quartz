@@ -62,7 +62,7 @@
 }
 
 /* — Light theme (toggle) — */
-[data-theme="light"] {
+[data-theme='light'] {
   --q-canvas: #fafafa;
   --q-surface: #ffffff;
   --q-surface-alt: #f4f4f6;

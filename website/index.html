@@ -1,217 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quartz — A Notion-style markdown editor for VS Code</title>
-  <meta name="description" content="Quartz is a block editor for VS Code that renders your .md files as rich, editable blocks with slash commands, tables, and callouts. Round-trip markdown fidelity. Free and open source.">
-  <meta property="og:title" content="Quartz — Notion-style editor for VS Code">
-  <meta property="og:description" content="Block editing, slash commands, and round-trip markdown fidelity. Free, open source, MIT licensed.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <link rel="stylesheet" href="css/components/button.css">
-  <link rel="stylesheet" href="css/components/card.css">
-  <link rel="stylesheet" href="css/sections/navbar.css">
-  <link rel="stylesheet" href="css/sections/hero.css">
-  <link rel="stylesheet" href="css/sections/showcase.css">
-  <link rel="stylesheet" href="css/sections/features.css">
-  <link rel="stylesheet" href="css/sections/demo.css">
-  <link rel="stylesheet" href="css/sections/footer.css">
-</head>
-<body>
-
-  <!-- ══════════ NAVBAR ══════════ -->
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
-    <div class="navbar-inner">
-      <a href="#" class="navbar-brand" aria-label="Quartz home">
-        <svg class="navbar-logo" viewBox="0 0 200 260" aria-hidden="true">
-          <path d="M100 10 L155 55 L155 190 L130 250 L70 250 L45 190 L45 55 Z" />
-          <line x1="100" y1="10" x2="100" y2="75" />
-          <line x1="45" y1="55" x2="100" y2="75" />
-          <line x1="155" y1="55" x2="100" y2="75" />
-          <line x1="100" y1="75" x2="70" y2="250" />
-          <line x1="100" y1="75" x2="130" y2="250" />
-        </svg>
-        <span>Quartz</span>
-      </a>
-
-      <div class="navbar-links">
-        <a href="#showcase" class="navbar-link">Features</a>
-        <a href="#demo" class="navbar-link">Demo</a>
-        <a href="https://github.com/Mathuran/quartz" class="navbar-link" target="_blank" rel="noopener">GitHub</a>
-        <button class="theme-toggle" aria-label="Toggle theme">
-          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        </button>
-        <a href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz" class="btn btn-primary" target="_blank" rel="noopener">
-          Install
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ══════════ HERO ══════════ -->
-  <section class="hero" id="hero">
-    <div class="container">
-      <h1 class="hero-headline">Markdown editing<br>that feels like Notion</h1>
-      <p class="hero-subtitle">Quartz replaces the VS Code markdown preview with a block editor. Slash commands, drag-and-drop, tables, callouts &mdash; all writing to standard <code>.md</code> files.</p>
-      <div class="hero-actions">
-        <a href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz" class="btn btn-primary btn-lg" target="_blank" rel="noopener">
-          Install for VS Code
-        </a>
-        <a href="#demo" class="btn btn-ghost btn-lg">
-          Try the editor
-        </a>
-      </div>
-      <div class="hero-product reveal">
-        <img src="images/quartzDemo.png" alt="Quartz editor showing a rich document with formatting toolbar, sidebar, and outline view inside VS Code" width="960" height="540" loading="eager">
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ SHOWCASE ══════════ -->
-  <section class="showcase" id="showcase">
-    <div class="container">
-      <div class="showcase-steps">
-
-        <div class="showcase-step reveal">
-          <div class="showcase-step-content">
-            <span class="showcase-step-number">Slash commands</span>
-            <h2 class="showcase-step-title">Type / to build anything</h2>
-            <p class="showcase-step-desc">Headings, code blocks, tables, callouts, task lists &mdash; insert any block type from the keyboard. No menus to memorize.</p>
-          </div>
-          <div class="showcase-step-screenshot">
-            <img src="images/slashCommandDemo.png" alt="Slash command menu showing heading, list, and block options" width="640" height="400" loading="lazy">
-          </div>
-        </div>
-
-        <div class="showcase-step reveal">
-          <div class="showcase-step-content">
-            <span class="showcase-step-number">Dark theme</span>
-            <h2 class="showcase-step-title">Follows your VS Code theme</h2>
-            <p class="showcase-step-desc">Callouts, code blocks with syntax highlighting, and task lists &mdash; all rendered in your preferred color scheme.</p>
-          </div>
-          <div class="showcase-step-screenshot">
-            <img src="images/darkThemeDemo.png" alt="Quartz dark theme with callout blocks, code highlighting, and task lists" width="640" height="400" loading="lazy">
-          </div>
-        </div>
-
-        <div class="showcase-step reveal">
-          <div class="showcase-step-content">
-            <span class="showcase-step-number">Code blocks</span>
-            <h2 class="showcase-step-title">Syntax highlighting built in</h2>
-            <p class="showcase-step-desc">Fenced code blocks render with full syntax highlighting. Language detection, copy button, and clean <code>```</code> output in your markdown.</p>
-          </div>
-          <div class="showcase-step-screenshot">
-            <img src="images/codeBlockDemo.png" alt="Code block with syntax highlighting and language label" width="640" height="400" loading="lazy">
-          </div>
-        </div>
-
-        <div class="showcase-step reveal">
-          <div class="showcase-step-content">
-            <span class="showcase-step-number">Round-trip fidelity</span>
-            <h2 class="showcase-step-title">Your markdown stays clean</h2>
-            <p class="showcase-step-desc">What you write is what gets saved. No proprietary format, no metadata injection, no lock-in. Open your <code>.md</code> files anywhere.</p>
-          </div>
-          <div class="showcase-step-screenshot">
-            <img src="images/frontmatterDemo.png" alt="YAML frontmatter rendered as a clean editable banner" width="640" height="400" loading="lazy">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ FEATURES ══════════ -->
-  <section class="features" id="features">
-    <div class="container">
-      <div class="features-header reveal">
-        <h2>What's inside</h2>
-        <p>Everything renders from standard markdown syntax.</p>
-      </div>
-
-      <div class="features-grid">
-        <div class="card reveal">
-          <div class="card-icon">/</div>
-          <h3>Slash commands</h3>
-          <p>Type / to insert headings, lists, code blocks, tables, callouts, and more.</p>
-        </div>
-        <div class="card reveal">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-          </div>
-          <h3>Tables</h3>
-          <p>Inline table editing with add/remove rows and columns.</p>
-        </div>
-        <div class="card reveal">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </div>
-          <h3>Code blocks</h3>
-          <p>Syntax highlighting for 50+ languages with language detection.</p>
-        </div>
-        <div class="card reveal">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          </div>
-          <h3>Callouts</h3>
-          <p>Obsidian-compatible admonitions. Tip, warning, info, and custom types.</p>
-        </div>
-        <div class="card reveal">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <h3>Frontmatter</h3>
-          <p>YAML frontmatter displayed as a clean, editable banner.</p>
-        </div>
-        <div class="card reveal">
-          <div class="card-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          </div>
-          <h3>Dark &amp; light</h3>
-          <p>Follows your VS Code theme automatically.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ DEMO ══════════ -->
-  <section class="demo" id="demo">
-    <div class="container">
-      <div class="demo-header reveal">
-        <h2>Try the editor</h2>
-        <p>This is the actual Quartz editor running in your browser. Type <code>/</code> for slash commands, <code>#</code> for headings.</p>
-      </div>
-
-      <div class="demo-editor-wrapper reveal">
-        <div class="demo-placeholder" id="demo-placeholder">
-          Loading editor...
-        </div>
-      </div>
-
-      <div class="demo-footer reveal">
-        <p>Like this? The VS Code extension has drag-and-drop, keyboard shortcuts, and theme integration.</p>
-        <a href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz" class="btn btn-primary" target="_blank" rel="noopener">
-          Install for VS Code
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ FOOTER ══════════ -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <svg class="footer-brand-logo" viewBox="0 0 200 260" aria-hidden="true">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quartz — A Notion-style markdown editor for VS Code</title>
+    <meta
+      name="description"
+      content="Quartz is a block editor for VS Code that renders your .md files as rich, editable blocks with slash commands, tables, and callouts. Round-trip markdown fidelity. Free and open source."
+    />
+    <meta property="og:title" content="Quartz — Notion-style editor for VS Code" />
+    <meta
+      property="og:description"
+      content="Block editing, slash commands, and round-trip markdown fidelity. Free, open source, MIT licensed."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/components/button.css" />
+    <link rel="stylesheet" href="css/components/card.css" />
+    <link rel="stylesheet" href="css/sections/navbar.css" />
+    <link rel="stylesheet" href="css/sections/hero.css" />
+    <link rel="stylesheet" href="css/sections/showcase.css" />
+    <link rel="stylesheet" href="css/sections/features.css" />
+    <link rel="stylesheet" href="css/sections/demo.css" />
+    <link rel="stylesheet" href="css/sections/footer.css" />
+  </head>
+  <body>
+    <!-- ══════════ NAVBAR ══════════ -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="navbar-inner">
+        <a href="#" class="navbar-brand" aria-label="Quartz home">
+          <svg class="navbar-logo" viewBox="0 0 200 260" aria-hidden="true">
             <path d="M100 10 L155 55 L155 190 L130 250 L70 250 L45 190 L45 55 Z" />
             <line x1="100" y1="10" x2="100" y2="75" />
             <line x1="45" y1="55" x2="100" y2="75" />
@@ -219,19 +48,366 @@
             <line x1="100" y1="75" x2="70" y2="250" />
             <line x1="100" y1="75" x2="130" y2="250" />
           </svg>
-          <span>Quartz &middot; MIT License</span>
-        </div>
-        <div class="footer-links">
-          <a href="https://github.com/Mathuran/quartz" target="_blank" rel="noopener">GitHub</a>
-          <span class="sep">&middot;</span>
-          <a href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz" target="_blank" rel="noopener">Marketplace</a>
-          <span class="sep">&middot;</span>
-          <a href="https://github.com/Mathuran/quartz/issues" target="_blank" rel="noopener">Issues</a>
+          <span>Quartz</span>
+        </a>
+
+        <div class="navbar-links">
+          <a href="#showcase" class="navbar-link">Features</a>
+          <a href="#demo" class="navbar-link">Demo</a>
+          <a
+            href="https://github.com/Mathuran/quartz"
+            class="navbar-link"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <svg
+              class="icon-moon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <svg
+              class="icon-sun"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          </button>
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener"
+          >
+            Install
+          </a>
         </div>
       </div>
-    </div>
-  </footer>
+    </nav>
 
-  <script src="js/main.js" type="module"></script>
-</body>
+    <!-- ══════════ HERO ══════════ -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <h1 class="hero-headline">Markdown editing<br />that feels like Notion</h1>
+        <p class="hero-subtitle">
+          Quartz replaces the VS Code markdown preview with a block editor. Slash commands,
+          drag-and-drop, tables, callouts &mdash; all writing to standard <code>.md</code> files.
+        </p>
+        <div class="hero-actions">
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz"
+            class="btn btn-primary btn-lg"
+            target="_blank"
+            rel="noopener"
+          >
+            Install for VS Code
+          </a>
+          <a href="#demo" class="btn btn-ghost btn-lg"> Try the editor </a>
+        </div>
+        <div class="hero-product reveal">
+          <img
+            src="images/quartzDemo.png"
+            alt="Quartz editor showing a rich document with formatting toolbar, sidebar, and outline view inside VS Code"
+            width="960"
+            height="540"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SHOWCASE ══════════ -->
+    <section class="showcase" id="showcase">
+      <div class="container">
+        <div class="showcase-steps">
+          <div class="showcase-step reveal">
+            <div class="showcase-step-content">
+              <span class="showcase-step-number">Slash commands</span>
+              <h2 class="showcase-step-title">Type / to build anything</h2>
+              <p class="showcase-step-desc">
+                Headings, code blocks, tables, callouts, task lists &mdash; insert any block type
+                from the keyboard. No menus to memorize.
+              </p>
+            </div>
+            <div class="showcase-step-screenshot">
+              <img
+                src="images/slashCommandDemo.png"
+                alt="Slash command menu showing heading, list, and block options"
+                width="640"
+                height="400"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          <div class="showcase-step reveal">
+            <div class="showcase-step-content">
+              <span class="showcase-step-number">Dark theme</span>
+              <h2 class="showcase-step-title">Follows your VS Code theme</h2>
+              <p class="showcase-step-desc">
+                Callouts, code blocks with syntax highlighting, and task lists &mdash; all rendered
+                in your preferred color scheme.
+              </p>
+            </div>
+            <div class="showcase-step-screenshot">
+              <img
+                src="images/darkThemeDemo.png"
+                alt="Quartz dark theme with callout blocks, code highlighting, and task lists"
+                width="640"
+                height="400"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          <div class="showcase-step reveal">
+            <div class="showcase-step-content">
+              <span class="showcase-step-number">Code blocks</span>
+              <h2 class="showcase-step-title">Syntax highlighting built in</h2>
+              <p class="showcase-step-desc">
+                Fenced code blocks render with full syntax highlighting. Language detection, copy
+                button, and clean <code>```</code> output in your markdown.
+              </p>
+            </div>
+            <div class="showcase-step-screenshot">
+              <img
+                src="images/codeBlockDemo.png"
+                alt="Code block with syntax highlighting and language label"
+                width="640"
+                height="400"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          <div class="showcase-step reveal">
+            <div class="showcase-step-content">
+              <span class="showcase-step-number">Round-trip fidelity</span>
+              <h2 class="showcase-step-title">Your markdown stays clean</h2>
+              <p class="showcase-step-desc">
+                What you write is what gets saved. No proprietary format, no metadata injection, no
+                lock-in. Open your <code>.md</code> files anywhere.
+              </p>
+            </div>
+            <div class="showcase-step-screenshot">
+              <img
+                src="images/frontmatterDemo.png"
+                alt="YAML frontmatter rendered as a clean editable banner"
+                width="640"
+                height="400"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FEATURES ══════════ -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="features-header reveal">
+          <h2>What's inside</h2>
+          <p>Everything renders from standard markdown syntax.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="card reveal">
+            <div class="card-icon">/</div>
+            <h3>Slash commands</h3>
+            <p>Type / to insert headings, lists, code blocks, tables, callouts, and more.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="3" y1="15" x2="21" y2="15" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="15" y1="3" x2="15" y2="21" />
+              </svg>
+            </div>
+            <h3>Tables</h3>
+            <p>Inline table editing with add/remove rows and columns.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+            </div>
+            <h3>Code blocks</h3>
+            <p>Syntax highlighting for 50+ languages with language detection.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </div>
+            <h3>Callouts</h3>
+            <p>Obsidian-compatible admonitions. Tip, warning, info, and custom types.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+            </div>
+            <h3>Frontmatter</h3>
+            <p>YAML frontmatter displayed as a clean, editable banner.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            </div>
+            <h3>Dark &amp; light</h3>
+            <p>Follows your VS Code theme automatically.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ DEMO ══════════ -->
+    <section class="demo" id="demo">
+      <div class="container">
+        <div class="demo-header reveal">
+          <h2>Try the editor</h2>
+          <p>
+            This is the actual Quartz editor running in your browser. Type <code>/</code> for slash
+            commands, <code>#</code> for headings.
+          </p>
+        </div>
+
+        <div class="demo-editor-wrapper reveal">
+          <div class="demo-placeholder" id="demo-placeholder">Loading editor...</div>
+        </div>
+
+        <div class="demo-footer reveal">
+          <p>
+            Like this? The VS Code extension has drag-and-drop, keyboard shortcuts, and theme
+            integration.
+          </p>
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener"
+          >
+            Install for VS Code
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <svg class="footer-brand-logo" viewBox="0 0 200 260" aria-hidden="true">
+              <path d="M100 10 L155 55 L155 190 L130 250 L70 250 L45 190 L45 55 Z" />
+              <line x1="100" y1="10" x2="100" y2="75" />
+              <line x1="45" y1="55" x2="100" y2="75" />
+              <line x1="155" y1="55" x2="100" y2="75" />
+              <line x1="100" y1="75" x2="70" y2="250" />
+              <line x1="100" y1="75" x2="130" y2="250" />
+            </svg>
+            <span>Quartz &middot; MIT License</span>
+          </div>
+          <div class="footer-links">
+            <a href="https://github.com/Mathuran/quartz" target="_blank" rel="noopener">GitHub</a>
+            <span class="sep">&middot;</span>
+            <a
+              href="https://marketplace.visualstudio.com/items?itemName=mathuransadagopan.quartz"
+              target="_blank"
+              rel="noopener"
+              >Marketplace</a
+            >
+            <span class="sep">&middot;</span>
+            <a href="https://github.com/Mathuran/quartz/issues" target="_blank" rel="noopener"
+              >Issues</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/main.js" type="module"></script>
+  </body>
 </html>

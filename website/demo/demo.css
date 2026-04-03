@@ -25,7 +25,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
@@ -102,7 +103,8 @@ body {
   color: var(--q-text-secondary);
 }
 
-#editor ul, #editor ol {
+#editor ul,
+#editor ol {
   padding-left: 1.5em;
   margin-bottom: 0.75em;
 }

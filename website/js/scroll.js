@@ -14,7 +14,7 @@ export function initScrollAnimations() {
         }
       });
     },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
   );
 
   document.querySelectorAll('.reveal, .stagger-children').forEach((el) => {
@@ -30,7 +30,7 @@ export function initScrollAnimations() {
       ([entry]) => {
         navbar.classList.toggle('scrolled', !entry.isIntersecting);
       },
-      { threshold: 0, rootMargin: '-64px 0px 0px 0px' }
+      { threshold: 0, rootMargin: '-64px 0px 0px 0px' },
     );
 
     if (heroSection) {
@@ -48,7 +48,7 @@ export function initScrollAnimations() {
       if (target) {
         e.preventDefault();
         const navHeight = parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
+          getComputedStyle(document.documentElement).getPropertyValue('--nav-height'),
         );
         const y = target.getBoundingClientRect().top + window.scrollY - navHeight;
         window.scrollTo({ top: y, behavior: 'smooth' });

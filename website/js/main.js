@@ -52,7 +52,7 @@ function initDemoLazyLoad() {
         placeholder.insertAdjacentElement('afterend', iframe);
       }
     },
-    { rootMargin: '400px 0px' }
+    { rootMargin: '400px 0px' },
   );
 
   observer.observe(demoSection);

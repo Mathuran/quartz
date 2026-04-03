@@ -1,4 +1,15 @@
 {
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node serve.js",
+    "clean": "rm -rf dist",
+    "lint": "eslint js/ demo/demo.js build.js serve.js",
+    "lint:fix": "eslint --fix js/ demo/demo.js build.js serve.js",
+    "format": "prettier --write \"**/*.{js,css,html}\" --ignore-path ../.gitignore",
+    "format:check": "prettier --check \"**/*.{js,css,html}\" --ignore-path ../.gitignore",
+    "test": "npx playwright test",
+    "test:update": "npx playwright test --update-snapshots"
+  }
 }
