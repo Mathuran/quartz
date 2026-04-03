@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quartz</title>
+    <meta name="description" content="A Notion-style markdown editor for VS Code" />
+    <meta property="og:title" content="Quartz" />
+    <meta property="og:description" content="A Notion-style markdown editor for VS Code" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        background: radial-gradient(
+          ellipse 80% 70% at 60% 45%,
+          #e2e2e8 0%,
+          #c8c8d2 50%,
+          #b0b0be 100%
+        );
+        background-attachment: fixed;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ---- Three.js canvas ---- */
+      #c {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* ---- Vignette ---- */
+      .vignette {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        background: radial-gradient(
+          ellipse 70% 60% at 55% 50%,
+          transparent 0%,
+          rgba(160, 160, 175, 0.25) 100%
+        );
+      }
+
+      /* ---- Text overlay ---- */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        padding-left: clamp(2.5rem, 8vw, 8rem);
+        z-index: 10;
+      }
+
+      .title {
+        font-family: 'Cormorant', Georgia, 'Times New Roman', serif;
+        font-weight: 300;
+        font-size: clamp(4.5rem, 10vw, 9rem);
+        color: rgba(20, 20, 30, 0.85);
+        letter-spacing: 0.02em;
+        line-height: 1;
+        user-select: none;
+      }
+
+      /* ---- Film grain ---- */
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 100;
+        opacity: 0.035;
+        mix-blend-mode: overlay;
+      }
+
+      .grain svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* ---- Reduced motion ---- */
+      @media (prefers-reduced-motion: reduce) {
+        .grain {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="c"
+      role="img"
+      aria-label="Spinning translucent octahedron crystal illuminated by light"
+    ></canvas>
+
+    <div class="vignette"></div>
+
+    <div class="overlay">
+      <h1 class="title">Quartz</h1>
+    </div>
+
+    <div class="grain">
+      <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <filter id="noise">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.65"
+            numOctaves="3"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noise)" />
+      </svg>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from 'three';
+
+      // ---- Renderer ----
+      const canvas = document.getElementById('c');
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.4;
+
+      // ---- Scene (no background — CSS gradient shows through) ----
+      const scene = new THREE.Scene();
+
+      // ---- Camera ----
+      const camera = new THREE.PerspectiveCamera(
+        35,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100,
+      );
+      camera.position.set(0, 0, 6);
+
+      // ---- Crystal geometry ----
+      const geometry = new THREE.OctahedronGeometry(1.4, 0);
+
+      // ---- Per-face materials (varying opacity based on light direction) ----
+      const lightDir = new THREE.Vector3(5, 4, 3).normalize();
+      const normals = geometry.getAttribute('normal');
+
+      // Assign each of the 8 faces to a material group
+      geometry.clearGroups();
+      const materials = [];
+      for (let i = 0; i < 8; i++) {
+        geometry.addGroup(i * 3, 3, i);
+
+        // Face normal from first vertex of each triangle
+        const nx = normals.getX(i * 3);
+        const ny = normals.getY(i * 3);
+        const nz = normals.getZ(i * 3);
+        const faceNormal = new THREE.Vector3(nx, ny, nz);
+
+        // dot: 1 = facing light, -1 = facing away
+        const dot = faceNormal.dot(lightDir);
+        // Faces facing light → more transparent; faces away → more opaque
+        const opacity = 0.45 + (1 - (dot + 1) / 2) * 0.5;
+
+        materials.push(
+          new THREE.MeshPhysicalMaterial({
+            color: 0xf0f0f8,
+            metalness: 0.02,
+            roughness: 0.12,
+            transparent: true,
+            opacity,
+            side: THREE.FrontSide,
+            envMapIntensity: 1.4,
+            specularIntensity: 1.5,
+            specularColor: new THREE.Color(0xffffff),
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.03,
+            reflectivity: 0.8,
+          }),
+        );
+      }
+
+      const crystal = new THREE.Mesh(geometry, materials);
+      crystal.position.set(0.6, 0, 0);
+      scene.add(crystal);
+
+      // ---- Edge highlights ----
+      const edges = new THREE.EdgesGeometry(geometry);
+      const edgeMaterial = new THREE.LineBasicMaterial({
+        color: 0x666677,
+        transparent: true,
+        opacity: 0.35,
+      });
+      const wireframe = new THREE.LineSegments(edges, edgeMaterial);
+      crystal.add(wireframe);
+
+      // ---- Lighting ----
+
+      // Key light: top-right, bright white — main illumination
+      const keyLight = new THREE.PointLight(0xffffff, 12.0, 50);
+      keyLight.position.set(5, 4, 3);
+      scene.add(keyLight);
+
+      // Ambient fill: low, creates shadow contrast on unlit faces
+      const ambientLight = new THREE.AmbientLight(0xd0d0d8, 0.35);
+      scene.add(ambientLight);
+
+      // Rim light: left-back, cool accent for edge definition
+      const rimLight = new THREE.PointLight(0xb0b8e0, 4.0, 30);
+      rimLight.position.set(-4, -2, 4);
+      scene.add(rimLight);
+
+      // Fill light: below, warm lift
+      const fillLight = new THREE.PointLight(0xfff8f0, 3.0, 30);
+      fillLight.position.set(0, -4, 2);
+      scene.add(fillLight);
+
+      // ---- Environment map (procedural) ----
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const envScene = new THREE.Scene();
+      envScene.background = new THREE.Color(0xc0c0cc);
+
+      const envLight1 = new THREE.PointLight(0xffffff, 60);
+      envLight1.position.set(5, 5, 5);
+      envScene.add(envLight1);
+
+      const envLight2 = new THREE.PointLight(0xffffff, 40);
+      envLight2.position.set(-5, -3, 2);
+      envScene.add(envLight2);
+
+      const envLight3 = new THREE.PointLight(0xfff8ee, 30);
+      envLight3.position.set(3, -4, -3);
+      envScene.add(envLight3);
+
+      const envLight4 = new THREE.PointLight(0xffffff, 50);
+      envLight4.position.set(-3, 5, -3);
+      envScene.add(envLight4);
+
+      scene.environment = pmrem.fromScene(envScene).texture;
+      pmrem.dispose();
+
+      // ---- Mouse tracking ----
+      let targetMouseX = 0,
+        targetMouseY = 0;
+      let currentMouseX = 0,
+        currentMouseY = 0;
+
+      document.addEventListener('pointermove', (e) => {
+        targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      // ---- Animation ----
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const clock = new THREE.Clock();
+
+      function animate() {
+        const t = clock.getElapsedTime();
+
+        // Smooth mouse follow
+        currentMouseX += (targetMouseX - currentMouseX) * 0.03;
+        currentMouseY += (targetMouseY - currentMouseY) * 0.03;
+
+        // Crystal rotation
+        crystal.rotation.y = t * 0.2;
+        crystal.rotation.x = Math.sin(t * 0.12) * 0.2;
+        crystal.rotation.z = Math.cos(t * 0.08) * 0.05;
+
+        // Subtle floating
+        crystal.position.y = Math.sin(t * 0.3) * 0.08;
+
+        // Mouse-reactive key light
+        keyLight.position.x = 5 + currentMouseX * 1.0;
+        keyLight.position.y = 4 - currentMouseY * 1.0;
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      if (prefersReducedMotion) {
+        crystal.rotation.y = 0.4;
+        crystal.rotation.x = 0.2;
+        renderer.render(scene, camera);
+      } else {
+        animate();
+      }
+
+      // ---- Resize ----
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>
