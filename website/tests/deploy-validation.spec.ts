@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.DEPLOY_URL || 'https://62088b7f.quartz-editor.pages.dev';
+const BASE_URL = process.env.DEPLOY_URL || 'https://quartz-editor.dev';
 
 test.describe('Deployed site validation', () => {
   test('homepage loads with all sections', async ({ page }) => {

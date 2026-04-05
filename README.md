@@ -1,7 +1,7 @@
 # Quartz — Clear Markdown Editor for VS Code
 
 [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/mathuran-quartz.quartz-md?label=VS%20Code%20Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=mathuran-quartz.quartz-md)
-[![Website](https://img.shields.io/badge/Website-quartz--editor.pages.dev-d4a853)](https://quartz-editor.pages.dev/)
+[![Website](https://img.shields.io/badge/Website-quartz--editor.dev-d4a853)](https://quartz-editor.dev/)
 
 ![Quartz Editor](https://raw.githubusercontent.com/Mathuran/quartz/main/images/quartzDemo.png)
 
