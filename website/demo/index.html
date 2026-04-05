@@ -6,14 +6,91 @@
     <title>Quartz Editor Demo</title>
     <link rel="stylesheet" href="webview/index.css" />
     <style>
+      /* v2 silver/grey palette — override VS Code variables before webview CSS loads */
+      :root {
+        --vscode-editor-background: #ffffff;
+        --vscode-editor-foreground: #2a2a3a;
+        --vscode-panel-border: #e0e0e6;
+        --vscode-focusBorder: #8888a0;
+        --vscode-editor-selectionBackground: rgba(120, 120, 150, 0.2);
+        --vscode-textCodeBlock-background: #f4f4f7;
+        --vscode-sideBar-background: #ffffff;
+        --vscode-list-hoverBackground: rgba(0, 0, 0, 0.04);
+      }
+
       html,
       body {
         height: 100%;
         margin: 0;
-        overflow: hidden;
+        background: #ffffff;
       }
+
       #root {
         height: 100%;
+        overflow-y: auto;
+      }
+
+      /* Center the page in the viewport */
+      .quartz-page-wrapper {
+        padding: 32px 0 !important;
+        min-height: 100% !important;
+        justify-content: center !important;
+      }
+
+      /* A4 paper: 210 × 297 mm ≈ 794 × 1123 px at 96 dpi */
+      .quartz-page {
+        max-width: 794px !important;
+        min-height: 1123px !important;
+        padding: 40px 48px !important;
+        border: none !important;
+        border-radius: 2px !important;
+        box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.04),
+          0 4px 16px rgba(0, 0, 0, 0.03) !important;
+      }
+
+      /* Tighter typography for web demo */
+      .quartz-editor-content {
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+      }
+
+      .quartz-editor-content h1 {
+        font-size: 1.625em !important;
+        margin: 0.6em 0 0.3em !important;
+      }
+
+      .quartz-editor-content h2 {
+        font-size: 1.2em !important;
+        margin: 0.5em 0 0.25em !important;
+      }
+
+      .quartz-editor-content h3 {
+        font-size: 1.05em !important;
+        margin: 0.4em 0 0.2em !important;
+      }
+
+      .quartz-editor-content pre {
+        padding: 10px 14px !important;
+        font-size: 0.85em !important;
+      }
+
+      .quartz-editor-content blockquote {
+        padding: 0.2em 0 0.2em 1em !important;
+      }
+
+      .quartz-editor-content ul,
+      .quartz-editor-content ol {
+        margin: 0.3em 0 !important;
+        padding-left: 1.5em !important;
+      }
+
+      .quartz-editor-content li {
+        margin: 0.1em 0 !important;
+      }
+
+      .quartz-editor-content hr {
+        margin: 1.25em 0 !important;
       }
     </style>
     <script>
@@ -22,7 +99,6 @@
         const state = {};
         return {
           postMessage: function (message) {
-            // When the editor sends 'ready', load sample markdown
             if (message && message.type === 'ready') {
               setTimeout(function () {
                 window.postMessage(
@@ -33,7 +109,6 @@
                   },
                   '*',
                 );
-                // Send config to enable all features
                 window.postMessage(
                   {
                     type: 'configUpdate',
@@ -42,11 +117,12 @@
                       showSlashCommands: true,
                       showTableOfContents: false,
                       renderFrontmatter: true,
-                      theme: 'auto',
+                      theme: 'light',
                       fontFamily: 'system',
                       fontSize: 'medium',
                       lineHeight: 'normal',
                       editorMaxWidth: 'narrow',
+                      editorTheme: 'clean',
                     },
                   },
                   '*',
@@ -64,6 +140,8 @@
       };
 
       var SAMPLE_MD = [
+        '[Back to Quartz](../v2/index.html) · [Install for VS Code](https://marketplace.visualstudio.com/items?itemName=mathuran-quartz.quartz-md) · [GitHub](https://github.com/Mathuran/quartz)',
+        '',
         '# Welcome to Quartz',
         '',
         'A **Notion-style** markdown editor that lives inside VS Code.',
@@ -95,13 +173,27 @@
         '- [ ] Drag and reorder blocks',
         '',
         '---',
-        '',
-        '*Install Quartz to get the full experience with drag-and-drop blocks, keyboard shortcuts, and more.*',
       ].join('\n');
     </script>
   </head>
-  <body>
+  <body data-vscode-theme-kind="vscode-light">
     <div id="root"></div>
     <script type="module" src="webview/index.js"></script>
+    <script>
+      // Navigate the parent browser window for all link clicks
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a[href]');
+        if (!link) return;
+        e.preventDefault();
+        var href = link.getAttribute('href');
+        if (href.startsWith('http')) {
+          // External links open in new tab
+          window.top.open(href, '_blank', 'noopener');
+        } else {
+          // Relative links (e.g. landing page) navigate the parent
+          window.top.location.href = href;
+        }
+      });
+    </script>
   </body>
 </html>
