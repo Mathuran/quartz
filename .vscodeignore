@@ -24,3 +24,12 @@ images/icon.png.placeholder
 .env.*
 eslint.config.mjs
 .prettierrc
+website/**
+.agents/**
+docs/**
+scripts/**
+deno.lock
+knip.json
+CONTRIBUTING.md
+CHANGELOG.md
+package-lock.json
