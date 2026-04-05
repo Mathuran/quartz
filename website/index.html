@@ -86,7 +86,7 @@
         pointer-events: none;
         display: flex;
         align-items: center;
-        padding-left: clamp(2.5rem, 8vw, 8rem);
+        padding-left: clamp(4rem, 12vw, 12rem);
         z-index: 10;
       }
 
@@ -310,11 +310,10 @@
     <section class="snap-section info-section" id="info">
       <div class="info-grid">
         <div class="info-col">
-          <p class="info-label">What it is</p>
           <h2 class="info-heading">A block editor for your .md files</h2>
           <p class="info-text">
             Quartz replaces the VS Code markdown preview with a Notion-style editor.
-            Slash commands, drag-and-drop, tables, callouts &mdash; writing to standard markdown.
+            Slash commands, tables, callouts &mdash; writing to standard markdown.
           </p>
           <div class="info-actions">
             <a href="demo.html" class="info-link">Try the editor</a>
@@ -422,7 +421,7 @@
       }
 
       const crystal = new THREE.Mesh(geometry, materials);
-      crystal.position.set(0.6, 0, 0);
+      crystal.position.set(1.4, 0, 0);
       scene.add(crystal);
 
       // ---- Edge highlights ----
