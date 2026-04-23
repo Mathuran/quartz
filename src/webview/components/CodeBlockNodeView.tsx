@@ -8,6 +8,7 @@ import {
   type LanguageEntry,
 } from '../constants/languages';
 import { shouldOpenUpward } from '../utils/menuPosition';
+import { MermaidBlockView } from './MermaidBlockView';
 
 const CopyIcon = () => (
   <svg
@@ -65,13 +66,25 @@ type CodeBlockAction =
 function codeBlockReducer(state: CodeBlockState, action: CodeBlockAction): CodeBlockState {
   switch (action.type) {
     case 'OPEN_DROPDOWN':
-      return { ...state, dropdownOpen: true, dropdownDirection: action.direction, search: '', activeIndex: 0 };
+      return {
+        ...state,
+        dropdownOpen: true,
+        dropdownDirection: action.direction,
+        search: '',
+        activeIndex: 0,
+      };
     case 'CLOSE_DROPDOWN':
       return { ...state, dropdownOpen: false, search: '', activeIndex: 0 };
     case 'TOGGLE_DROPDOWN':
       return state.dropdownOpen
         ? { ...state, dropdownOpen: false, search: '', activeIndex: 0 }
-        : { ...state, dropdownOpen: true, dropdownDirection: action.direction, search: '', activeIndex: 0 };
+        : {
+            ...state,
+            dropdownOpen: true,
+            dropdownDirection: action.direction,
+            search: '',
+            activeIndex: 0,
+          };
     case 'SET_SEARCH':
       return { ...state, search: action.search, activeIndex: 0 };
     case 'SET_ACTIVE_INDEX':
@@ -91,7 +104,40 @@ const initialCodeBlockState: CodeBlockState = {
   copied: false,
 };
 
-export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: NodeViewProps) {
+export function CodeBlockNodeView(props: NodeViewProps) {
+  const { node, editor, getPos } = props;
+  const language = (node.attrs.language as string) || '';
+
+  // Mermaid code blocks render as diagrams instead of raw code
+  if (language === 'mermaid') {
+    const code = node.textContent;
+    const handleCodeChange = (newCode: string) => {
+      const pos = getPos();
+      if (pos == null) return;
+      const { tr } = editor.state;
+      // Replace the content of the code block node (pos+1 to pos+1+oldLength)
+      const start = pos + 1;
+      const end = start + node.content.size;
+      if (newCode) {
+        tr.replaceWith(start, end, editor.state.schema.text(newCode));
+      } else {
+        tr.delete(start, end);
+      }
+      editor.view.dispatch(tr);
+    };
+    return (
+      <NodeViewWrapper className="quartz-codeblock quartz-codeblock-mermaid">
+        <div contentEditable={false}>
+          <MermaidBlockView code={code} onCodeChange={handleCodeChange} />
+        </div>
+      </NodeViewWrapper>
+    );
+  }
+
+  return <CodeBlockNodeViewInner {...props} />;
+}
+
+function CodeBlockNodeViewInner({ node, updateAttributes, editor: _editor }: NodeViewProps) {
   const language = (node.attrs.language as string) || '';
   const [state, dispatch] = useReducer(codeBlockReducer, initialCodeBlockState);
   const { dropdownOpen, dropdownDirection, search, activeIndex, copied } = state;
@@ -153,7 +199,10 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        dispatch({ type: 'SET_ACTIVE_INDEX', index: Math.min(activeIndex + 1, flatList.length - 1) });
+        dispatch({
+          type: 'SET_ACTIVE_INDEX',
+          index: Math.min(activeIndex + 1, flatList.length - 1),
+        });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         dispatch({ type: 'SET_ACTIVE_INDEX', index: Math.max(activeIndex - 1, 0) });
@@ -218,7 +267,9 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
               if (!dropdownOpen && langBtnRef.current) {
                 const rect = langBtnRef.current.getBoundingClientRect();
                 const DROPDOWN_MAX_HEIGHT = 300;
-                direction = shouldOpenUpward(rect.bottom, rect.top, DROPDOWN_MAX_HEIGHT) ? 'up' : 'down';
+                direction = shouldOpenUpward(rect.bottom, rect.top, DROPDOWN_MAX_HEIGHT)
+                  ? 'up'
+                  : 'down';
               }
               dispatch({ type: 'TOGGLE_DROPDOWN', direction });
               if (!dropdownOpen) {
@@ -231,7 +282,12 @@ export function CodeBlockNodeView({ node, updateAttributes, editor: _editor }: N
           </button>
 
           {dropdownOpen && (
-            <div className="quartz-codeblock-dropdown" role="listbox" data-direction={dropdownDirection} onKeyDown={handleKeyDown}>
+            <div
+              className="quartz-codeblock-dropdown"
+              role="listbox"
+              data-direction={dropdownDirection}
+              onKeyDown={handleKeyDown}
+            >
               <div className="quartz-codeblock-dropdown-search">
                 <input
                   ref={searchInputRef}

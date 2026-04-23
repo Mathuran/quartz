@@ -49,6 +49,7 @@ export default defineConfig({
         'specs/external-change.spec.ts',
         'specs/roundtrip.spec.ts',
         'specs/slash-commands.spec.ts',
+        'specs/mermaid-diagram.spec.ts',
         'specs/frontmatter-banner.spec.ts',
         'specs/list-item-movement.spec.ts',
         'specs/table-of-contents.spec.ts',

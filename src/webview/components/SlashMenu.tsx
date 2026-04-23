@@ -24,7 +24,14 @@ type SlashMenuAction =
 function slashMenuReducer(state: SlashMenuState, action: SlashMenuAction): SlashMenuState {
   switch (action.type) {
     case 'OPEN':
-      return { ...state, isOpen: true, query: '', selectedIndex: 0, position: action.position, openUpward: action.openUpward };
+      return {
+        ...state,
+        isOpen: true,
+        query: '',
+        selectedIndex: 0,
+        position: action.position,
+        openUpward: action.openUpward,
+      };
     case 'CLOSE':
       return { ...state, isOpen: false, query: '', selectedIndex: 0 };
     case 'SET_QUERY':
@@ -103,6 +110,8 @@ export function SlashMenu({ editor }: SlashMenuProps) {
                 return commands.toggleTaskList();
               case 'codeBlock':
                 return commands.toggleCodeBlock();
+              case 'mermaid':
+                return commands.setCodeBlock({ language: 'mermaid' });
               case 'blockquote':
                 return commands.toggleBlockquote();
               case 'divider':
@@ -196,7 +205,10 @@ export function SlashMenu({ editor }: SlashMenuProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.min(selectedIndex + 1, filteredCommands.length - 1) });
+        dispatch({
+          type: 'SET_SELECTED_INDEX',
+          index: Math.min(selectedIndex + 1, filteredCommands.length - 1),
+        });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         dispatch({ type: 'SET_SELECTED_INDEX', index: Math.max(selectedIndex - 1, 0) });

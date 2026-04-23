@@ -54,6 +54,7 @@ import type { EditorConfig } from './types';
 import './styles/callout.css';
 import './styles/codeBlock.css';
 import './styles/codeBlockThemes.css';
+import './styles/mermaid.css';
 import './styles/tableOfContents.css';
 import './styles/search.css';
 
@@ -224,7 +225,10 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
             '| Editor text length:',
             editorText.length,
           );
-          console.warn('[Quartz] Parsed JSON:', JSON.stringify(initialParsed.doc, null, 2).slice(0, 2000));
+          console.warn(
+            '[Quartz] Parsed JSON:',
+            JSON.stringify(initialParsed.doc, null, 2).slice(0, 2000),
+          );
           dispatch({ type: 'SET_WARNING', warning: msg });
         }
       }
@@ -269,8 +273,10 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
           const editorText = editor.getText().trim();
           if (editorText.length < 10) {
             console.warn('[Quartz] Content may have been dropped after external update.');
-            dispatch({ type: 'SET_WARNING', warning:
-              'The document could not be fully rendered. Some content may use unsupported formatting.',
+            dispatch({
+              type: 'SET_WARNING',
+              warning:
+                'The document could not be fully rendered. Some content may use unsupported formatting.',
             });
           }
         }
@@ -377,7 +383,10 @@ export function Editor({ initialContent, config, onUpdate }: EditorProps) {
       {contentWarning && (
         <div className="quartz-content-warning">
           <span>{contentWarning}</span>
-          <button onClick={() => dispatch({ type: 'SET_WARNING', warning: null })} className="quartz-warning-dismiss">
+          <button
+            onClick={() => dispatch({ type: 'SET_WARNING', warning: null })}
+            className="quartz-warning-dismiss"
+          >
             Dismiss
           </button>
         </div>

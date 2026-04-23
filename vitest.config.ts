@@ -49,6 +49,7 @@ export default defineConfig({
             'test/unit/roundtrip-all-blocks.test.ts',
             'test/unit/callout-roundtrip.test.ts',
             'test/unit/frontmatter-roundtrip.test.ts',
+            'test/unit/mermaid-roundtrip.test.ts',
           ],
           exclude: ['node_modules/**'],
           sequence: { groupOrder: 2 },

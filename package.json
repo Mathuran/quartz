@@ -166,7 +166,13 @@
         "quartz.editor.editorTheme": {
           "type": "string",
           "default": "clean",
-          "enum": ["default", "clean", "warm", "academic", "minimal"],
+          "enum": [
+            "default",
+            "clean",
+            "warm",
+            "academic",
+            "minimal"
+          ],
           "enumDescriptions": [
             "Standard look — adapts to your VS Code theme",
             "Clean and modern — generous spacing, warm paper tint",
@@ -280,6 +286,7 @@
     "highlight.js": "^11.9.0",
     "lowlight": "^3.1.0",
     "markdown-it": "^14.1.0",
+    "mermaid": "^11.14.0",
     "prettier": "^3.8.1",
     "react": "^18.2.0",
     "react-doctor": "^0.0.29",

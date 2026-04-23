@@ -92,6 +92,16 @@ export const slashCommands: SlashCommand[] = [
     command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
   },
   {
+    id: 'mermaid',
+    label: 'Mermaid Diagram',
+    description: 'Flowchart or sequence diagram',
+    icon: '◇',
+    aliases: ['diagram', 'flowchart', 'sequence', 'chart'],
+    command: (editor) => {
+      editor.chain().focus().setCodeBlock({ language: 'mermaid' }).run();
+    },
+  },
+  {
     id: 'blockquote',
     label: 'Quote',
     description: 'Blockquote',
