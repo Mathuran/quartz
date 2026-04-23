@@ -20,3 +20,4 @@ playwright-results/
 
 # Placeholder files
 images/*.placeholder
+.playwright-mcp/*
