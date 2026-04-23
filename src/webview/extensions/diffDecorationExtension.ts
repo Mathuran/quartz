@@ -16,10 +16,7 @@ interface DiffPluginState {
 
 const diffDecorationKey = new PluginKey<DiffPluginState>('diffDecoration');
 
-function buildDecorations(
-  state: EditorState,
-  blockDiffMap: Map<number, DiffType>,
-): DecorationSet {
+function buildDecorations(state: EditorState, blockDiffMap: Map<number, DiffType>): DecorationSet {
   if (blockDiffMap.size === 0) return DecorationSet.empty;
 
   const decorations: Decoration[] = [];

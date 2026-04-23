@@ -16,10 +16,7 @@ interface SearchPluginState {
 
 export const searchHighlightKey = new PluginKey<SearchPluginState>('searchHighlight');
 
-function buildDecorations(
-  state: EditorState,
-  highlightState: SearchHighlightState,
-): DecorationSet {
+function buildDecorations(state: EditorState, highlightState: SearchHighlightState): DecorationSet {
   if (highlightState.matches.length === 0) {
     return DecorationSet.empty;
   }

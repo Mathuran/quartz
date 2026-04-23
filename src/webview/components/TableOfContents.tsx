@@ -140,7 +140,10 @@ export function TableOfContents({ editor }: TableOfContentsProps) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         e.stopPropagation();
-        dispatch({ type: 'SET_SELECTED_INDEX', index: Math.min(selectedIndex + 1, filteredHeadings.length - 1) });
+        dispatch({
+          type: 'SET_SELECTED_INDEX',
+          index: Math.min(selectedIndex + 1, filteredHeadings.length - 1),
+        });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         e.stopPropagation();

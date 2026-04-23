@@ -194,11 +194,7 @@ export function activate(context: vscode.ExtensionContext) {
         await vscode.commands.executeCommand('vscode.openWith', uri, 'default');
       } else {
         // Switch to Quartz editor
-        await vscode.commands.executeCommand(
-          'vscode.openWith',
-          uri,
-          QuartzEditorProvider.viewType,
-        );
+        await vscode.commands.executeCommand('vscode.openWith', uri, QuartzEditorProvider.viewType);
       }
     }),
   );

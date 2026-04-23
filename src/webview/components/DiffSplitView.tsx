@@ -178,7 +178,10 @@ export function DiffSplitView({
 
   // Memoize extension arrays to avoid recreating on every render
   const leftExtensions = useMemo(
-    () => [...getSharedExtensions(), DiffDecorationExtension.configure({ blockDiffMap: leftDiffMap })],
+    () => [
+      ...getSharedExtensions(),
+      DiffDecorationExtension.configure({ blockDiffMap: leftDiffMap }),
+    ],
     [leftDiffMap],
   );
 

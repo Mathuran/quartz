@@ -23,12 +23,7 @@ function normalizeUrl(url: string): string {
  * Opens when user clicks the link button in the formatting toolbar.
  * Mount/unmount this component to open/close — state resets automatically on mount.
  */
-export function LinkDialog({
-  onSubmit,
-  onCancel,
-  initialText,
-  hasSelection,
-}: LinkDialogProps) {
+export function LinkDialog({ onSubmit, onCancel, initialText, hasSelection }: LinkDialogProps) {
   const [url, setUrl] = useState('');
   const [text, setText] = useState(initialText || '');
   const [error, setError] = useState<string | null>(null);

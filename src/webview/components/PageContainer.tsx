@@ -20,10 +20,11 @@ export function PageContainer({ children }: PageContainerProps) {
   }, []);
 
   return (
-    <div ref={containerRef} className={`quartz-page-wrapper align-center ${isNarrow ? 'quartz-narrow' : ''}`}>
-      <div className="quartz-page">
-        {children}
-      </div>
+    <div
+      ref={containerRef}
+      className={`quartz-page-wrapper align-center ${isNarrow ? 'quartz-narrow' : ''}`}
+    >
+      <div className="quartz-page">{children}</div>
     </div>
   );
 }

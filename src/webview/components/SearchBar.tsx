@@ -35,7 +35,15 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
     case 'OPEN':
       return { ...state, isOpen: true, query: action.query, showReplace: action.showReplace };
     case 'CLOSE':
-      return { ...state, isOpen: false, showReplace: false, query: '', replacement: '', matches: [], currentIndex: -1 };
+      return {
+        ...state,
+        isOpen: false,
+        showReplace: false,
+        query: '',
+        replacement: '',
+        matches: [],
+        currentIndex: -1,
+      };
     case 'SET_QUERY':
       return { ...state, query: action.query };
     case 'SET_REPLACEMENT':
@@ -115,7 +123,16 @@ function ReplaceRow({
 
 export function SearchBar({ editor }: SearchBarProps) {
   const [state, dispatch] = useReducer(searchReducer, initialSearchState);
-  const { isOpen, showReplace, query, replacement, caseSensitive, wholeWord, matches, currentIndex } = state;
+  const {
+    isOpen,
+    showReplace,
+    query,
+    replacement,
+    caseSensitive,
+    wholeWord,
+    matches,
+    currentIndex,
+  } = state;
   const findInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

@@ -185,9 +185,7 @@ function parseBlockquote(
   }
 
   if (safetyLimit <= 0) {
-    console.warn(
-      'parseBlockquote: safety limit exhausted — blockquote may be incomplete',
-    );
+    console.warn('parseBlockquote: safety limit exhausted — blockquote may be incomplete');
   }
 
   return { nodes, endIndex: i };

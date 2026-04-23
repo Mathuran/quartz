@@ -52,9 +52,11 @@ function computeLCS(oldBlocks: JSONContent[], newBlocks: JSONContent[]): [number
   return pairs;
 }
 
-function buildLCSMap(
-  lcsPairs: [number, number][],
-): { oldInLCS: Set<number>; newInLCS: Set<number>; lcsOldToNew: Map<number, number> } {
+function buildLCSMap(lcsPairs: [number, number][]): {
+  oldInLCS: Set<number>;
+  newInLCS: Set<number>;
+  lcsOldToNew: Map<number, number>;
+} {
   const oldInLCS = new Set<number>();
   const newInLCS = new Set<number>();
   const lcsOldToNew = new Map<number, number>();
