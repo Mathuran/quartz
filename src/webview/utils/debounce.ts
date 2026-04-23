@@ -1,11 +1,11 @@
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: unknown[]) => void>(
   fn: T,
   delay: number,
 ): T & { flush: () => void; cancel: () => void } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  let lastArgs: any[] | null = null;
+  let lastArgs: unknown[] | null = null;
 
-  const debounced = ((...args: any[]) => {
+  const debounced = ((...args: unknown[]) => {
     lastArgs = args;
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {

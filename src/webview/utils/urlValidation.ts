@@ -25,7 +25,6 @@ const SAFE_DATA_IMAGE_PREFIXES = [
  * string comparison but some engines may ignore the control character.
  */
 export function stripControlCharacters(input: string): string {
-   
   return input.replace(/[\x00-\x1f\x7f]/g, '');
 }
 

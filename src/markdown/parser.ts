@@ -77,7 +77,7 @@ export function parseMarkdown(text: string): ParseResult {
   return parseMarkdownInternal(text, 0);
 }
 
-function parseMarkdownInternal(text: string, depth: number): ParseResult {
+function parseMarkdownInternal(text: string, _depth: number): ParseResult {
   if (!text || !text.trim()) {
     return { doc: { type: 'doc', content: [{ type: 'paragraph' }] }, frontmatter: null };
   }

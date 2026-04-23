@@ -29,6 +29,10 @@ export default [
       // Security plugin recommended rules
       ...securityPlugin.configs.recommended.rules,
 
+      // Disable noisy false positives — all flagged uses are internal
+      // array/object indexing on trusted data, not user-controlled keys.
+      "security/detect-object-injection": "off",
+
       // Allow unused vars prefixed with _
       "@typescript-eslint/no-unused-vars": [
         "error",

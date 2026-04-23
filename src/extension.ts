@@ -182,6 +182,8 @@ export function activate(context: vscode.ExtensionContext) {
 
       // Check if current editor is Quartz (custom editor) or text editor
       const isQuartzEditor =
+        typeof input === 'object' &&
+        input !== null &&
         'viewType' in input &&
         (input as { viewType: string }).viewType === QuartzEditorProvider.viewType;
 

@@ -113,7 +113,7 @@ function getMermaid() {
 }
 
 // Re-initialize mermaid when theme changes, notify all blocks
-let themeVersion = 0;
+let _themeVersion = 0;
 const themeListeners = new Set<() => void>();
 
 function onThemeChange(cb: () => void) {
@@ -129,7 +129,7 @@ if (typeof MutationObserver !== 'undefined') {
     const dark = isDarkTheme();
     if (dark !== currentThemeIsDark) {
       currentThemeIsDark = dark;
-      themeVersion++;
+      _themeVersion++;
       // Re-initialize mermaid with new theme
       getMermaid().then((mod) => {
         mod.default.initialize(getMermaidConfig());
@@ -245,7 +245,6 @@ export function MermaidBlockView({ code, onCodeChange }: MermaidBlockViewProps) 
       setDraft(code);
       renderDiagram(code);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
   // ---- Re-render when VS Code theme changes ----

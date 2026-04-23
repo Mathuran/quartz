@@ -68,9 +68,8 @@ const lowlight = createLowlight();
 // so they don't block the initial editor render.
 import('./lowlightLanguages.js')
   .then((mod) => {
-    const grammars = (mod as { grammars: Parameters<typeof lowlight.register>[0] }).grammars;
-    if (grammars && typeof grammars === 'object') {
-      lowlight.register(grammars);
+    if (mod.grammars && typeof mod.grammars === 'object') {
+      lowlight.register(mod.grammars);
     }
   })
   .catch((err: unknown) => {
@@ -150,7 +149,7 @@ function safeParse(markdown: string): {
   }
 }
 
-export function Editor({ initialContent, config, onUpdate }: EditorProps) {
+export function Editor({ initialContent, config: _config, onUpdate }: EditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialContentRef = useRef(initialContent);
 

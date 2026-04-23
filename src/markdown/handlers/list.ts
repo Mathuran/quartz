@@ -162,7 +162,7 @@ export function convertToTaskItem(listItem: JSONContent): JSONContent {
   if (firstParagraph?.type === 'paragraph' && firstParagraph.content) {
     const firstText = firstParagraph.content[0];
     if (firstText?.type === 'text' && firstText.text) {
-      const match = firstText.text.match(/^\[([xX ])\](?:\s(.*))?$/s);
+      const match = firstText.text.match(/^\[([xX ])\]\s?(.*)$/s);
       if (match) {
         const checked = match[1].toLowerCase() === 'x';
         const remainingText = match[2] || '';
