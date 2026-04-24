@@ -1,7 +1,6 @@
 import type { JSONContent } from '@tiptap/core';
 
-const CALLOUT_REGEX =
-  /^\[!(note|tip|warning|danger|info|example|quote|abstract)\]([+-])?\s*(.*)$/i;
+const CALLOUT_REGEX = /^\[!(note|tip|warning|danger|info|example|quote|abstract)\]([+-])?\s*(.*)$/i;
 
 interface CalloutMatch {
   calloutType: string;
