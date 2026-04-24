@@ -92,8 +92,8 @@ function getMermaidConfig() {
   return {
     startOnLoad: false,
     securityLevel: 'strict' as const,
-    flowchart: { useMaxWidth: true },
-    sequence: { useMaxWidth: true },
+    flowchart: { useMaxWidth: false },
+    sequence: { useMaxWidth: false },
     theme: 'base' as const,
     themeVariables: dark ? DARK_THEME_VARS : LIGHT_THEME_VARS,
   };

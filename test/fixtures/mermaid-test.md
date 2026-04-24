@@ -1,65 +1,59 @@
 # Mermaid Diagram Test
 
-Some text before diagrams.
+Five simple-to-medium complexity diagrams that render within the 400px max-height.
 
 ## Flowchart
 
 ```mermaid
 graph TD
-    A[User opens file] --> B{Has mermaid blocks?}
-    B -->|Yes| C[Render diagrams]
-    B -->|No| D[Normal editor]
-    C --> E[Click edit button]
-    E --> F[Edit source code]
-    F --> G[Click Done]
-    G --> C
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action A]
+    B -->|No| D[Action B]
+    C --> E[End]
+    D --> E
 ```
 
 ## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant E as Editor
-    participant M as Mermaid.js
-    U->>E: Open markdown file
-    E->>M: Parse mermaid block
-    M-->>E: Return SVG
-    E-->>U: Display diagram
-    U->>E: Click edit button
-    E-->>U: Show textarea
-    U->>E: Edit + click Done
-    E->>M: Re-render
-    M-->>E: Updated SVG
-    E-->>U: Display updated diagram
+    Client->>Server: POST /login
+    Server->>DB: Query user
+    DB-->>Server: User record
+    Server-->>Client: 200 OK + token
 ```
 
-## Regular Code Block (should render normally)
-
-```typescript
-function hello() {
-  console.log("This should be a normal code block");
-}
-```
-
-## Invalid Mermaid (should show error)
+## State Diagram
 
 ```mermaid
-this is not valid mermaid syntax
-    --> broken
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Review : Submit
+    Review --> Approved : Approve
+    Review --> Draft : Request changes
+    Approved --> Published : Publish
+    Published --> [*]
 ```
 
-## Empty Mermaid Block
+## Entity Relationship Diagram
 
 ```mermaid
+erDiagram
+    USER ||--o{ POST : writes
+    POST ||--o{ COMMENT : has
+    USER ||--o{ COMMENT : writes
+    POST }o--|| CATEGORY : belongs_to
 ```
 
-## Mixed Content After Diagrams
+## Git Graph
 
-Regular paragraph after diagrams. Make sure everything below renders fine.
-
-- List item 1
-- List item 2
-- List item 3
-
-> A blockquote for good measure.
+```mermaid
+gitGraph
+    commit
+    branch feature
+    commit
+    commit
+    checkout main
+    merge feature
+    commit
+```
