@@ -7,13 +7,9 @@ import { computeDiff } from './diff/diffEngine';
 import { computeAlignment } from './diff/alignment';
 import type { DiffResult, AlignedRow } from './diff/types';
 import { EDITOR_THEMES } from './types';
-import type { EditorConfig } from './types';
+import type { EditorConfig, VsCodeApi } from './types';
 
-declare function acquireVsCodeApi(): {
-  postMessage(message: unknown): void;
-  getState(): unknown;
-  setState(state: unknown): void;
-};
+declare function acquireVsCodeApi(): VsCodeApi;
 
 const vscode = acquireVsCodeApi();
 

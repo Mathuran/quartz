@@ -1,11 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { VsCodeApi } from '../types';
 import '../styles/frontmatter.css';
-
-interface VsCodeApi {
-  postMessage(message: unknown): void;
-  getState(): Record<string, unknown> | undefined;
-  setState(state: unknown): void;
-}
 
 interface FrontmatterBannerProps {
   frontmatter: string | null;
