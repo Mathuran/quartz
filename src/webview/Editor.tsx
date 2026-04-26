@@ -49,7 +49,7 @@ import { CalloutExtension } from './extensions/calloutExtension';
 import { SearchHighlightExtension } from './extensions/searchHighlightExtension';
 import { SearchBar } from './components/SearchBar';
 import { LinkDialog } from './components/LinkDialog';
-import type { EditorConfig } from './types';
+import type { EditorConfig, VsCodeApi } from './types';
 
 import './styles/callout.css';
 import './styles/codeBlock.css';
@@ -248,6 +248,20 @@ export function Editor({ initialContent, config: _config, onUpdate }: EditorProp
       attributes: {
         class: 'quartz-editor-content',
         spellcheck: 'true',
+      },
+      handleClick: (_view, _pos, event) => {
+        if (!event.metaKey && !event.ctrlKey) return false;
+
+        const target = event.target;
+        if (!(target instanceof Element)) return false;
+
+        const link = target.closest('a[href]');
+        if (!(link instanceof HTMLAnchorElement)) return false;
+
+        event.preventDefault();
+        const vscode = (window as unknown as { vscodeApi?: VsCodeApi }).vscodeApi;
+        vscode?.postMessage({ type: 'openLink', href: link.getAttribute('href') || '' });
+        return true;
       },
     },
   });

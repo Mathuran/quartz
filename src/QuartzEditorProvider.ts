@@ -115,6 +115,9 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
         case 'requestGitDiff':
           await this.openGitDiff(webviewPanel.webview, document);
           return;
+        case 'openLink':
+          await this.openLink(webviewPanel.webview, document, message.href);
+          return;
         case 'diffNoChanges':
           vscode.window.showInformationMessage('No changes compared to HEAD.');
           return;
@@ -267,6 +270,42 @@ export class QuartzEditorProvider implements vscode.CustomTextEditorProvider {
     );
     edit.replace(document.uri, fullRange, content);
     await vscode.workspace.applyEdit(edit);
+  }
+
+  private async openLink(
+    webview: vscode.Webview,
+    document: vscode.TextDocument,
+    href: unknown,
+  ): Promise<void> {
+    if (typeof href !== 'string' || !href.trim()) return;
+
+    const trimmed = href.trim();
+    if (trimmed.startsWith('#')) return;
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      await vscode.env.openExternal(vscode.Uri.parse(trimmed));
+      return;
+    }
+
+    const target = this.resolveLocalLink(document, trimmed);
+
+    try {
+      await vscode.workspace.fs.stat(target);
+    } catch {
+      vscode.window.showWarningMessage(`Linked file does not exist: ${target.fsPath}`);
+      return;
+    }
+
+    await vscode.commands.executeCommand('vscode.open', target);
+  }
+
+  private resolveLocalLink(document: vscode.TextDocument, href: string): vscode.Uri {
+    const pathOnly = href.split('#', 1)[0];
+    const resolvedPath = path.isAbsolute(pathOnly)
+      ? pathOnly
+      : path.resolve(path.dirname(document.uri.fsPath), pathOnly);
+
+    return vscode.Uri.file(resolvedPath);
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
